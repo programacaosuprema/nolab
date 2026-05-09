@@ -1,44 +1,11 @@
 import CGenerator from "./CGeneratorBase";
 
-// 🔹 EXPRESSÕES
-CGenerator.forBlock['compare'] = function(block) {
-
-  let aBlock = block.getInputTargetBlock("A");
-  let bBlock = block.getInputTargetBlock("B");
-
-  let a = "0";
-  let b = "0";
-
-  if (aBlock) {
-    const result = CGenerator.blockToCode(aBlock);
-    a = Array.isArray(result) ? result[0] : result;
-  }
-
-  if (bBlock) {
-    const result = CGenerator.blockToCode(bBlock);
-    b = Array.isArray(result) ? result[0] : result;
-  }
-
-  const op = block.getFieldValue('OP');
-
-  return [`${a} ${op} ${b}`, CGenerator.ORDER_NONE];
-};
-
-CGenerator.forBlock['variable'] = function(block) {
-  return [block.getFieldValue('VAR'), CGenerator.ORDER_ATOMIC];
-};
-
-CGenerator.forBlock['text'] = function(block) {
-  const text = block.getFieldValue('TEXT') || "";
-  return [`"${text}"`, CGenerator.ORDER_ATOMIC];
-};
-
-CGenerator.forBlock['is_empty'] = function(block) {
+CGenerator.forBlock['list_is_empty'] = function(block) {
   const list = block.getFieldValue("LIST");
   return [`(${list}.tamanho == 0)`, CGenerator.ORDER_ATOMIC];
 };
 
-CGenerator.forBlock['size'] = function(block) {
+CGenerator.forBlock['list_size'] = function(block) {
   const list = block.getFieldValue("LIST");
   return [`${list}.tamanho`, CGenerator.ORDER_ATOMIC];
 };
@@ -81,7 +48,6 @@ export function generateListC(workspace) {
     
     let code = "";
     let current = block;
-    console.log("tipo atual:", current.type);
 
     while (current) {
       // LISTA
@@ -102,7 +68,7 @@ export function generateListC(workspace) {
       }
 
       // INSERT
-      if (current.type === "insert") {
+      if (current.type === "list_insert") {
         usedFunctions.inserir = true;
 
         const value = current.getFieldValue("VALUE");
@@ -112,7 +78,7 @@ export function generateListC(workspace) {
       }
 
       // REMOVE FIRST
-      if (current.type === "remove_first") {
+      if (current.type === "list_remove_first") {
         usedFunctions.remover_inicio = true;
 
         const list = current.getFieldValue("LIST");
@@ -120,7 +86,7 @@ export function generateListC(workspace) {
       }
 
       // REMOVE LAST
-      if (current.type === "remove_last") {
+      if (current.type === "list_remove_last") {
         usedFunctions.remover_final = true;
 
         const list = current.getFieldValue("LIST");
@@ -128,7 +94,7 @@ export function generateListC(workspace) {
       }
 
       // REMOVE ITEM
-      if (current.type === "remove_item") {
+      if (current.type === "list_remove_item") {
         usedFunctions.remover_valor = true;
 
         const value = current.getFieldValue("VALUE");
@@ -137,7 +103,7 @@ export function generateListC(workspace) {
       }
 
       // REMOVE INDEX
-      if (current.type === "remove_index") {
+      if (current.type === "list_remove_index") {
         usedFunctions.remover_posicao = true;
 
         const index = current.getFieldValue("INDEX");
@@ -146,7 +112,7 @@ export function generateListC(workspace) {
       }
 
       // GET
-      if (current.type === "item_position") {
+      if (current.type === "list_item_position") {
         usedFunctions.obter = true;
 
         const pos = current.getFieldValue("VALUE");
@@ -164,7 +130,7 @@ export function generateListC(workspace) {
       }
 
       // SHOW
-      if (current.type === "show") {
+      if (current.type === "base_show") {
 
         let text = '""';
         let value = "0";
@@ -186,7 +152,7 @@ export function generateListC(workspace) {
       }
 
       // IF
-      if (current.type === "if") {
+      if (current.type === "base_if") {
         let conditionBlock = current.getInputTargetBlock("CONDITION");
 
         let condition = "0";
@@ -211,7 +177,7 @@ export function generateListC(workspace) {
       }
 
       // IF ELSE
-      if (current.type === "if_else") {
+      if (current.type === "base_if_else") {
         let conditionBlock = current.getInputTargetBlock("CONDITION");
         let condition = "0";
 
@@ -238,7 +204,7 @@ export function generateListC(workspace) {
       }
 
       // FOR EACH
-      if (current.type === "for_each") {
+      if (current.type === "list_for_each") {
         const varName = current.getFieldValue("VAR");
         const list = current.getFieldValue("LIST");
 
@@ -258,7 +224,7 @@ export function generateListC(workspace) {
       }
 
       // SORT
-      if (current.type === "sort_ascending") {
+      if (current.type === "list_sort_ascending") {
         usedFunctions.ordenar_crescente = true;
 
         const list = current.getFieldValue("LIST");
@@ -273,7 +239,7 @@ export function generateListC(workspace) {
       }
 
       // INVERT
-      if (current.type === "invert") {
+      if (current.type === "list_invert") {
         usedFunctions.inverter = true;
 
         const list = current.getFieldValue("LIST");
@@ -288,7 +254,7 @@ export function generateListC(workspace) {
 
   // 🔹 PEGA APENAS O run_program
   const blocks = workspace.getTopBlocks(true).filter(
-    (block) => block.type === "run_program"
+    (block) => block.type === "list_run_program"
   );
 
   if (!blocks || blocks.length === 0) return "";
@@ -305,12 +271,12 @@ export function generateListC(workspace) {
         return true;
       }
 
-      if (current.type === "if") {
+      if (current.type === "base_if") {
         const doBlock = current.getInputTargetBlock("DO");
         if (doBlock && containsList(doBlock)) return true;
       }
 
-      if (current.type === "if_else") {
+      if (current.type === "base_if_else") {
         const doBlock = current.getInputTargetBlock("DO");
         const elseBlock = current.getInputTargetBlock("ELSE");
 
@@ -318,7 +284,7 @@ export function generateListC(workspace) {
         if (elseBlock && containsList(elseBlock)) return true;
       }
 
-      if (current.type === "for_each") {
+      if (current.type === "list_for_each") {
         const doBlock = current.getInputTargetBlock("DO");
         if (doBlock && containsList(doBlock)) return true;
       }

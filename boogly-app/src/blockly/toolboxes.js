@@ -10,7 +10,7 @@ export const queueToolbox = {
   list: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "run_program" },
+      { kind: "block", type: "queue_run_program" },
       { kind: "block", type: "queue_container" },
       { kind: "block", type: "queue_fixed" },
       { kind: "block", type: "enqueue" },
@@ -24,32 +24,32 @@ export const queueToolbox = {
       { kind: "block", type: "queue_front" },
       { kind: "block", type: "queue_size" },
       { kind: "block", type: "queue_is_empty" },
-      { kind: "block", type: "show" }
+      { kind: "block", type: "base_show" }
     ]
   },
 
   variables: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "variable" },
-      { kind: "block", type: "text" },
-      {kind: "block", type: "number"}
+      { kind: "block", type: "base_variable" },
+      { kind: "block", type: "base_text" },
+      {kind: "block", type: "base_number"}
     ]
   },
 
   conditions: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "compare" },
-      { kind: "block", type: "if" },
-      { kind: "block", type: "if_else" }
+      { kind: "block", type: "base_compare" },
+      { kind: "block", type: "base_if" },
+      { kind: "block", type: "base_if_else" }
     ]
   },
 
   loops: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "for_each" }
+      { kind: "block", type: "queue_for_each" }
     ]
   }
 };
@@ -60,16 +60,16 @@ export const toolboxCategories = {
   list: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "run_program" },
+      { kind: "block", type: "list_run_program" },
       { kind: "block", type: "list_container" },
       { kind: "block", type: "list_fixed" },
-      { kind: "block", type: "insert" },
-      { kind: "block", type: "remove_last" },
-      { kind: "block", type: "remove_first" },
-      { kind: "block", type: "remove_item" },
-      { kind: "block", type: "remove_index" },
-      { kind: "block", type: "sublist" },
-      { kind: "block", type: "invert" },
+      { kind: "block", type: "list_insert" },
+      { kind: "block", type: "list_remove_last" },
+      { kind: "block", type: "list_remove_first" },
+      { kind: "block", type: "list_remove_item" },
+      { kind: "block", type: "list_remove_index" },
+      { kind: "block", type: "list_sublist" },
+      { kind: "block", type: "list_invert" },
     ]
   },
 
@@ -77,11 +77,11 @@ export const toolboxCategories = {
   state: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "is_empty" },
-      { kind: "block", type: "size" },
+      { kind: "block", type: "list_is_empty" },
+      { kind: "block", type: "list_size" },
       { kind: "block", type: "list_index" },
-      { kind: "block", type: "item_position" },
-      { kind: "block", type: "show" }
+      { kind: "block", type: "list_item_position" },
+      { kind: "block", type: "base_show" }
 
     ]
   },
@@ -90,8 +90,8 @@ export const toolboxCategories = {
   sort: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "sort_ascending" },
-      { kind: "block", type: "sort_descending" },
+      { kind: "block", type: "list_sort_ascending" },
+      { kind: "block", type: "list_sort_descending" },
     ]
   },
 
@@ -99,9 +99,9 @@ export const toolboxCategories = {
   variables: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "variable" },
-      { kind: "block", type: "text" },
-
+      { kind: "block", type: "base_variable" },
+      { kind: "block", type: "base_text" },
+      { kind: "block", type: "base_number"}
     ]
   },
 
@@ -109,9 +109,9 @@ export const toolboxCategories = {
   conditions: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "compare" },
-      { kind: "block", type: "if" },
-      { kind: "block", type: "if_else" },
+      { kind: "block", type: "base_compare" },
+      { kind: "block", type: "base_if" },
+      { kind: "block", type: "base_if_else" },
     ]
   },
 
@@ -119,7 +119,7 @@ export const toolboxCategories = {
   loops: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "for_each" },
+      { kind: "block", type: "list_for_each" },
     ]
   }
 

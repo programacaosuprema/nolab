@@ -10,10 +10,11 @@ function blockSameName(block) {
   const name = block.getFieldValue("NAME");
   const allBlocks = block.workspace.getAllBlocks();
 
-  const sameName = allBlocks.filter(b =>
-    (b.type === "queue_container" || b.type === "queue_fixed") &&
-    b.id !== block.id &&
-    b.getFieldValue("NAME") === name
+  const sameName = allBlocks.filter(
+    (b) =>
+      (b.type === "queue_container" || b.type === "queue_fixed") &&
+      b.id !== block.id &&
+      b.getFieldValue("NAME") === name
   );
 
   if (sameName.length > 0) {
@@ -27,21 +28,40 @@ function blockSameName(block) {
 
 /* =====================================================
    🔹 UTIL: obter filas disponíveis
+   Mesma lógica da lista: nunca retorna vazio
 ===================================================== */
 function getQueues(workspace) {
   if (!workspace) return [["-", "-"]];
 
-  const blocks = workspace.getAllBlocks();
+  const blocks = workspace.getAllBlocks(false);
 
   const queues = blocks
-    .filter(b => b.type === "queue_container" || b.type === "queue_fixed")
-    .map(b => b.getFieldValue("NAME"))
-    .filter(name => name && name.trim() !== "");
+    .filter((b) => b.type === "queue_container" || b.type === "queue_fixed")
+    .map((b) => b.getFieldValue("NAME"))
+    .filter((name) => name && name.trim() !== "");
 
   if (queues.length === 0) return [["-", "-"]];
 
-  return queues.map(name => [name, name]);
+  return queues.map((name) => [name, name]);
 }
+
+/* =====================================================
+   🔹 BLOCO: RUN PROGRAM
+===================================================== */
+Blockly.Blocks["queue_run_program"] = {
+  init: function () {
+    this.appendDummyInput().appendField("🚩 Quando EXECUTAR for clicado");
+
+    this.appendStatementInput("DO").setCheck(null);
+
+    this.setColour(490);
+    this.setPreviousStatement(false);
+    this.setNextStatement(false);
+    this.setDeletable(true);
+    this.setMovable(true);
+    this.setTooltip("Bloco inicial do programa");
+  }
+};
 
 /* =====================================================
    🔹 BLOCO: CRIAR FILA
@@ -85,71 +105,36 @@ Blockly.Blocks["queue_fixed"] = {
 
 /* =====================================================
    🔹 BLOCO: ENFILEIRAR
-   Ex.: enfileirar 10 na minha_fila
 ===================================================== */
 Blockly.Blocks["enqueue"] = {
   init: function () {
     this.appendValueInput("VALUE")
-      .setCheck("Number")
+      .setCheck(null)
       .appendField("enfileirar");
 
     this.appendDummyInput()
       .appendField("na")
-      .appendField(
-        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
-        "QUEUE"
-      );
+      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE");
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(160);
-  },
-
-  onchange: function () {
-    const field = this.getField("QUEUE");
-    if (!field || !this.workspace) return;
-
-    const options = getQueues(this.workspace);
-    const current = field.getValue();
-
-    const exists = options.some(([_, value]) => value === current);
-
-    if (!exists) {
-      field.setValue(options[0][1]);
-    }
   }
 };
 
 /* =====================================================
    🔹 BLOCO: DESENFILEIRAR
-   Ex.: desenfileirar da minha_fila
 ===================================================== */
 Blockly.Blocks["dequeue"] = {
   init: function () {
     this.appendDummyInput()
       .appendField("desenfileirar da")
-      .appendField(
-        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
-        "QUEUE"
-      );
+      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE");
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setColour(160);
-  },
-
-  onchange: function () {
-    const field = this.getField("QUEUE");
-    if (!field || !this.workspace) return;
-
-    const options = getQueues(this.workspace);
-    const current = field.getValue();
-
-    const exists = options.some(([_, value]) => value === current);
-
-    if (!exists) {
-      field.setValue(options[0][1]);
-    }
   }
 };
 
@@ -168,7 +153,7 @@ Blockly.Blocks["queue_front"] = {
 };
 
 /* =====================================================
-   🔹 BLOCO: TAMANHO
+   🔹 BLOCO: TAMANHO DA FILA
 ===================================================== */
 Blockly.Blocks["queue_size"] = {
   init: function () {
@@ -182,7 +167,7 @@ Blockly.Blocks["queue_size"] = {
 };
 
 /* =====================================================
-   🔹 BLOCO: VERIFICAR SE VAZIA
+   🔹 BLOCO: FILA ESTÁ VAZIA
 ===================================================== */
 Blockly.Blocks["queue_is_empty"] = {
   init: function () {
@@ -198,38 +183,31 @@ Blockly.Blocks["queue_is_empty"] = {
 
 /* =====================================================
    🔹 BLOCO: EXIBIR
-   (reutiliza o estilo da lista)
 ===================================================== */
-Blockly.Blocks["show"] = {
+
+
+Blockly.Blocks['queue_for_each'] = {
   init: function () {
-    this.appendValueInput("TEXT")
-      .setCheck("String")
-      .appendField("exibir");
-
     this.appendDummyInput()
-      .appendField("+");
+      .appendField("para cada")
+      .appendField(new Blockly.FieldTextInput("item"), "VAR")
+      .appendField("em")
+      .appendField(
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        "QUEUE"
+      );
 
-    this.appendValueInput("VALUE").setCheck(null);
+    this.appendStatementInput("DO")
+      .appendField("faça");
 
-    this.setInputsInline(true);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(200);
-
-    this.setTooltip("Exibe texto + valor");
-    this.setHelpUrl("");
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(30);
   }
 };
 
-Blockly.Blocks["number"] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField(new Blockly.FieldNumber(0), "VALUE");
 
-    this.setOutput(true, "Number"); // 🔥 IMPORTANTE
 
-    this.setColour(60);
 
-    this.setTooltip("Número");
-  }
-};
+
+

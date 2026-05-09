@@ -1,6 +1,12 @@
 import { javascriptGenerator } from "blockly/javascript";
 
-javascriptGenerator.forBlock["insert"] = function (block) {
+javascriptGenerator.forBlock['list_run_program'] = function (block) {
+  const statements = javascriptGenerator.statementToCode(block, "DO");
+
+  return `// INICIAR_EXECUCAO\n${statements}// FIM_EXECUCAO\n`;
+};
+
+javascriptGenerator.forBlock["list_insert"] = function (block) {
 
   const value = block.getFieldValue("VALUE");
   const listName = block.getFieldValue("LIST");
@@ -8,40 +14,40 @@ javascriptGenerator.forBlock["insert"] = function (block) {
   return `inserir(${value}, "${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["remove_last"] = function (block) {
+javascriptGenerator.forBlock["list_remove_last"] = function (block) {
    const listName = block.getFieldValue("LIST");
 
   return `remover_ultimo("${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["remove_first"] = function (block) {
+javascriptGenerator.forBlock["list_remove_first"] = function (block) {
    const listName = block.getFieldValue("LIST");
 
   return `remover_primeiro("${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["remove_item"] = function (block) {
+javascriptGenerator.forBlock["list_remove_item"] = function (block) {
   const value = block.getFieldValue("VALUE");
   const listName = block.getFieldValue("LIST");
 
   return `remover_item(${value}, "${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["remove_index"] = function (block) {
+javascriptGenerator.forBlock["list_remove_index"] = function (block) {
   const index = block.getFieldValue("INDEX");
     const listName = block.getFieldValue("LIST");
 
   return `remover_da_posicao(${index}, "${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["size"] = function (block) {
+javascriptGenerator.forBlock["list_size"] = function (block) {
 
   const listName = block.getFieldValue("LIST");
 
   return [`tamanho("${listName}")`, javascriptGenerator.ORDER_NONE];
 };
 
-javascriptGenerator.forBlock["is_empty"] = function (block) {
+javascriptGenerator.forBlock["list_is_empty"] = function (block) {
 
  const listName = block.getFieldValue("LIST");
 
@@ -63,7 +69,7 @@ javascriptGenerator.forBlock["list_fixed"] = function (block) {
   return `criar_lista_limitada("${name}", ${size})\n`;
 };
 
-javascriptGenerator.forBlock["item_position"] = function (block) { /*  */
+javascriptGenerator.forBlock["list_item_position"] = function (block) { /*  */
 
   const value = block.getFieldValue("VALUE");
   const listName = block.getFieldValue("LIST");
@@ -71,7 +77,7 @@ javascriptGenerator.forBlock["item_position"] = function (block) { /*  */
   return `exibir_item_pelo_indice(${value}, "${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["sublist"] = function (block) { 
+javascriptGenerator.forBlock["list_sublist"] = function (block) { 
 
   const first_value = block.getFieldValue("FIRST_VALUE");
   const second_value = block.getFieldValue("SECOND_VALUE");
@@ -89,28 +95,28 @@ javascriptGenerator.forBlock["list_index"] = function (block) {
   return `exibir_indice_pelo_item(${value}, "${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["sort_ascending"] = function (block) { 
+javascriptGenerator.forBlock["list_sort_ascending"] = function (block) { 
 
   const listName = block.getFieldValue("LIST");
 
   return `ordenar_crescente("${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["sort_descending"] = function (block) { 
+javascriptGenerator.forBlock["list_sort_descending"] = function (block) { 
 
   const listName = block.getFieldValue("LIST");
 
   return `ordenar_decrescente("${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["invert"] = function (block) { 
+javascriptGenerator.forBlock["list_invert"] = function (block) { 
 
   const listName = block.getFieldValue("LIST");
 
   return `inverter("${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["for_each"] = function (block) {
+javascriptGenerator.forBlock["list_for_each"] = function (block) {
   const variable = block.getFieldValue("VAR");
   const list = block.getFieldValue("LIST");
   const statements = javascriptGenerator.statementToCode(block, "DO");
@@ -122,7 +128,7 @@ javascriptGenerator.forBlock["for_each"] = function (block) {
     `;
 };
 
-javascriptGenerator.forBlock["if"] = function (block) {
+javascriptGenerator.forBlock["base_if"] = function (block) {
     const condition = javascriptGenerator.valueToCode(block, "CONDITION", 0) || "false";
     const statements = javascriptGenerator.statementToCode(block, "DO");
 
@@ -133,7 +139,7 @@ javascriptGenerator.forBlock["if"] = function (block) {
   `;
 };
 
-javascriptGenerator.forBlock["if_else"] = function (block) {
+javascriptGenerator.forBlock["base_if_else"] = function (block) {
   const condition = javascriptGenerator.valueToCode(block, "CONDITION", 0) || "false";
   const doStatements = javascriptGenerator.statementToCode(block, "DO");
   const elseStatements = javascriptGenerator.statementToCode(block, "ELSE");
@@ -147,7 +153,7 @@ javascriptGenerator.forBlock["if_else"] = function (block) {
   `;
 };
 
-javascriptGenerator.forBlock["compare"] = function (block) {
+javascriptGenerator.forBlock["base_compare"] = function (block) {
   const A = javascriptGenerator.valueToCode(block, "A", 0) || 0;
   const B = javascriptGenerator.valueToCode(block, "B", 0) || 0;
   const op = block.getFieldValue("OP");
@@ -155,18 +161,12 @@ javascriptGenerator.forBlock["compare"] = function (block) {
   return [`${A} ${op} ${B}`, javascriptGenerator.ORDER_NONE];
 };
 
-javascriptGenerator.forBlock["variable"] = function (block) {
+javascriptGenerator.forBlock["base_variable"] = function (block) {
   const name = block.getFieldValue("VAR");
   return [name, javascriptGenerator.ORDER_NONE];
 };
 
-javascriptGenerator.forBlock['run_program'] = function (block) {
-  const statements = javascriptGenerator.statementToCode(block, "DO");
-
-  return `// INICIAR_EXECUCAO\n${statements}// FIM_EXECUCAO\n`;
-};
-
-javascriptGenerator.forBlock['show'] = function (block) {
+javascriptGenerator.forBlock['base_show'] = function (block) {
 
   const text =
     javascriptGenerator.valueToCode(block, "TEXT", javascriptGenerator.ORDER_NONE) || '""';
@@ -176,7 +176,12 @@ javascriptGenerator.forBlock['show'] = function (block) {
   return `exibir(${text}, ${value});\n`;
 };
 
-javascriptGenerator.forBlock['text'] = function (block) {
+javascriptGenerator.forBlock['base_text'] = function (block) {
   const text = block.getFieldValue('TEXT');
   return [`"${text}"`, javascriptGenerator.ORDER_NONE];
+};
+
+javascriptGenerator.forBlock["base_number"] = function (block) {
+  const value = Number(block.getFieldValue("VALUE"));
+  return [value || 0, javascriptGenerator.ORDER_NONE];
 };

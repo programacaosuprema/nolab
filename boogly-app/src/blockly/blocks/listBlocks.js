@@ -43,7 +43,7 @@ function getLists(workspace) {
   return lists.map(name => [name, name]);
 }
 
-Blockly.Blocks['run_program'] = {
+Blockly.Blocks['list_run_program'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("🚩 Quando EXECUTAR for clicado");
@@ -107,7 +107,7 @@ Blockly.Blocks['list_fixed'] = {
 /* =====================================================
    🔹 BLOCO: INSERIR
 ===================================================== */
-Blockly.Blocks['insert'] = {
+Blockly.Blocks['list_insert'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("inserir")
@@ -124,7 +124,7 @@ Blockly.Blocks['insert'] = {
 /* =====================================================
    🔹 BLOCO: REMOVER (último)
 ===================================================== */
-Blockly.Blocks['remove_last'] = {
+Blockly.Blocks['list_remove_last'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("remover último de")
@@ -136,7 +136,7 @@ Blockly.Blocks['remove_last'] = {
   }
 };
 
-Blockly.Blocks['remove_first'] = {
+Blockly.Blocks['list_remove_first'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("remover primeiro de")
@@ -151,7 +151,7 @@ Blockly.Blocks['remove_first'] = {
 /* =====================================================
    🔹 BLOCO: REMOVER ITEM (valor)
 ===================================================== */
-Blockly.Blocks['remove_item'] = {
+Blockly.Blocks['list_remove_item'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("remover item")
@@ -168,7 +168,7 @@ Blockly.Blocks['remove_item'] = {
 /* =====================================================
    🔹 BLOCO: REMOVER POR ÍNDICE
 ===================================================== */
-Blockly.Blocks['remove_index'] = {
+Blockly.Blocks['list_remove_index'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("remover posição")
@@ -185,7 +185,7 @@ Blockly.Blocks['remove_index'] = {
 /* =====================================================
    🔹 BLOCO: TAMANHO
 ===================================================== */
-Blockly.Blocks['size'] = {
+Blockly.Blocks['list_size'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("tamanho de")
@@ -198,7 +198,7 @@ Blockly.Blocks['size'] = {
 /* =====================================================
    🔹 BLOCO: VERIFICAR SE VAZIA
 ===================================================== */
-Blockly.Blocks['is_empty'] = {
+Blockly.Blocks['list_is_empty'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("lista")
@@ -211,7 +211,7 @@ Blockly.Blocks['is_empty'] = {
   }
 };
 
-Blockly.Blocks['item_position'] = {
+Blockly.Blocks['list_item_position'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("exibir item da posição ")
@@ -225,31 +225,7 @@ Blockly.Blocks['item_position'] = {
   }
 };
 
-Blockly.Blocks['show'] = {
-  init: function () {
-
-    this.appendValueInput("TEXT")
-      .setCheck("String")
-      .appendField("exibir");
-
-    this.appendDummyInput()
-      .appendField("+");
-
-    this.appendValueInput("VALUE").setCheck(null); ;
-
-    this.setInputsInline(true); // 🔥 ISSO AQUI FAZ FICAR EM LINHA
-
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-
-    this.setColour(200); // roxo parecido com a imagem
-
-    this.setTooltip("Exibe texto + valor");
-    this.setHelpUrl("");
-  }
-};
-
-Blockly.Blocks['sublist'] = {
+Blockly.Blocks['list_sublist'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("sublista de")
@@ -279,7 +255,7 @@ Blockly.Blocks['list_index'] = {
   }
 };
 
-Blockly.Blocks['sort_ascending'] = {
+Blockly.Blocks['list_sort_ascending'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("ordenar ")
@@ -292,7 +268,7 @@ Blockly.Blocks['sort_ascending'] = {
   }
 };
 
-Blockly.Blocks['sort_descending'] = {
+Blockly.Blocks['list_sort_descending'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("ordenar ")
@@ -305,7 +281,7 @@ Blockly.Blocks['sort_descending'] = {
   }
 };
 
-Blockly.Blocks['invert'] = {
+Blockly.Blocks['list_invert'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("inverter ")
@@ -317,7 +293,7 @@ Blockly.Blocks['invert'] = {
   }
 };
 
-Blockly.Blocks['for_each'] = {
+Blockly.Blocks['list_for_each'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("para cada")
@@ -334,119 +310,4 @@ Blockly.Blocks['for_each'] = {
   }
 };
 
-Blockly.Blocks['if'] = {
-  init: function () {
-    this.appendValueInput("CONDITION")
-      .setCheck("Boolean")
-      .appendField("se");
 
-    this.appendStatementInput("DO")
-      .appendField("faça");
-
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(289);
-
-    this.setOnChange(function() {
-      const condition = this.getInputTargetBlock("CONDITION");
-
-      if (!condition) {
-        this.setWarningText("Adicione uma condição");
-      } else {
-        this.setWarningText(null);
-      }
-      });
-    }
-};
-
-Blockly.Blocks['if_else'] = {
-  init: function () {
-    this.appendValueInput("CONDITION")
-      .setCheck("Boolean") // 🔥 FALTAVA ISSO
-      .appendField("se");
-
-    this.appendStatementInput("DO")
-      .appendField("faça");
-
-    this.appendStatementInput("ELSE")
-      .appendField("senão");
-
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(289);  
-
-    this.setOnChange(function() {
-      const condition = this.getInputTargetBlock("CONDITION");
-
-      if (!condition) {
-        this.setWarningText("Adicione uma condição");
-      } else {
-        this.setWarningText(null);
-      }
-    }); 
-  }
-};
-
-Blockly.Blocks['compare'] = {
-  init: function () {
-    this.appendValueInput("A")
-    .setCheck(["Number", "Variable"]);
-
-    this.appendDummyInput()
-      .appendField(new Blockly.FieldDropdown([
-        ["=", "=="],
-        ["≠", "!="],
-        [">", ">"],
-        ["<", "<"],
-        ["≥", ">="],
-        ["≤", "<="]
-      ]), "OP");
-
-    this.appendValueInput("B")
-    .setCheck(["Number", "Variable"]);
-
-    this.setInputsInline(true);
-
-    this.setOutput(true, "Boolean"); // 🔥 ESSENCIAL
-
-    this.setColour(210);
-
-    this.setOnChange(function() {
-      const a = this.getInputTargetBlock("A");
-      const b = this.getInputTargetBlock("B");
-
-      if (!a || !b) {
-        this.setWarningText("Preencha os dois lados da comparação");
-      } else {
-        this.setWarningText(null);
-      }
-    });
-  }
-};
-
-Blockly.Blocks['variable'] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField(new Blockly.FieldTextInput("variável"), "VAR");
-
-    this.setOutput(true, "Variable"); 
-
-    this.setColour(60);
-  }
-};
-
-Blockly.Blocks['text'] = {
-  init: function () {
-    this.appendDummyInput()
-      .appendField('"')
-      .appendField(new Blockly.FieldTextInput("texto"), "TEXT")
-      .appendField('"');
-
-    this.setOutput(true, "String"); // 🔥 IMPORTANTE
-
-    this.setColour(160); // pode ajustar depois
-
-    this.setTooltip("Texto");
-    this.setHelpUrl("");
-  }
-};

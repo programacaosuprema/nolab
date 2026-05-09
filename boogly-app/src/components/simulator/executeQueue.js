@@ -7,7 +7,8 @@ export function executeQueue(code) {
     return [
       {
         type: "error",
-        message: "Adicione o bloco 'Quando EXECUTAR for clicado' para iniciar o programa.",
+        message:
+          "Adicione o bloco 'Quando EXECUTAR for clicado' para iniciar o programa.",
         state: {}
       }
     ];
@@ -34,6 +35,7 @@ export function executeQueue(code) {
 
     if (!isRunning) return;
 
+    // 🔹 IF
     if (line.startsWith("if")) {
       const condition = line.match(/if\s*\((.*)\)/)?.[1];
       let result = false;
@@ -49,6 +51,7 @@ export function executeQueue(code) {
       return;
     }
 
+    // 🔹 ELSE
     if (line.startsWith("} else {")) {
       const last = conditionStack.pop();
       const result = !last;
@@ -57,6 +60,7 @@ export function executeQueue(code) {
       return;
     }
 
+    // 🔹 FECHAMENTO DE BLOCO
     if (line === "}") {
       conditionStack.pop();
       shouldExecute =
@@ -68,24 +72,75 @@ export function executeQueue(code) {
 
     if (!shouldExecute) return;
 
-    const match = line.match(/(\w+)\((.*?)\)/);
+    // 🔹 CAPTURA FUNÇÃO E ARGUMENTOS
+    // Exemplo:
+    // enfileirar("minha_fila", (10));
+    const match = line.match(/(\w+)\((.*)\);?/);
     if (!match) return;
 
     const operation = match[1];
-    const args = match[2]
-      ? match[2].split(",").map((arg) => {
-          const value = arg.trim();
+    const rawArgs = match[2];
 
-          if (value.startsWith('"') && value.endsWith('"')) {
-            return value.slice(1, -1);
-          }
+    // 🔹 SPLIT ROBUSTO (preserva strings com vírgulas)
+    const args = [];
+    let current = "";
+    let inString = false;
 
-          return Number(value);
-        })
-      : [];
+    for (let i = 0; i < rawArgs.length; i++) {
+      const char = rawArgs[i];
 
+      if (char === '"') {
+        inString = !inString;
+        current += char;
+        continue;
+      }
+
+      if (char === "," && !inString) {
+        args.push(current.trim());
+        current = "";
+        continue;
+      }
+
+      current += char;
+    }
+
+    if (current.trim() !== "") {
+      args.push(current.trim());
+    }
+
+    // 🔹 CONVERTE ARGUMENTOS
+    const parsedArgs = args.map((arg) => {
+      let value = arg.trim();
+
+      // Remove parênteses externos: (10) -> 10
+      while (
+        value.startsWith("(") &&
+        value.endsWith(")")
+      ) {
+        value = value.slice(1, -1).trim();
+      }
+
+      // String
+      if (
+        value.startsWith('"') &&
+        value.endsWith('"')
+      ) {
+        return value.slice(1, -1);
+      }
+
+      // Número
+      const num = Number(value);
+      if (!Number.isNaN(num)) {
+        return num;
+      }
+
+      // Valor literal (variável, expressão, etc.)
+      return value;
+    });
+
+    // 🔹 EXECUTA OPERAÇÃO
     if (typeof simulator[operation] === "function") {
-      simulator[operation](...args);
+      simulator[operation](...parsedArgs);
     }
   });
 

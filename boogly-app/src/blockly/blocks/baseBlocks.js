@@ -1,6 +1,64 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
 
+/* ==========================================================
+   BLOCO: NÃO (negação lógica)
+   ========================================================== */
+Blockly.Blocks["base_not"] = {
+  init: function () {
+    this.appendValueInput("VALUE")
+      .setCheck(null)
+      .appendField("não");
+
+    this.setOutput(true, null);
+    this.setColour(210);
+    this.setTooltip("Inverte o valor lógico.");
+  }
+};
+
+/* ==========================================================
+   BLOCO: EXIBIR TEXTO
+   Exemplo: exibir "Olá Mundo"
+   ========================================================== */
+Blockly.Blocks["base_show_text"] = {
+  init: function () {
+    this.appendValueInput("TEXT")
+      .setCheck(null)
+      .appendField("exibir texto");
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(160);
+    this.setTooltip("Exibe apenas um texto.");
+  }
+};
+
+/* ==========================================================
+   BLOCO: RECEBER VALOR
+   Exemplo: receber valor
+   Usado como expressão para leitura do teclado.
+   ========================================================== */
+Blockly.Blocks["base_input"] = {
+  init: function () {
+    // 🔹 Aceita somente blocos do tipo "Variable"
+    this.appendValueInput("VARIABLE")
+      .setCheck("Variable");
+
+    this.appendDummyInput()
+      .appendField("=");
+
+    // 🔹 Aceita somente blocos do tipo "Value"
+    this.appendValueInput("VALUE")
+      .setCheck("Value");
+
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(60);
+    this.setTooltip("Atribui um valor a uma variável.");
+  }
+};
+
 // VARIABLE
 Blockly.Blocks['base_variable'] = {
   init: function () {

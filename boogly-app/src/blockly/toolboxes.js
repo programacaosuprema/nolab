@@ -24,7 +24,8 @@ export const queueToolbox = {
       { kind: "block", type: "queue_front" },
       { kind: "block", type: "queue_size" },
       { kind: "block", type: "queue_is_empty" },
-      { kind: "block", type: "base_show" }
+      { kind: "block", type: "base_show" },
+      {kind: "block", type: "base_show_text"},
     ]
   },
 
@@ -33,7 +34,10 @@ export const queueToolbox = {
     contents: [
       { kind: "block", type: "base_variable" },
       { kind: "block", type: "base_text" },
-      {kind: "block", type: "base_number"}
+      { kind: "block", type: "base_number"},
+      { kind: "block", type: "base_input"},
+      { kind: "block", type: "base_not"},
+      
     ]
   },
 
@@ -81,8 +85,8 @@ export const toolboxCategories = {
       { kind: "block", type: "list_size" },
       { kind: "block", type: "list_index" },
       { kind: "block", type: "list_item_position" },
-      { kind: "block", type: "base_show" }
-
+      { kind: "block", type: "base_show" },
+      { kind: "block", type: "base_show_text"},
     ]
   },
 
@@ -101,7 +105,9 @@ export const toolboxCategories = {
     contents: [
       { kind: "block", type: "base_variable" },
       { kind: "block", type: "base_text" },
-      { kind: "block", type: "base_number"}
+      { kind: "block", type: "base_number"},
+      { kind: "block", type: "base_input"},
+      { kind: "block", type: "base_not"},
     ]
   },
 

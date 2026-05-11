@@ -29,6 +29,19 @@ export function generateQueueC(workspace) {
     return code + indent() + line + "\n";
   }
 
+  function addGeneratedCode(code, generated) {
+    const lines = generated
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    for (const line of lines) {
+      code = addLine(code, line);
+    }
+
+    return code;
+  }
+
   function blockToCodeValue(block, defaultValue = "0") {
     if (!block) return defaultValue;
 
@@ -174,6 +187,16 @@ export function generateQueueC(workspace) {
           code,
           `printf("%s %d\\n", ${text}, ${value});`
         );
+      }
+
+      if (current.type === "base_input") {
+        const generated = CGenerator.blockToCode(current);
+        code = addGeneratedCode(code, generated);
+      }
+
+      if (current.type === "base_show_text") {
+        const generated = CGenerator.blockToCode(current);
+        code = addGeneratedCode(code, generated);
       }
 
       // 🔹 IF

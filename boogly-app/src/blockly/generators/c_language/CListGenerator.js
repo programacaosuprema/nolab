@@ -24,6 +24,19 @@ export function generateListC(workspace) {
     return code + indent() + line + "\n";
   }
 
+  function addGeneratedCode(code, generated) {
+    const lines = generated
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    for (const line of lines) {
+      code = addLine(code, line);
+    }
+
+    return code;
+  }
+
   // 🔹 CONTROLE DE FUNÇÕES USADAS
   let functions = "";
   let usedFunctions = {
@@ -127,6 +140,16 @@ export function generateListC(workspace) {
         const value = current.getFieldValue("VALUE");
         const list = current.getFieldValue("LIST");
         code = addLine(code, `printf("%d\\n", buscar_posicao(&${list}, ${value}));`);
+      }
+
+      if (current.type === "base_input") {
+        const generated = CGenerator.blockToCode(current);
+        code = addGeneratedCode(code, generated);
+      }
+
+      if (current.type === "base_show_text") {
+        const generated = CGenerator.blockToCode(current);
+        code = addGeneratedCode(code, generated);
       }
 
       // SHOW

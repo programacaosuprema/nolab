@@ -185,3 +185,55 @@ javascriptGenerator.forBlock["base_number"] = function (block) {
   const value = Number(block.getFieldValue("VALUE"));
   return [value || 0, javascriptGenerator.ORDER_NONE];
 };
+
+/* ==========================================================
+   NÃO (negação lógica)
+   ========================================================== */
+javascriptGenerator.forBlock["base_not"] = function (block) {
+  const value =
+    javascriptGenerator.valueToCode(
+      block,
+      "VALUE",
+      javascriptGenerator.ORDER_LOGICAL_NOT
+    ) || "false";
+
+  return [
+    `!(${value})`,
+    javascriptGenerator.ORDER_LOGICAL_NOT
+  ];
+};
+
+/* ==========================================================
+   EXIBIR APENAS TEXTO
+   ========================================================== */
+javascriptGenerator.forBlock["base_show_text"] = function (block) {
+  const text =
+    javascriptGenerator.valueToCode(
+      block,
+      "TEXT",
+      javascriptGenerator.ORDER_NONE
+    ) || '""';
+
+  return `exibir_texto(${text});\n`;
+};
+
+/* ==========================================================
+   RECEBER VALOR
+   ========================================================== */
+javascriptGenerator.forBlock["base_input"] = function (block) {
+  const variable =
+    javascriptGenerator.valueToCode(
+      block,
+      "VARIABLE",
+      javascriptGenerator.ORDER_ASSIGNMENT
+    ) || "variavel";
+
+  const value =
+    javascriptGenerator.valueToCode(
+      block,
+      "VALUE",
+      javascriptGenerator.ORDER_ASSIGNMENT
+    ) || "0";
+
+  return `${variable} = ${value};\n`;
+};

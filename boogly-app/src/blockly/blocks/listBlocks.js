@@ -86,16 +86,22 @@ Blockly.Blocks['list_container'] = {
 /* =====================================================
    🔹 BLOCO: LISTA FIXA
 ===================================================== */
-Blockly.Blocks['list_fixed'] = {
+Blockly.Blocks["list_fixed"] = {
   init: function () {
     this.appendDummyInput()
       .appendField("criar lista")
-      .appendField(new Blockly.FieldTextInput("minha_lista_fixa"), "NAME")
-      .appendField("tamanho")
-      .appendField(new Blockly.FieldNumber(3, 0), "SIZE");
+      .appendField(
+        new Blockly.FieldTextInput("minha_lista_fixa"),
+        "NAME"
+      )
+      .appendField("tamanho");
+
+    this.appendValueInput("SIZE")
+      .setCheck("Value");
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(130);
   },
 
@@ -107,18 +113,24 @@ Blockly.Blocks['list_fixed'] = {
 /* =====================================================
    🔹 BLOCO: INSERIR
 ===================================================== */
-Blockly.Blocks['list_insert'] = {
+Blockly.Blocks["list_insert"] = {
   init: function () {
+    this.appendValueInput("VALUE")
+      .setCheck("Value")
+      .appendField("inserir");
+
     this.appendDummyInput()
-      .appendField("inserir")
-      .appendField(new Blockly.FieldNumber(0), "VALUE")
       .appendField("em")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(100, 100, 100);
-  } 
+  }
 };
 
 /* =====================================================
@@ -151,16 +163,22 @@ Blockly.Blocks['list_remove_first'] = {
 /* =====================================================
    🔹 BLOCO: REMOVER ITEM (valor)
 ===================================================== */
-Blockly.Blocks['list_remove_item'] = {
+Blockly.Blocks["list_remove_item"] = {
   init: function () {
+    this.appendValueInput("VALUE")
+      .setCheck("Value")
+      .appendField("remover item");
+
     this.appendDummyInput()
-      .appendField("remover item")
-      .appendField(new Blockly.FieldNumber(0), "VALUE")
       .appendField("de")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(0);
   }
 };
@@ -168,16 +186,22 @@ Blockly.Blocks['list_remove_item'] = {
 /* =====================================================
    🔹 BLOCO: REMOVER POR ÍNDICE
 ===================================================== */
-Blockly.Blocks['list_remove_index'] = {
+Blockly.Blocks["list_remove_index"] = {
   init: function () {
+    this.appendValueInput("INDEX")
+      .setCheck("Value")
+      .appendField("remover posição");
+
     this.appendDummyInput()
-      .appendField("remover posição")
-      .appendField(new Blockly.FieldNumber(0, 0), "INDEX")
       .appendField("de")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(0);
   }
 };
@@ -211,46 +235,66 @@ Blockly.Blocks['list_is_empty'] = {
   }
 };
 
-Blockly.Blocks['list_item_position'] = {
+Blockly.Blocks["list_item_position"] = {
   init: function () {
+    this.appendValueInput("VALUE")
+      .setCheck("Value")
+      .appendField("exibir item da posição");
+
     this.appendDummyInput()
-      .appendField("exibir item da posição ")
-      .appendField(new Blockly.FieldNumber(0), "VALUE")
       .appendField("de")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(200);
   }
 };
 
-Blockly.Blocks['list_sublist'] = {
+Blockly.Blocks["list_sublist"] = {
   init: function () {
+    this.appendValueInput("FIRST_VALUE")
+      .setCheck("Value")
+      .appendField("sublista de");
+
+    this.appendValueInput("SECOND_VALUE")
+      .setCheck("Value")
+      .appendField("até");
+
     this.appendDummyInput()
-      .appendField("sublista de")
-      .appendField(new Blockly.FieldNumber(0), "FIRST_VALUE")
-      .appendField("até")
-      .appendField(new Blockly.FieldNumber(0), "SECOND_VALUE")
       .appendField("de")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(200);
   }
 };
 
-Blockly.Blocks['list_index'] = {
+Blockly.Blocks["list_index"] = {
   init: function () {
+    this.appendValueInput("VALUE")
+      .setCheck("Value")
+      .appendField("exibir posição do item");
+
     this.appendDummyInput()
-      .appendField("exibir posição do item ")
-      .appendField(new Blockly.FieldNumber(0), "VALUE")
       .appendField("de")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(200);
   }
 };

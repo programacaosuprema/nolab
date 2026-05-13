@@ -147,15 +147,55 @@ export function executeList(code) {
       ? match[2].split(",").map(arg => {
           const value = arg.trim();
 
+          // String entre aspas
           if (value.startsWith('"') && value.endsWith('"')) {
             return value.slice(1, -1);
           }
 
-          return Number(value);
+          // Número válido
+          const num = Number(value);
+          if (!Number.isNaN(num)) {
+            return num;
+          }
+
+          // Caso seja outro tipo de valor, mantém como texto
+          return value;
         })
       : [];
 
     if (typeof simulator[operation] === "function") {
+      // 🔹 inserir("minha_lista", 10)
+      // Simulator espera: inserir(10, "minha_lista")
+      if (operation === "inserir") {
+        const [nome, valor] = args;
+        simulator.inserir(valor, nome);
+        return;
+      }
+
+      if (operation === "remover_item") {
+        const [nome, valor] = args;
+        simulator.remover_item(valor, nome);
+        return;
+      }
+
+      if (operation === "remover_da_posicao") {
+        const [indice, nome] = args;
+        simulator.remover_da_posicao(indice, nome);
+        return;
+      }
+
+      if (operation === "criar_lista_limitada") {
+        const [nome, tamanho] = args;
+        simulator.criar_lista_limitada(nome, tamanho);
+        return;
+      }
+
+      if (operation === "sublista") {
+        const [nome, inicio, fim] = args;
+        simulator.sublista(inicio, fim, nome);
+        return;
+      }
+
       simulator[operation](...args);
     }
   });

@@ -7,11 +7,16 @@ javascriptGenerator.forBlock['list_run_program'] = function (block) {
 };
 
 javascriptGenerator.forBlock["list_insert"] = function (block) {
+  const value =
+    javascriptGenerator.valueToCode(
+      block,
+      "VALUE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
 
-  const value = block.getFieldValue("VALUE");
-  const listName = block.getFieldValue("LIST");
+  const list = block.getFieldValue("LIST");
 
-  return `inserir(${value}, "${listName}")\n`;
+  return `inserir("${list}", ${value});\n`;
 };
 
 javascriptGenerator.forBlock["list_remove_last"] = function (block) {
@@ -27,15 +32,27 @@ javascriptGenerator.forBlock["list_remove_first"] = function (block) {
 };
 
 javascriptGenerator.forBlock["list_remove_item"] = function (block) {
-  const value = block.getFieldValue("VALUE");
-  const listName = block.getFieldValue("LIST");
+  const value =
+    javascriptGenerator.valueToCode(
+      block,
+      "VALUE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
 
-  return `remover_item(${value}, "${listName}")\n`;
+  const list = block.getFieldValue("LIST");
+
+  return `remover_item("${list}", ${value});\n`;
 };
 
 javascriptGenerator.forBlock["list_remove_index"] = function (block) {
-  const index = block.getFieldValue("INDEX");
-    const listName = block.getFieldValue("LIST");
+  const index =
+    javascriptGenerator.valueToCode(
+      block,
+      "INDEX",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
+
+  const listName = block.getFieldValue("LIST");
 
   return `remover_da_posicao(${index}, "${listName}")\n`;
 };
@@ -62,33 +79,59 @@ javascriptGenerator.forBlock["list_container"] = function (block) {
 };
 
 javascriptGenerator.forBlock["list_fixed"] = function (block) {
-
   const name = block.getFieldValue("NAME");
-  const size = block.getFieldValue("SIZE");
+
+  const size =
+    javascriptGenerator.valueToCode(
+      block,
+      "SIZE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
 
   return `criar_lista_limitada("${name}", ${size})\n`;
 };
 
-javascriptGenerator.forBlock["list_item_position"] = function (block) { /*  */
+javascriptGenerator.forBlock["list_item_position"] = function (block) {
+  const value =
+    javascriptGenerator.valueToCode(
+      block,
+      "VALUE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
 
-  const value = block.getFieldValue("VALUE");
   const listName = block.getFieldValue("LIST");
 
   return `exibir_item_pelo_indice(${value}, "${listName}")\n`;
 };
 
-javascriptGenerator.forBlock["list_sublist"] = function (block) { 
+javascriptGenerator.forBlock["list_sublist"] = function (block) {
+  const firstValue =
+    javascriptGenerator.valueToCode(
+      block,
+      "FIRST_VALUE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
 
-  const first_value = block.getFieldValue("FIRST_VALUE");
-  const second_value = block.getFieldValue("SECOND_VALUE");
+  const secondValue =
+    javascriptGenerator.valueToCode(
+      block,
+      "SECOND_VALUE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
+
   const listName = block.getFieldValue("LIST");
 
-  return `sublista(${first_value}, ${second_value}, "${listName}")\n`;
+  return `sublista(${firstValue}, ${secondValue}, "${listName}")\n`;
 };
 
 javascriptGenerator.forBlock["list_index"] = function (block) { 
 
-  const value = block.getFieldValue("VALUE");
+  const value =
+    javascriptGenerator.valueToCode(
+      block,
+      "VALUE",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
 
   const listName = block.getFieldValue("LIST");
 
@@ -229,7 +272,7 @@ javascriptGenerator.forBlock["base_input"] = function (block) {
     ) || "variavel";
 
   const value =
-    javascriptGenerator.valueToCode(
+    javascriptGenerator.valueToCode(  
       block,
       "VALUE",
       javascriptGenerator.ORDER_ASSIGNMENT

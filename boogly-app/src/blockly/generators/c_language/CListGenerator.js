@@ -37,6 +37,15 @@ export function generateListC(workspace) {
     return code;
   }
 
+  function blockToCodeValue(block, defaultValue = "0") {
+      if (!block) return defaultValue;
+  
+      const result = CGenerator.blockToCode(block);
+      return Array.isArray(result)
+        ? result[0]
+        : (result || defaultValue);
+  }
+
   // 🔹 CONTROLE DE FUNÇÕES USADAS
   let functions = "";
   let usedFunctions = {
@@ -68,10 +77,21 @@ export function generateListC(workspace) {
         current.type === "list_container" ||
         current.type === "list_fixed"
       ) {
-        const name = current.getFieldValue("NAME");
+        const name =
+          current.getFieldValue("NAME") || "minha_lista";
 
+        // 🔹 LISTA FIXA COM TAMANHO DEFINIDO POR OUTRO BLOCO
         if (current.type === "list_fixed") {
-          usedFunctions.size = current.getFieldValue("SIZE");
+          const sizeBlock =
+            current.getInputTargetBlock("SIZE");
+
+          // Usa o valor do bloco conectado.
+          // Se nenhum bloco estiver conectado, assume 0.
+          const size =
+            blockToCodeValue(sizeBlock, "0");
+
+          // Armazena o tamanho dinamicamente
+          usedFunctions.size = size;
         }
 
         usedFunctions.inicializar = true;
@@ -79,16 +99,24 @@ export function generateListC(workspace) {
         code = addLine(code, `Lista ${name};`);
         code = addLine(code, `inicializar(&${name});`);
       }
-
       // INSERT
       if (current.type === "list_insert") {
-        usedFunctions.inserir = true;
+          usedFunctions.inserir = true;
 
-        const value = current.getFieldValue("VALUE");
-        const list = current.getFieldValue("LIST");
+          const valueBlock =
+            current.getInputTargetBlock("VALUE");
 
-        code = addLine(code, `inserir_inicio(&${list}, ${value});`);
-      }
+          const value =
+            blockToCodeValue(valueBlock, "0");
+
+          const list =
+            current.getFieldValue("LIST") || "lista";
+
+          code = addLine(
+            code,
+            `inserir_elemento(&${list}, ${value});`
+          );
+        }
 
       // REMOVE FIRST
       if (current.type === "list_remove_first") {
@@ -109,47 +137,74 @@ export function generateListC(workspace) {
       // REMOVE ITEM
       if (current.type === "list_remove_item") {
         usedFunctions.remover_valor = true;
+        const valueBlock =
+          current.getInputTargetBlock("VALUE");
 
-        const value = current.getFieldValue("VALUE");
-        const list = current.getFieldValue("LIST");
-        code = addLine(code, `remover_valor(&${list}, ${value});`);
+        const value =
+          blockToCodeValue(valueBlock, "0");
+
+        const list =
+          current.getFieldValue("LIST") || "lista";
+
+        code = addLine(
+          code,
+          `remover_valor(&${list}, ${value}); /* remover item ${value} da lista ${list} */`
+        );
       }
 
       // REMOVE INDEX
       if (current.type === "list_remove_index") {
         usedFunctions.remover_posicao = true;
+        const indexBlock =
+          current.getInputTargetBlock("INDEX");
 
-        const index = current.getFieldValue("INDEX");
-        const list = current.getFieldValue("LIST");
-        code = addLine(code, `remover_posicao(&${list}, ${index});`);
+        const index =
+          blockToCodeValue(indexBlock, "0");
+
+        const list =
+          current.getFieldValue("LIST") || "lista";
+
+        code = addLine(
+          code,
+          `remover_posicao(&${list}, ${index});`
+        );
       }
 
       // GET
       if (current.type === "list_item_position") {
         usedFunctions.obter = true;
+        const valueBlock =
+          current.getInputTargetBlock("VALUE");
 
-        const pos = current.getFieldValue("VALUE");
-        const list = current.getFieldValue("LIST");
-        code = addLine(code, `printf("%d\\n", obter_elemento(&${list}, ${pos}));`);
+        const position =
+          blockToCodeValue(valueBlock, "0");
+
+        const list =
+          current.getFieldValue("LIST") || "lista";
+
+        code = addLine(code, 
+          `printf("%d\\n", obter_elemento(&${list}, ${position}));`);
       }
+
+      
 
       // BUSCAR
       if (current.type === "list_index") {
         usedFunctions.buscar = true;
 
-        const value = current.getFieldValue("VALUE");
-        const list = current.getFieldValue("LIST");
-        code = addLine(code, `printf("%d\\n", buscar_posicao(&${list}, ${value}));`);
-      }
+        const valueBlock =
+          current.getInputTargetBlock("VALUE");
 
-      if (current.type === "base_input") {
-        const generated = CGenerator.blockToCode(current);
-        code = addGeneratedCode(code, generated);
-      }
+        const value =
+          blockToCodeValue(valueBlock, "0");
 
-      if (current.type === "base_show_text") {
-        const generated = CGenerator.blockToCode(current);
-        code = addGeneratedCode(code, generated);
+        const list =
+          current.getFieldValue("LIST") || "lista";
+
+        code = addLine(
+          code,
+          `printf("%d\\n", buscar_posicao(&${list}, ${value}));`
+        );
       }
 
       // SHOW
@@ -224,6 +279,28 @@ export function generateListC(workspace) {
 
         indentLevel--;
         code = addLine(code, `}`);
+      }
+
+      if (current.type === "list_sublist") {
+        const firstBlock =
+          current.getInputTargetBlock("FIRST_VALUE");
+
+        const secondBlock =
+          current.getInputTargetBlock("SECOND_VALUE");
+
+        const first =
+          blockToCodeValue(firstBlock, "0");
+
+        const second =
+          blockToCodeValue(secondBlock, "0");
+
+        const list =
+          current.getFieldValue("LIST") || "lista";
+
+        code = addLine(
+          code,
+          `sublista(&${list}, ${first}, ${second});`
+        );
       }
 
       // FOR EACH

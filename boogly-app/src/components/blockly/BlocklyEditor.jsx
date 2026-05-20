@@ -15,6 +15,9 @@ import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
 import { useAuth } from "../../autenticator/useAuth";
 
+import { saveWorkspace, loadWorkspace }
+  from "../../blockly/workspaceStorage";
+
 export default function BlocklyEditor({
   toolbox,
   setCode,
@@ -30,9 +33,11 @@ export default function BlocklyEditor({
   const [initError, setInitError] = useState(false);
   const [toolboxVisible, setToolboxVisible] = useState(true);
 
+  const [saveStatus, setSaveStatus] = useState("Salvo");
+
   const { theme } = useTheme();
   const { showError } = useError();
-  const { structure } = useAuth();
+  const { user, structure } = useAuth();
 
   const isListToolbox = toolbox?.list;
 
@@ -65,8 +70,16 @@ export default function BlocklyEditor({
           clearTimeout(debounceRef.current);
 
           debounceRef.current = setTimeout(() => {
+            
             try {
               if (!workspaceRef.current) return;
+                setSaveStatus("Salvando...");
+
+                saveWorkspace(workspaceRef.current, structure, user?.id);
+
+                setTimeout(() => {
+                  setSaveStatus("Salvo");
+                }, 500);
 
               // 🔥 JS CODE
               let codeJS = "";
@@ -146,15 +159,7 @@ export default function BlocklyEditor({
         console.warn("Erro ao destruir workspace:", err);
       }
     };
-  }, [
-    toolbox,
-    theme.border,
-    setCode,
-    setCCode,
-    setBlockCount,
-    structure,
-    showError
-  ]);
+  }, [toolbox, theme.border, setCode, setCCode, setBlockCount, structure, showError, user?.id]);
 
   // 🔥 UPDATE TOOLBOX
   useEffect(() => {
@@ -240,6 +245,34 @@ export default function BlocklyEditor({
       import("../../blockly/generators/my_language/stackGenerator");
     }
   }, [structure]);
+
+  useEffect(() => {
+    if (!workspaceRef.current) return;
+
+    try {
+      workspaceRef.current.clear();
+
+      setSaveStatus("Restaurado");
+
+      loadWorkspace(workspaceRef.current, structure, user?.id);
+
+      setTimeout(() => {
+        setSaveStatus("Salvo");
+      }, 1500);
+
+      if (setBlockCount) {
+        const count =
+          workspaceRef.current.getAllBlocks(false).length;
+        setBlockCount(count);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar workspace salvo:", err);
+
+      showError({
+        message: "Erro ao restaurar os blocos salvos."
+      });
+    }
+  }, [structure, setBlockCount, showError]);
 
   // ❌ FALLBACK UI
   if (initError) {
@@ -366,19 +399,40 @@ export default function BlocklyEditor({
         </div>
 
         <div className="flex-1 relative">
-          <div
-            className="absolute top-3 right-3 px-3 py-2 rounded-lg text-sm font-semibold shadow z-10"
-            style={{
-              background: theme.card,
-              color: theme.text,
-              border: `1px solid ${theme.border}`
-            }}
-          >
-            🧩 {blockCount} blocos
-          </div>
+  {/* 💾 Status de salvamento */}
+  <div
+    className="absolute top-3 right-3 px-3 py-2 rounded-lg text-sm font-semibold shadow z-10"
+    style={{
+      background: theme.card,
+      color:
+        saveStatus === "Salvando..."
+          ? theme.primary
+          : saveStatus === "Restaurado"
+          ? "#16a34a"
+          : theme.text,
+      border: `1px solid ${theme.border}`
+    }}
+  >
+    {saveStatus === "Salvando..." && "💾 Salvando..."}
+    {saveStatus === "Salvo" && "✅ Salvo automaticamente"}
+    {saveStatus === "Restaurado" && "📂 Workspace restaurado"}
+  </div>
 
-          <div ref={blocklyDiv} className="h-full w-full" />
-        </div>
+  {/* 🧩 Contador de blocos (embaixo do status) */}
+  <div
+    className="absolute top-16 right-3 px-3 py-2 rounded-lg text-sm font-semibold shadow z-10"
+    style={{
+      background: theme.card,
+      color: theme.text,
+      border: `1px solid ${theme.border}`
+    }}
+  >
+    🧩 {blockCount} blocos
+  </div>
+
+  {/* Blockly Workspace */}
+  <div ref={blocklyDiv} className="h-full w-full" />
+</div>
       </div>
     </div>
   );

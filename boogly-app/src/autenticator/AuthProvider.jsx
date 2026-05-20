@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../autenticator/AuthContext";
 import { AppContext } from "../app_configuration/AppContext";
+import { clearGuestWorkspaces } from "../blockly/workspaceStorage";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -45,7 +46,7 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [domainUrl]);
 
-  // 🔥 LOGIN (email ou nickname)
+  // 🔥 LOGIN
   async function authenticate(identifier) {
     const res = await fetch(`${domainUrl}/auth`, {
       method: "POST",
@@ -66,6 +67,7 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(true);
   }
 
+  // 🔥 LOGIN COMO VISITANTE
   async function loginAsGuest() {
     const res = await fetch(`${domainUrl}/auth/guest`, {
       method: "POST",
@@ -78,15 +80,22 @@ export function AuthProvider({ children }) {
     }
 
     localStorage.setItem("token", data.token);
-
     setUser(data.user);
     setIsAuthenticated(true);
   }
 
+  // 🔥 LOGOUT
   function logout() {
+    // Seu schema usa o campo "guest"
+    if (user?.guest === true) {
+      clearGuestWorkspaces();
+    }
+
     localStorage.removeItem("token");
+
     setUser(null);
     setIsAuthenticated(false);
+    setStructure(undefined);
   }
 
   return (

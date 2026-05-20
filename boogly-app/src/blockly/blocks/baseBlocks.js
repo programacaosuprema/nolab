@@ -11,7 +11,7 @@ Blockly.Blocks["base_not"] = {
       .appendField("não");
 
     this.setOutput(true, null);
-    this.setColour(210);
+    this.setColour(800);
     this.setTooltip("Inverte o valor lógico.");
   }
 };
@@ -49,12 +49,12 @@ Blockly.Blocks["base_input"] = {
 
     // 🔹 Lado direito: aceita qualquer bloco do tipo "Value"
     this.appendValueInput("VALUE")
-      .setCheck("Value");
+      .setCheck("Value", "Variable");
 
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(60);
+    this.setColour(399, 200, 111);
     this.setTooltip("Atribui um valor a uma variável.");
 
     // 🔥 Validação extra para garantir que o lado esquerdo
@@ -84,8 +84,8 @@ Blockly.Blocks['base_variable'] = {
     this.appendDummyInput()
       .appendField(new Blockly.FieldTextInput("variável"), "VAR");
 
-    this.setOutput(true, null);
-    this.setColour(60);
+    this.setOutput(true, "Variable");
+    this.setColour(988);
   }
 };
 
@@ -99,7 +99,7 @@ Blockly.Blocks['base_text'] = {
 
     this.setOutput(true, "String"); // 🔥 IMPORTANTE
 
-    this.setColour(160); // pode ajustar depois
+    this.setColour(130); // pode ajustar depois
 
     this.setTooltip("Texto");
     this.setHelpUrl("");
@@ -122,7 +122,7 @@ Blockly.Blocks["base_compare"] = {
   init: function () {
     this.appendValueInput("A")
       // 🔥 Aceita qualquer bloco que retorne "Value"
-      .setCheck("Value");
+      .setCheck("Value", "Variable");
 
     this.appendDummyInput()
       .appendField(

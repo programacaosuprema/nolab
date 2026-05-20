@@ -264,21 +264,23 @@ javascriptGenerator.forBlock["base_show_text"] = function (block) {
    RECEBER VALOR
    ========================================================== */
 javascriptGenerator.forBlock["base_input"] = function (block) {
-  const variable =
-    javascriptGenerator.valueToCode(
-      block,
-      "VARIABLE",
-      javascriptGenerator.ORDER_ASSIGNMENT
-    ) || "variavel";
+  const variableBlock = block.getInputTargetBlock("VARIABLE");
+  const valueBlock = block.getInputTargetBlock("VALUE");
 
-  const value =
-    javascriptGenerator.valueToCode(  
-      block,
-      "VALUE",
-      javascriptGenerator.ORDER_ASSIGNMENT
-    ) || "0";
+  let variable = "variavel";
+  let value = "0";
 
-  return `${variable} = ${value};\n`;
+  if (variableBlock) {
+    const result = javascriptGenerator.blockToCode(variableBlock);
+    variable = Array.isArray(result) ? result[0] : result;
+  }
+
+  if (valueBlock) {
+    const result = javascriptGenerator.blockToCode(valueBlock);
+    value = Array.isArray(result) ? result[0] : result;
+  }
+
+  return `set_var("${variable}", ${value});\n`;
 };
 
 // listGenerator.js
@@ -299,3 +301,4 @@ javascriptGenerator.forBlock["list_get"] = function (block) {
     javascriptGenerator.ORDER_ATOMIC
   ];
 };
+

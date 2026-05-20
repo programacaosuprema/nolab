@@ -116,7 +116,7 @@ Blockly.Blocks["list_fixed"] = {
 Blockly.Blocks["list_insert"] = {
   init: function () {
     this.appendValueInput("VALUE")
-      .setCheck("Value")
+      .setCheck(["Value", "Variable"])
       .appendField("inserir");
 
     this.appendDummyInput()
@@ -166,7 +166,7 @@ Blockly.Blocks['list_remove_first'] = {
 Blockly.Blocks["list_remove_item"] = {
   init: function () {
     this.appendValueInput("VALUE")
-      .setCheck("Value")
+      .setCheck(["Value", "Variable"])
       .appendField("remover item");
 
     this.appendDummyInput()

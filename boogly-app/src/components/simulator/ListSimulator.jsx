@@ -2,7 +2,35 @@ export class ListSimulator {
 
   constructor() {
     this.lists = {};
+    this.variables = {};
     this.steps = [];
+  }
+
+  set_var(name, value) {
+    this.variables[name] = value;
+    this.steps.push({
+      type: "assign",
+      message: `${name} = ${value}`,
+      state: this.getState()
+    });
+  }
+  
+  getState() {
+    const state = {};
+
+    // Copia todas as listas
+    for (const key in this.lists) {
+      state[key] = [...this.lists[key].data];
+    }
+
+    // Adiciona as variáveis salvas
+    state.variables = { ...this.variables };
+
+    return state;
+  }
+
+  get_var(name) {
+    return this.variables[name] ?? 0;
   }
 
   criar_lista(nome) {
@@ -242,16 +270,6 @@ export class ListSimulator {
     return list;
   }
 
-  getState() {
-    const state = {};
-
-    for (const key in this.lists) {
-      state[key] = [...this.lists[key].data];
-    }
-
-    return state;
-  }
-
   para_cada(variable, nome, callback) {
     const list = this.getList(nome);
     if (!list) return;
@@ -406,11 +424,12 @@ export class ListSimulator {
 
     return sub;
   }
+
   show(texto, valor) {
-  this.steps.push({
-    type: "print",
-    message: `${texto} ${valor}`,
-    state: this.getState()
-  });
-}
+    this.steps.push({
+      type: "print",
+      message: `${texto} ${valor}`,
+      state: this.getState()
+    });
+  }
 }

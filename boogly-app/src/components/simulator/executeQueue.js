@@ -1,5 +1,23 @@
 import { QueueSimulator } from "./QueueSimulator";
 
+function resolveArg(arg, simulator) {
+  const value = arg.trim();
+
+  if (value.startsWith('get_var(')) {
+    const name = value.match(/get_var\("(.+)"\)/)?.[1];
+    return simulator.get_var(name);
+  }
+
+  if (value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1);
+  }
+
+  const num = Number(value);
+  if (!Number.isNaN(num)) return num;
+
+  return value;
+}
+
 export function executeQueue(code) {
   const simulator = new QueueSimulator();
 
@@ -82,7 +100,12 @@ export function executeQueue(code) {
     const rawArgs = match[2];
 
     // 🔹 SPLIT ROBUSTO (preserva strings com vírgulas)
-    const args = [];
+    const args = match[2]
+      ? match[2].split(",").map(arg =>
+          resolveArg(arg, simulator)
+        )
+      : [];
+      
     let current = "";
     let inString = false;
 
@@ -142,6 +165,12 @@ export function executeQueue(code) {
     if (typeof simulator[operation] === "function") {
       simulator[operation](...parsedArgs);
     }
+    
+    if (operation === "set_var") {
+        const [name, value] = args;
+        simulator.set_var(name, value);
+        return;
+      }
   });
 
   return simulator.steps;

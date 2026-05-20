@@ -15,7 +15,35 @@ CGenerator.forBlock["base_number"] = function (block) {
    ========================================================== */
 CGenerator.forBlock["base_variable"] = function (block) {
   const name = block.getFieldValue("VAR") || "variavel";
-  return ["let " + name, CGenerator.ORDER_ATOMIC];
+
+  // Quando usado em expressões, retorna o valor da variável
+  return [`${name}`, CGenerator.ORDER_ATOMIC];
+};
+
+
+// 🔥 CGenerator.forBlock["base_input"]
+// Substitua APENAS este gerador no CGeneratorBase.js
+
+CGenerator.forBlock["base_input"] = function (block) {
+  const variableBlock = block.getInputTargetBlock("VARIABLE");
+  const valueBlock = block.getInputTargetBlock("VALUE");
+
+  let variable = "variavel";
+  let value = "0";
+
+  // 🔥 Lê diretamente o nome da variável
+  if (variableBlock) {
+    variable = variableBlock.getFieldValue("VAR") || "variavel";
+  }
+
+  // 🔥 Gera o código do valor
+  if (valueBlock) {
+    const result = CGenerator.blockToCode(valueBlock);
+    value = Array.isArray(result) ? result[0] : result;
+  }
+
+  // 🔥 Gera atribuição correta
+  return `int ${variable} = ${value};\n`;
 };
 
 /* ==========================================================
@@ -65,38 +93,6 @@ CGenerator.forBlock["base_not"] = function (block) {
   }
 
   return [`!(${value})`, CGenerator.ORDER_UNARY_PREFIX];
-};
-
-/* ==========================================================
-   BASE INPUT
-   Exemplo:
-   x = 10
-   ========================================================== */
-CGenerator.forBlock["base_input"] = function (block) {
-  const variableBlock =
-    block.getInputTargetBlock("VARIABLE");
-
-  const valueBlock =
-    block.getInputTargetBlock("VALUE");
-
-  let variable = "variavel";
-  let value = "0";
-
-  if (variableBlock) {
-    const result = CGenerator.blockToCode(variableBlock);
-    variable = Array.isArray(result)
-      ? result[0]
-      : result;
-  }
-
-  if (valueBlock) {
-    const result = CGenerator.blockToCode(valueBlock);
-    value = Array.isArray(result)
-      ? result[0]
-      : result;
-  }
-
-  return `${variable} = ${value};\n`;
 };
 
 /* ==========================================================

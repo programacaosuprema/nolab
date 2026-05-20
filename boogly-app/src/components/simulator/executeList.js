@@ -1,5 +1,34 @@
 import { ListSimulator } from "./ListSimulator";
 
+function resolveArg(arg, simulator) {
+  const value = arg.trim();
+
+  // get_var("x")
+  if (value.startsWith('inserir_na_variavel(')) {
+    const name = value.match(/get_var\("(.+)"\)/)?.[1];
+    return simulator.get_var(name);
+  }
+
+  // "texto"
+  if (value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1);
+  }
+
+  // número
+  const num = Number(value);
+  if (!Number.isNaN(num)) {
+    return num;
+  }
+
+  // 🔥 Se existir uma variável com esse nome, retorna seu valor
+  if (simulator.variables && value in simulator.variables) {
+    return simulator.get_var(value);
+  }
+
+  // fallback
+  return value;
+}
+
 export function executeList(code) {
   const simulator = new ListSimulator();
 
@@ -144,23 +173,9 @@ export function executeList(code) {
     const operation = operationMap[rawOperation] || rawOperation;
 
     const args = match[2]
-      ? match[2].split(",").map(arg => {
-          const value = arg.trim();
-
-          // String entre aspas
-          if (value.startsWith('"') && value.endsWith('"')) {
-            return value.slice(1, -1);
-          }
-
-          // Número válido
-          const num = Number(value);
-          if (!Number.isNaN(num)) {
-            return num;
-          }
-
-          // Caso seja outro tipo de valor, mantém como texto
-          return value;
-        })
+      ? match[2].split(",").map(arg =>
+          resolveArg(arg, simulator)
+        )
       : [];
 
     if (typeof simulator[operation] === "function") {
@@ -193,6 +208,12 @@ export function executeList(code) {
       if (operation === "sublista") {
         const [nome, inicio, fim] = args;
         simulator.sublista(inicio, fim, nome);
+        return;
+      }
+
+      if (operation === "set_var") {
+        const [name, value] = args;
+        simulator.set_var(name, value);
         return;
       }
 

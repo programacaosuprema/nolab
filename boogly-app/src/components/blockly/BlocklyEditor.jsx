@@ -272,7 +272,7 @@ export default function BlocklyEditor({
         message: "Erro ao restaurar os blocos salvos."
       });
     }
-  }, [structure, setBlockCount, showError]);
+  }, [structure, setBlockCount, showError, user?.id]);
 
   // ❌ FALLBACK UI
   if (initError) {

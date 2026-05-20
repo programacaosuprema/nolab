@@ -1,5 +1,14 @@
 import CGenerator from "./CGeneratorBase";
 
+function blockToCodeValue(block, defaultValue = "0") {
+      if (!block) return defaultValue;
+  
+      const result = CGenerator.blockToCode(block);
+      return Array.isArray(result)
+        ? result[0]
+        : (result || defaultValue);
+  }
+
 CGenerator.forBlock['list_is_empty'] = function(block) {
   const list = block.getFieldValue("LIST");
   return [`(${list}.tamanho == 0)`, CGenerator.ORDER_ATOMIC];
@@ -8,6 +17,24 @@ CGenerator.forBlock['list_is_empty'] = function(block) {
 CGenerator.forBlock['list_size'] = function(block) {
   const list = block.getFieldValue("LIST");
   return [`${list}.tamanho`, CGenerator.ORDER_ATOMIC];
+};
+
+// CGeneratorBase.js (ou CListGenerator.js)
+CGenerator.forBlock["list_get"] = function (block) {
+  const indexBlock =
+    block.getInputTargetBlock("INDEX");
+
+  const index =
+    blockToCodeValue(indexBlock, "0");
+
+  const list =
+    block.getFieldValue("LIST") || "lista";
+
+  // 🔥 Expressão em C
+  return [
+    `pegar_posicao(${index}, &${list})`,
+    CGenerator.ORDER_ATOMIC
+  ];
 };
 
 // 🔹 GERADOR PRINCIPAL
@@ -37,15 +64,6 @@ export function generateListC(workspace) {
     return code;
   }
 
-  function blockToCodeValue(block, defaultValue = "0") {
-      if (!block) return defaultValue;
-  
-      const result = CGenerator.blockToCode(block);
-      return Array.isArray(result)
-        ? result[0]
-        : (result || defaultValue);
-  }
-
   // 🔹 CONTROLE DE FUNÇÕES USADAS
   let functions = "";
   let usedFunctions = {
@@ -62,6 +80,7 @@ export function generateListC(workspace) {
     ordenar_crescente: false,
     ordenar_decrescente: false,
     sublista: false,
+    pegar_posicao: false,
     size: 0,
   };
 
@@ -346,6 +365,26 @@ export function generateListC(workspace) {
         code = addLine(code, `inverter(&${list});`);
       }
 
+      if (current.type === "base_input") {
+        const generated = CGenerator.blockToCode(current);
+        code = addGeneratedCode(code, generated);
+      }
+
+      if (current.type === "list_get") {
+        usedFunctions.pegar_posicao = true;
+
+        const indexBlock =
+          current.getInputTargetBlock("INDEX");
+
+        const index =
+          blockToCodeValue(indexBlock, "0");
+
+        const list =
+          current.getFieldValue("LIST") || "lista";
+
+        return [`pegar(${index}, &${list})`, CGenerator.ORDER_ATOMIC];
+      }
+
       current = current.getNextBlock();
     }
 
@@ -444,7 +483,7 @@ void inicializar(Lista *l) {
 
   if (usedFunctions.inserir) {
     functions += `
-void inserir_inicio(Lista *l, int valor) {
+void inserir_elemento(Lista *l, int valor) {
     Nodo *novo = (Nodo*) malloc(sizeof(Nodo));
     novo->dado = valor;
     novo->proximo = l->inicio;
@@ -688,6 +727,27 @@ Lista sublista(Lista *l, int inicio, int fim) {
 }
 `;
   }
+
+  if (usedFunctions.pegar_posicao) {
+    functions += `
+int pegar_posicao(int posicao, Lista *lista) {
+    // Verifica se a posição é válida
+    if (posicao < 0 || posicao >= lista->tamanho) {
+        return -1;
+    }
+
+    Nodo *atual = lista->inicio;
+
+    // Avança até a posição desejada (índice começa em 0)
+    for (int i = 0; i < posicao; i++) {
+        atual = atual->proximo;
+    }
+
+    return atual->dado;
+}
+
+`;
+}
 
   return header + functions + "\nint main() {\n" + main + "    return 0;\n}";
 }

@@ -40,14 +40,14 @@ Blockly.Blocks["base_show_text"] = {
    ========================================================== */
 Blockly.Blocks["base_input"] = {
   init: function () {
-    // 🔹 Aceita somente blocos do tipo "Variable"
+    // 🔹 Lado esquerdo: aceita SOMENTE blocos do tipo "Variable"
     this.appendValueInput("VARIABLE")
       .setCheck("Variable");
 
     this.appendDummyInput()
       .appendField("=");
 
-    // 🔹 Aceita somente blocos do tipo "Value"
+    // 🔹 Lado direito: aceita qualquer bloco do tipo "Value"
     this.appendValueInput("VALUE")
       .setCheck("Value");
 
@@ -56,6 +56,25 @@ Blockly.Blocks["base_input"] = {
     this.setNextStatement(true);
     this.setColour(60);
     this.setTooltip("Atribui um valor a uma variável.");
+
+    // 🔥 Validação extra para garantir que o lado esquerdo
+    // seja exclusivamente um bloco base_variable.
+    this.setOnChange(function () {
+      const variableBlock =
+        this.getInputTargetBlock("VARIABLE");
+
+      if (
+        variableBlock &&
+        variableBlock.type !== "base_variable"
+      ) {
+        this.unplug(true);
+        this.setWarningText(
+          "O lado esquerdo deve conter apenas uma variável."
+        );
+      } else {
+        this.setWarningText(null);
+      }
+    });
   }
 };
 
@@ -99,36 +118,44 @@ Blockly.Blocks["base_number"] = {
 };
 
 // COMPARE
-Blockly.Blocks['base_compare'] = {
+Blockly.Blocks["base_compare"] = {
   init: function () {
     this.appendValueInput("A")
-    .setCheck(["Number", "Variable"]);
+      // 🔥 Aceita qualquer bloco que retorne "Value"
+      .setCheck("Value");
 
     this.appendDummyInput()
-      .appendField(new Blockly.FieldDropdown([
-        ["=", "=="],
-        ["≠", "!="],
-        [">", ">"],
-        ["<", "<"],
-        ["≥", ">="],
-        ["≤", "<="]
-      ]), "OP");
+      .appendField(
+        new Blockly.FieldDropdown([
+          ["=", "=="],
+          ["≠", "!="],
+          [">", ">"],
+          ["<", "<"],
+          ["≥", ">="],
+          ["≤", "<="]
+        ]),
+        "OP"
+      );
 
     this.appendValueInput("B")
-    .setCheck(["Number", "Variable"]);
+      // 🔥 Aceita qualquer bloco que retorne "Value"
+      .setCheck("Value");
 
     this.setInputsInline(true);
 
-    this.setOutput(true, "Boolean"); // 🔥 ESSENCIAL
+    // 🔥 Resultado da comparação é booleano
+    this.setOutput(true, "Boolean");
 
     this.setColour(210);
 
-    this.setOnChange(function() {
+    this.setOnChange(function () {
       const a = this.getInputTargetBlock("A");
       const b = this.getInputTargetBlock("B");
 
       if (!a || !b) {
-        this.setWarningText("Preencha os dois lados da comparação");
+        this.setWarningText(
+          "Preencha os dois lados da comparação"
+        );
       } else {
         this.setWarningText(null);
       }

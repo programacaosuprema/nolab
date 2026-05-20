@@ -72,6 +72,7 @@ export const toolboxCategories = {
       { kind: "block", type: "list_remove_first" },
       { kind: "block", type: "list_remove_item" },
       { kind: "block", type: "list_remove_index" },
+      { kind: "block", type: "list_get" },
       { kind: "block", type: "list_sublist" },
       { kind: "block", type: "list_invert" },
     ]

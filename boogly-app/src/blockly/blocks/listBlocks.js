@@ -354,4 +354,22 @@ Blockly.Blocks['list_for_each'] = {
   }
 };
 
+// listBlocks.js
+Blockly.Blocks["list_get"] = {
+  init: function () {
+    this.appendValueInput("INDEX")
+      .setCheck("Value")
+      .appendField("pegar posição");
 
+    this.appendDummyInput()
+      .appendField("de")
+      .appendField(
+        new Blockly.FieldDropdown(() => getLists(this.workspace)),
+        "LIST"
+      );
+    this.setOutput(true, "Value");
+
+    this.setInputsInline(true);
+    this.setColour(200);
+  }
+};

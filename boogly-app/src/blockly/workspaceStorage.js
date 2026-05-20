@@ -8,19 +8,24 @@ function getWorkspaceKey(userId, structure) {
 /**
  * Salva o workspace no localStorage.
  */
+// workspaceStorage.js (IMPORTANTE para evitar loop infinito)
 export function saveWorkspace(workspace, structure, userId) {
   if (!workspace) return;
+
+  // 🔥 Ignora eventos internos de carregamento
+  if (workspace.isLoading) return;
 
   try {
     const xml = Blockly.Xml.workspaceToDom(workspace);
     const xmlText = Blockly.Xml.domToText(xml);
 
-    localStorage.setItem(
-      getWorkspaceKey(userId, structure),
-      xmlText
-    );
+    const key = getWorkspaceKey(userId, structure);
 
-    console.log(`💾 Workspace "${structure}" salvo com sucesso.`);
+    // 🔥 Evita salvar repetidamente o mesmo XML
+    const current = localStorage.getItem(key);
+    if (current === xmlText) return;
+
+    localStorage.setItem(key, xmlText);
   } catch (error) {
     console.error("Erro ao salvar workspace:", error);
   }
@@ -29,20 +34,18 @@ export function saveWorkspace(workspace, structure, userId) {
 /**
  * Carrega o workspace salvo do localStorage.
  */
+// loadWorkspace()
 export function loadWorkspace(workspace, structure, userId) {
   if (!workspace) return;
 
-   const xmlText = localStorage.getItem(
-    getWorkspaceKey(userId, structure)
-  );
+  const key = getWorkspaceKey(userId, structure);
+  const xmlText = localStorage.getItem(key);
 
-  if (!xmlText) {
-    console.log(`ℹ️ Nenhum workspace salvo para "${structure}".`);
-    return;
-  }
+  if (!xmlText) return;
 
   try {
-    // ✅ Método correto nas versões atuais do Blockly
+    workspace.isLoading = true;
+
     const xml = Blockly.utils.xml.textToDom(xmlText);
 
     Blockly.Xml.clearWorkspaceAndLoadFromXml(
@@ -50,8 +53,9 @@ export function loadWorkspace(workspace, structure, userId) {
       workspace
     );
 
-    console.log(`📂 Workspace "${structure}" restaurado com sucesso.`);
+    workspace.isLoading = false;
   } catch (error) {
+    workspace.isLoading = false;
     console.error("Erro ao carregar workspace:", error);
   }
 }

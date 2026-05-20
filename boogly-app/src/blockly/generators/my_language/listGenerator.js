@@ -280,3 +280,22 @@ javascriptGenerator.forBlock["base_input"] = function (block) {
 
   return `${variable} = ${value};\n`;
 };
+
+// listGenerator.js
+javascriptGenerator.forBlock["list_get"] = function (block) {
+  const index =
+    javascriptGenerator.valueToCode(
+      block,
+      "INDEX",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
+
+  const list =
+    block.getFieldValue("LIST") || "minha_lista";
+
+  // 🔥 Retorna expressão, sem ponto e vírgula
+  return [
+    `pegar(${index}, "${list}")`,
+    javascriptGenerator.ORDER_ATOMIC
+  ];
+};

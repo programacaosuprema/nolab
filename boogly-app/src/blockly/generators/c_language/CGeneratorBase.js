@@ -15,7 +15,7 @@ CGenerator.forBlock["base_number"] = function (block) {
    ========================================================== */
 CGenerator.forBlock["base_variable"] = function (block) {
   const name = block.getFieldValue("VAR") || "variavel";
-  return [name, CGenerator.ORDER_ATOMIC];
+  return ["let " + name, CGenerator.ORDER_ATOMIC];
 };
 
 /* ==========================================================
@@ -118,6 +118,25 @@ CGenerator.forBlock["base_show_text"] = function (block) {
   }
 
   return `printf("%s\\n", ${text});\n`;
+};
+
+
+CGenerator.forBlock["list_get"] = function (block) {
+  const indexBlock = block.getInputTargetBlock("INDEX");
+
+  let index = "0";
+
+  if (indexBlock) {
+    const result = CGenerator.blockToCode(indexBlock);
+    index = Array.isArray(result) ? result[0] : result;
+  }
+
+  const list = block.getFieldValue("LIST") || "lista";
+
+  return [
+    `pegar(${index}, &${list})`,
+    CGenerator.ORDER_ATOMIC
+  ];
 };
 
 export default CGenerator;

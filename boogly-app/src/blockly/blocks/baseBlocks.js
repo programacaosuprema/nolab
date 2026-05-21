@@ -40,37 +40,43 @@ Blockly.Blocks["base_show_text"] = {
    ========================================================== */
 Blockly.Blocks["base_input"] = {
   init: function () {
-    // 🔹 Lado esquerdo: aceita SOMENTE blocos do tipo "Variable"
     this.appendValueInput("VARIABLE")
       .setCheck("Variable");
 
     this.appendDummyInput()
       .appendField("=");
 
-    // 🔹 Lado direito: aceita qualquer bloco do tipo "Value"
     this.appendValueInput("VALUE")
-      .setCheck("Value", "Variable");
+      .setCheck(["Value", "Variable"]);
 
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
-    this.setColour(399, 200, 111);
+    this.setColour(60);
     this.setTooltip("Atribui um valor a uma variável.");
 
-    // 🔥 Validação extra para garantir que o lado esquerdo
-    // seja exclusivamente um bloco base_variable.
     this.setOnChange(function () {
-      const variableBlock =
-        this.getInputTargetBlock("VARIABLE");
+      const variableBlock = this.getInputTargetBlock("VARIABLE");
 
-      if (
-        variableBlock &&
-        variableBlock.type !== "base_variable"
-      ) {
-        this.unplug(true);
-        this.setWarningText(
-          "O lado esquerdo deve conter apenas uma variável."
-        );
+      if (!variableBlock) {
+        this.setWarningText("Conecte uma variável no lado esquerdo.");
+        return;
+      }
+
+      const name = variableBlock.getFieldValue("VAR");
+
+      const duplicates = this.workspace
+        .getAllBlocks(false)
+        .filter((block) => {
+          if (block.id === this.id) return false;
+          if (block.type !== "base_input") return false;
+
+          const otherVar = block.getInputTargetBlock("VARIABLE");
+          return otherVar && otherVar.getFieldValue("VAR") === name;
+        });
+
+      if (duplicates.length > 0) {
+        this.setWarningText("Essa variável já foi criada em outro lugar.");
       } else {
         this.setWarningText(null);
       }

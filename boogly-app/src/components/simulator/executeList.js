@@ -7,7 +7,6 @@ function resolveCondition(condition, simulator) {
   for (const key in simulator.variables) {
     const value = simulator.variables[key];
 
-    // substitui apenas palavra inteira
     parsed = parsed.replace(
       new RegExp(`\\b${key}\\b`, "g"),
       value
@@ -26,11 +25,9 @@ function splitArguments(argsString) {
   for (let i = 0; i < argsString.length; i++) {
     const char = argsString[i];
 
-    // 🔥 controla profundidade dos parênteses
     if (char === "(") depth++;
     if (char === ")") depth--;
 
-    // 🔥 só separa vírgula fora dos parênteses
     if (char === "," && depth === 0) {
       args.push(current.trim());
       current = "";
@@ -50,7 +47,9 @@ function splitArguments(argsString) {
 function resolveArg(arg, simulator) {
   const value = arg.trim();
 
-  // get_var("x")
+  // ======================
+  // 🔥 get_var("x")
+  // ======================
   if (value.startsWith('get_var(')) {
     const name =
       value.match(/get_var\("(.+)"\)/)?.[1];
@@ -58,7 +57,9 @@ function resolveArg(arg, simulator) {
     return simulator.get_var(name);
   }
 
-  // pegar(...)
+  // ======================
+  // 🔥 pegar(...)
+  // ======================
   if (value.startsWith("pegar(")) {
     const match =
       value.match(/pegar\((.+?),\s*"(.+?)"\)/);
@@ -71,12 +72,16 @@ function resolveArg(arg, simulator) {
     }
   }
 
+  // ======================
   // 🔥 NULL
+  // ======================
   if (value === "null") {
     return null;
   }
 
-  // texto
+  // ======================
+  // 🔥 texto
+  // ======================
   if (
     value.startsWith('"') &&
     value.endsWith('"')
@@ -84,14 +89,18 @@ function resolveArg(arg, simulator) {
     return value.slice(1, -1);
   }
 
-  // número
+  // ======================
+  // 🔥 número
+  // ======================
   const num = Number(value);
 
   if (!Number.isNaN(num)) {
     return num;
   }
 
-  // variável
+  // ======================
+  // 🔥 variável simples
+  // ======================
   if (
     simulator.variables &&
     value in simulator.variables
@@ -102,247 +111,480 @@ function resolveArg(arg, simulator) {
   return value;
 }
 
-export function executeList(code) {
-  const simulator = new ListSimulator();
+function executeBlock(
+  lines,
+  simulator,
+  operationMap
+) {
 
-  // =========================
-  // 🔥 BLOCO EXECUTAR
-  // =========================
-  if (!code.includes("// INICIAR_EXECUCAO")) {
+  let shouldExecute = true;
+
+  let conditionStack = [];
+
+  for (let i = 0; i < lines.length; i++) {
+
+    let line = lines[i].trim();
+
+    if (!line) continue;
+
+    // ======================
+    // 🔥 IF
+    // ======================
+    if (line.startsWith("if")) {
+
+      const condition =
+        line.match(/if\s*\((.*)\)/)?.[1];
+
+      let result = false;
+
+      try {
+
+        const parsedCondition =
+          resolveCondition(
+            condition,
+            simulator
+          );
+
+        result =
+          eval(parsedCondition);
+
+        simulator.steps.push({
+          type: "condition",
+          message:
+            `teste: ${parsedCondition} => ${
+              result
+                ? "verdadeiro"
+                : "falso"
+            }`,
+          state:
+            simulator.getState()
+        });
+
+      } catch {
+
+        result = false;
+
+        simulator.steps.push({
+          type: "error",
+          message:
+            `erro ao testar condição`,
+          state:
+            simulator.getState()
+        });
+      }
+
+      conditionStack.push({
+        result,
+        executed: result
+      });
+
+      shouldExecute = result;
+
+      continue;
+    }
+
+    // ======================
+    // 🔥 ELSE
+    // ======================
+    if (line.startsWith("} else {")) {
+
+      const current =
+        conditionStack[
+          conditionStack.length - 1
+        ];
+
+      // 🔥 IF já executou
+      if (current.executed) {
+
+        shouldExecute = false;
+
+        current.result = false;
+
+        continue;
+      }
+
+      // 🔥 IF foi falso
+      shouldExecute = true;
+
+      current.result = true;
+      current.executed = true;
+
+      continue;
+    }
+
+    // ======================
+    // 🔥 FECHAMENTO
+    // ======================
+    if (line === "}") {
+
+      conditionStack.pop();
+
+      shouldExecute =
+        conditionStack.length === 0
+          ? true
+          : conditionStack[
+              conditionStack.length - 1
+            ].result;
+
+      continue;
+    }
+
+    if (!shouldExecute) continue;
+
+    // ======================
+    // 🔥 PARA CADA
+    // ======================
+    if (
+      line.startsWith(
+        "para_cada("
+      )
+    ) {
+
+      const match =
+        line.match(
+          /para_cada\("(.+?)",\s*"(.+?)"/
+        );
+
+      if (!match) continue;
+
+      const variable =
+        match[1];
+
+      const listName =
+        match[2];
+
+      const list =
+        simulator.lists[
+          listName
+        ];
+
+      if (!list) continue;
+
+      // 🔥 captura bloco interno
+      const internalLines = [];
+
+      let depth = 1;
+
+      i++;
+
+      while (
+        i < lines.length &&
+        depth > 0
+      ) {
+
+        const internal =
+          lines[i];
+
+        if (
+          internal.includes("{")
+        ) {
+          depth++;
+        }
+
+        if (
+          internal.includes("}")
+        ) {
+          depth--;
+        }
+
+        if (depth > 0) {
+          internalLines.push(
+            internal
+          );
+        }
+
+        i++;
+      }
+
+      i--;
+
+      // 🔥 percorre lista
+      for (const item of [
+        ...list.data
+      ]) {
+
+        simulator.set_var(
+          variable,
+          item
+        );
+
+        executeBlock(
+          internalLines,
+          simulator,
+          operationMap
+        );
+      }
+
+      continue;
+    }
+
+    // ======================
+    // 🔥 EXECUÇÃO
+    // ======================
+    const match =
+      line.match(
+        /^(\w+)\((.*)\);?$/
+      );
+
+    if (!match) continue;
+
+    const rawOperation =
+      match[1];
+
+    const operation =
+      operationMap[
+        rawOperation
+      ] || rawOperation;
+
+    const args = match[2]
+      ? splitArguments(
+          match[2]
+        ).map(arg =>
+          resolveArg(
+            arg,
+            simulator
+          )
+        )
+      : [];
+
+    if (
+      typeof simulator[
+        operation
+      ] === "function"
+    ) {
+
+      // ======================
+      // 🔥 INSERIR
+      // ======================
+      if (
+        operation ===
+        "inserir"
+      ) {
+
+        const [
+          nome,
+          valor
+        ] = args;
+
+        if (
+          valor === null ||
+          valor === undefined
+        ) {
+
+          simulator.steps.push({
+            type: "warning",
+            message:
+              `valor nulo não pode ser inserido`,
+            state:
+              simulator.getState()
+          });
+
+          continue;
+        }
+
+        simulator.inserir(
+          valor,
+          nome
+        );
+
+        continue;
+      }
+
+      // ======================
+      // 🔥 REMOVER ITEM
+      // ======================
+      if (
+        operation ===
+        "remover_item"
+      ) {
+
+        const [
+          nome,
+          valor
+        ] = args;
+
+        simulator.remover_item(
+          valor,
+          nome
+        );
+
+        continue;
+      }
+
+      // ======================
+      // 🔥 REMOVER POSIÇÃO
+      // ======================
+      if (
+        operation ===
+        "remover_da_posicao"
+      ) {
+
+        const [
+          indice,
+          nome
+        ] = args;
+
+        simulator.remover_da_posicao(
+          indice,
+          nome
+        );
+
+        continue;
+      }
+
+      // ======================
+      // 🔥 LISTA FIXA
+      // ======================
+      if (
+        operation ===
+        "criar_lista_limitada"
+      ) {
+
+        const [
+          nome,
+          tamanho
+        ] = args;
+
+        simulator
+          .criar_lista_limitada(
+            nome,
+            tamanho
+          );
+
+        continue;
+      }
+
+      // ======================
+      // 🔥 SUBLISTA
+      // ======================
+      if (
+        operation ===
+        "sublista"
+      ) {
+
+        const [
+          nome,
+          inicio,
+          fim
+        ] = args;
+
+        simulator.sublista(
+          inicio,
+          fim,
+          nome
+        );
+
+        continue;
+      }
+
+      // ======================
+      // 🔥 VARIÁVEL
+      // ======================
+      if (
+        operation ===
+        "set_var"
+      ) {
+
+        const [
+          name,
+          value
+        ] = args;
+
+        simulator.set_var(
+          name,
+          value
+        );
+
+        continue;
+      }
+
+      // ======================
+      // 🔥 EXECUÇÃO PADRÃO
+      // ======================
+      simulator[
+        operation
+      ](...args);
+    }
+  }
+}
+
+export function executeList(code) {
+
+  const simulator =
+    new ListSimulator();
+
+  // ======================
+  // 🔥 EXECUTAR
+  // ======================
+  if (
+    !code.includes(
+      "// INICIAR_EXECUCAO"
+    )
+  ) {
+
     return [
       {
         type: "error",
-        message: "Adicione o bloco EXECUTAR.",
+        message:
+          "Adicione o bloco EXECUTAR.",
         state: {}
       }
     ];
   }
 
-  const lines = code.split("\n");
+  const lines = code
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean);
 
-  let isRunning = false;
-  let hasList = false;
+  const start =
+    lines.indexOf(
+      "// INICIAR_EXECUCAO"
+    );
 
-  let shouldExecute = true;
-  let conditionStack = [];
+  const end =
+    lines.indexOf(
+      "// FIM_EXECUCAO"
+    );
 
-  // 🔥 mapa de tradução (Blockly → Simulator)
+  const executableLines =
+    lines.slice(
+      start + 1,
+      end
+    );
+
+  // ======================
+  // 🔥 MAPA
+  // ======================
   const operationMap = {
     insert: "inserir",
-    remove_last: "remover_ultimo",
-    remove_first: "remover_primeiro",
-    remove_item: "remover_item",
-    remove_index: "remover_da_posicao",
-    sublist: "sublista",
-    invert: "inverter",
-    sort_ascending: "ordenar_crescente",
-    sort_descending: "ordenar_decrescente",
-    list_container: "criar_lista",
-    list_fixed: "criar_lista_limitada"
+    remove_last:
+      "remover_ultimo",
+    remove_first:
+      "remover_primeiro",
+    remove_item:
+      "remover_item",
+    remove_index:
+      "remover_da_posicao",
+    sublist:
+      "sublista",
+    invert:
+      "inverter",
+    sort_ascending:
+      "ordenar_crescente",
+    sort_descending:
+      "ordenar_decrescente",
+    list_container:
+      "criar_lista",
+    list_fixed:
+      "criar_lista_limitada"
   };
 
-  lines.forEach(line => {
-    line = line.trim();
-
-    if (line === "// INICIAR_EXECUCAO") {
-      isRunning = true;
-      return;
-    }
-
-    if (line === "// FIM_EXECUCAO") {
-      isRunning = false;
-      return;
-    }
-
-    if (!isRunning) return;
-
-    // =========================
-    // 🔥 DETECTAR CRIAÇÃO
-    // =========================
-    if (
-      line.includes("list_container") ||
-      line.includes("list_fixed") ||
-      line.includes("criar_lista")
-    ) {
-      hasList = true;
-    }
-
-    // =========================
-    // 🔥 BLOQUEAR SEM LISTA
-    // =========================
-    const isListOperation =
-      line.includes("insert(") ||
-      line.includes("remove_last(") ||
-      line.includes("remove_first(") ||
-      line.includes("remove_item(") ||
-      line.includes("remove_index(") ||
-      line.includes("sublist(") ||
-      line.includes("invert(") ||
-      line.includes("sort_ascending(") ||
-      line.includes("sort_descending(");
-
-    if (isListOperation && !hasList) {
-      return [
-        {
-          type: "error",
-          message: "Crie a lista antes de usar operações.",
-          state: {}
-        }
-      ];
-    }
-
-    // ======================
-// 🔥 IF
-// ======================
-  if (line.startsWith("if")) {
-    const condition =
-      line.match(/if\s*\((.*)\)/)?.[1];
-
-    let result = false;
-
-    try {
-      const parsedCondition =
-        resolveCondition(condition, simulator);
-
-      result = eval(parsedCondition);
-
-      simulator.steps.push({
-        type: "condition",
-        message:
-          `teste: ${parsedCondition} => ${result ? "verdadeiro" : "falso"}`,
-        state: simulator.getState()
-      });
-
-    } catch {
-      result = false;
-
-      simulator.steps.push({
-        type: "error",
-        message: `erro ao testar condição`,
-        state: simulator.getState()
-      });
-    }
-
-    conditionStack.push({
-      result,
-      executed: result
-    });
-
-    shouldExecute = result;
-
-    return;
-  }
-
-  // ======================
-  // 🔥 ELSE
-  // ======================
-  if (line.startsWith("} else {")) {
-    const current =
-      conditionStack[conditionStack.length - 1];
-
-    // 🔥 Se o IF já executou,
-    // o ELSE NÃO deve executar
-    if (current.executed) {
-      shouldExecute = false;
-      current.result = false;
-      return;
-    }
-
-    // 🔥 IF foi falso -> ELSE executa
-    shouldExecute = true;
-    current.result = true;
-    current.executed = true;
-
-    return;
-  }
-
-  // ======================
-  // 🔥 FECHAMENTO
-  // ======================
-  if (line === "}") {
-    conditionStack.pop();
-
-    shouldExecute =
-      conditionStack.length === 0
-        ? true
-        : conditionStack[
-            conditionStack.length - 1
-          ].result;
-
-    return;
-  }
-
-    if (!shouldExecute) return;
-
-    // ======================
-    // 🔥 EXECUÇÃO
-    // ======================
-    const match = line.match(/^(\w+)\((.*)\);?$/);
-    if (!match) return;
-
-    const rawOperation = match[1];
-    const operation = operationMap[rawOperation] || rawOperation;
-
-    const args = match[2]
-      ? splitArguments(match[2]).map(arg =>
-          resolveArg(arg, simulator)
-        )
-      : [];
-
-    if (typeof simulator[operation] === "function") {
-      // 🔹 inserir("minha_lista", 10)
-      // Simulator espera: inserir(10, "minha_lista")
-      if (operation === "inserir") {
-        const [nome, valor] = args;
-
-        // 🔥 não insere nulo
-        if (valor === null || valor === undefined) {
-          simulator.steps.push({
-            type: "warning",
-            message: `valor nulo não pode ser inserido`,
-            state: simulator.getState()
-          });
-
-          return;
-        }
-
-        simulator.inserir(valor, nome);
-        return;
-      }
-
-      if (operation === "remover_item") {
-        const [nome, valor] = args;
-        simulator.remover_item(valor, nome);
-        return;
-      }
-
-      if (operation === "remover_da_posicao") {
-        const [indice, nome] = args;
-        simulator.remover_da_posicao(indice, nome);
-        return;
-      }
-
-      if (operation === "criar_lista_limitada") {
-        const [nome, tamanho] = args;
-        simulator.criar_lista_limitada(nome, tamanho);
-        return;
-      }
-
-      if (operation === "sublista") {
-        const [nome, inicio, fim] = args;
-        simulator.sublista(inicio, fim, nome);
-        return;
-      }
-
-      if (operation === "set_var") {
-        const [name, value] = args;
-        simulator.set_var(name, value);
-        return;
-      }
-
-      simulator[operation](...args);
-    }
-  });
+  executeBlock(
+    executableLines,
+    simulator,
+    operationMap
+  );
 
   return simulator.steps;
 }

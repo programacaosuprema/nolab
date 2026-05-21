@@ -337,19 +337,33 @@ Blockly.Blocks['list_invert'] = {
   }
 };
 
-Blockly.Blocks['list_for_each'] = {
+Blockly.Blocks["list_for_each"] = {
   init: function () {
-    this.appendDummyInput()
-      .appendField("para cada")
-      .appendField(new Blockly.FieldTextInput("item"), "VAR")
-      .appendField("em")
-      .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
 
+    // 🔥 variável do loop
+    this.appendValueInput("VARIABLE")
+      .setCheck("Variable")
+      .appendField("para cada");
+
+    // 🔥 lista
+    this.appendDummyInput()
+      .appendField("em")
+      .appendField(
+        new Blockly.FieldDropdown(
+          () => getLists(this.workspace)
+        ),
+        "LIST"
+      );
+
+    // 🔥 corpo
     this.appendStatementInput("DO")
       .appendField("faça");
 
+    this.setInputsInline(true);
+
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+
     this.setColour(30);
   }
 };

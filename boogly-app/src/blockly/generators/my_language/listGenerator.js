@@ -160,7 +160,15 @@ javascriptGenerator.forBlock["list_invert"] = function (block) {
 };
 
 javascriptGenerator.forBlock["list_for_each"] = function (block) {
-  const variable = block.getFieldValue("VAR");
+  const variableBlock = block.getInputTargetBlock("VARIABLE");
+
+  let variable = "item";
+
+  if (variableBlock) {
+    variable =
+      variableBlock.getFieldValue("VAR") || "item";
+  }
+
   const list = block.getFieldValue("LIST");
   const statements = javascriptGenerator.statementToCode(block, "DO");
 

@@ -1,5 +1,22 @@
 import { ListSimulator } from "./ListSimulator";
 
+function resolveCondition(condition, simulator) {
+  let parsed = condition;
+
+  // 🔥 substitui variáveis simples
+  for (const key in simulator.variables) {
+    const value = simulator.variables[key];
+
+    // substitui apenas palavra inteira
+    parsed = parsed.replace(
+      new RegExp(`\\b${key}\\b`, "g"),
+      value
+    );
+  }
+
+  return parsed;
+}
+
 function splitArguments(argsString) {
   const args = [];
 
@@ -175,47 +192,85 @@ export function executeList(code) {
     }
 
     // ======================
-    // 🔥 IF
-    // ======================
-    if (line.startsWith("if")) {
-      const condition = line.match(/if\s*\((.*)\)/)?.[1];
+// 🔥 IF
+// ======================
+  if (line.startsWith("if")) {
+    const condition =
+      line.match(/if\s*\((.*)\)/)?.[1];
 
-      let result = false;
+    let result = false;
 
-      try {
-        result = eval(condition);
-      } catch {
-        result = false;
-      }
+    try {
+      const parsedCondition =
+        resolveCondition(condition, simulator);
 
-      conditionStack.push(result);
-      shouldExecute = result;
+      result = eval(parsedCondition);
+
+      simulator.steps.push({
+        type: "condition",
+        message:
+          `teste: ${parsedCondition} => ${result ? "verdadeiro" : "falso"}`,
+        state: simulator.getState()
+      });
+
+    } catch {
+      result = false;
+
+      simulator.steps.push({
+        type: "error",
+        message: `erro ao testar condição`,
+        state: simulator.getState()
+      });
+    }
+
+    conditionStack.push({
+      result,
+      executed: result
+    });
+
+    shouldExecute = result;
+
+    return;
+  }
+
+  // ======================
+  // 🔥 ELSE
+  // ======================
+  if (line.startsWith("} else {")) {
+    const current =
+      conditionStack[conditionStack.length - 1];
+
+    // 🔥 Se o IF já executou,
+    // o ELSE NÃO deve executar
+    if (current.executed) {
+      shouldExecute = false;
+      current.result = false;
       return;
     }
 
-    // ======================
-    // 🔥 ELSE
-    // ======================
-    if (line.startsWith("} else {")) {
-      const last = conditionStack.pop();
-      const result = !last;
+    // 🔥 IF foi falso -> ELSE executa
+    shouldExecute = true;
+    current.result = true;
+    current.executed = true;
 
-      conditionStack.push(result);
-      shouldExecute = result;
-      return;
-    }
+    return;
+  }
 
-    // ======================
-    // 🔥 FECHAMENTO
-    // ======================
-    if (line === "}") {
-      conditionStack.pop();
-      shouldExecute =
-        conditionStack.length === 0
-          ? true
-          : conditionStack[conditionStack.length - 1];
-      return;
-    }
+  // ======================
+  // 🔥 FECHAMENTO
+  // ======================
+  if (line === "}") {
+    conditionStack.pop();
+
+    shouldExecute =
+      conditionStack.length === 0
+        ? true
+        : conditionStack[
+            conditionStack.length - 1
+          ].result;
+
+    return;
+  }
 
     if (!shouldExecute) return;
 

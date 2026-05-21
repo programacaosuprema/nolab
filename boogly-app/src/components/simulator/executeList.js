@@ -1,31 +1,87 @@
 import { ListSimulator } from "./ListSimulator";
 
+function splitArguments(argsString) {
+  const args = [];
+
+  let current = "";
+  let depth = 0;
+
+  for (let i = 0; i < argsString.length; i++) {
+    const char = argsString[i];
+
+    // 🔥 controla profundidade dos parênteses
+    if (char === "(") depth++;
+    if (char === ")") depth--;
+
+    // 🔥 só separa vírgula fora dos parênteses
+    if (char === "," && depth === 0) {
+      args.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current.trim()) {
+    args.push(current.trim());
+  }
+
+  return args;
+}
+
 function resolveArg(arg, simulator) {
   const value = arg.trim();
 
   // get_var("x")
-  if (value.startsWith('inserir_na_variavel(')) {
-    const name = value.match(/get_var\("(.+)"\)/)?.[1];
+  if (value.startsWith('get_var(')) {
+    const name =
+      value.match(/get_var\("(.+)"\)/)?.[1];
+
     return simulator.get_var(name);
   }
 
-  // "texto"
-  if (value.startsWith('"') && value.endsWith('"')) {
+  // pegar(...)
+  if (value.startsWith("pegar(")) {
+    const match =
+      value.match(/pegar\((.+?),\s*"(.+?)"\)/);
+
+    if (match) {
+      const posicao = Number(match[1]);
+      const lista = match[2];
+
+      return simulator.pegar(posicao, lista);
+    }
+  }
+
+  // 🔥 NULL
+  if (value === "null") {
+    return null;
+  }
+
+  // texto
+  if (
+    value.startsWith('"') &&
+    value.endsWith('"')
+  ) {
     return value.slice(1, -1);
   }
 
   // número
   const num = Number(value);
+
   if (!Number.isNaN(num)) {
     return num;
   }
 
-  // 🔥 Se existir uma variável com esse nome, retorna seu valor
-  if (simulator.variables && value in simulator.variables) {
+  // variável
+  if (
+    simulator.variables &&
+    value in simulator.variables
+  ) {
     return simulator.get_var(value);
   }
 
-  // fallback
   return value;
 }
 
@@ -166,14 +222,14 @@ export function executeList(code) {
     // ======================
     // 🔥 EXECUÇÃO
     // ======================
-    const match = line.match(/(\w+)\((.*?)\)/);
+    const match = line.match(/^(\w+)\((.*)\);?$/);
     if (!match) return;
 
     const rawOperation = match[1];
     const operation = operationMap[rawOperation] || rawOperation;
 
     const args = match[2]
-      ? match[2].split(",").map(arg =>
+      ? splitArguments(match[2]).map(arg =>
           resolveArg(arg, simulator)
         )
       : [];
@@ -183,6 +239,18 @@ export function executeList(code) {
       // Simulator espera: inserir(10, "minha_lista")
       if (operation === "inserir") {
         const [nome, valor] = args;
+
+        // 🔥 não insere nulo
+        if (valor === null || valor === undefined) {
+          simulator.steps.push({
+            type: "warning",
+            message: `valor nulo não pode ser inserido`,
+            state: simulator.getState()
+          });
+
+          return;
+        }
+
         simulator.inserir(valor, nome);
         return;
       }

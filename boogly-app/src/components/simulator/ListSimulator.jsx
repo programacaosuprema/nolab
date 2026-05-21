@@ -30,7 +30,38 @@ export class ListSimulator {
   }
 
   get_var(name) {
-    return this.variables[name] ?? 0;
+    return this.variables[name];
+  }
+
+  pegar(posicao, nome) {
+    const lista = this.lists[nome];
+
+    // 🔥 lista não existe
+    if (!lista) {
+      this.steps.push({
+        type: "error",
+        message: `lista "${nome}" não existe`,
+        state: this.getState()
+      });
+
+      return null;
+    }
+
+    // 🔥 posição inválida
+    if (
+      posicao < 0 ||
+      posicao >= lista.data.length
+    ) {
+      this.steps.push({
+        type: "warning",
+        message: `posição ${posicao} é nula`,
+        state: this.getState()
+      });
+
+      return null;
+    }
+
+    return lista.data[posicao];
   }
 
   criar_lista(nome) {

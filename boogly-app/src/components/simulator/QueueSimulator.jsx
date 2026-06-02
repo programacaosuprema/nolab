@@ -2,7 +2,68 @@ export class QueueSimulator {
   constructor() {
     this.queues = {};
     this.fixedSizes = {};
+    this.variables = {};
     this.steps = [];
+  }
+
+   set_var(name, value) {
+    this.variables[name] = value;
+    this.steps.push({
+      type: "assign",
+      message: `${name} = ${value}`,
+      state: this.getState()
+    });
+  }
+  
+  getState() {
+    const state = {};
+
+    // 🔥 copia filas
+    for (const key in this.queues) {
+      state[key] = [...this.queues[key]];
+    }
+
+    // 🔥 copia variáveis
+    state.variables = {
+      ...this.variables
+    };
+
+    return state;
+  }
+
+  get_var(name) {
+    return this.variables[name];
+  }
+
+  pegar(posicao, nome) {
+    const fila = this.queues[nome];
+
+    // 🔥 fila não existe
+    if (!fila) {
+      this.steps.push({
+        type: "error",
+        message: `fila "${nome}" não existe`,
+        state: this.getState()
+      });
+
+      return null;
+    }
+
+    // 🔥 posição inválida
+    if (
+      posicao < 0 ||
+      posicao >= fila.length
+    ) {
+      this.steps.push({
+        type: "warning",
+        message: `posição ${posicao} é nula`,
+        state: this.getState()
+      });
+
+      return null;
+    }
+
+    return fila[posicao];
   }
 
   criar_fila(name) {
@@ -112,6 +173,6 @@ export class QueueSimulator {
   }
 
   snapshot() {
-    return JSON.parse(JSON.stringify(this.queues));
+    return this.getState();
   }
 }

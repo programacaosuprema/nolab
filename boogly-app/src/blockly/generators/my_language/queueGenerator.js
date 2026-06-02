@@ -97,7 +97,15 @@ javascriptGenerator.forBlock["base_if_else"] = function (block) {
 };
 
 javascriptGenerator.forBlock["queue_for_each"] = function (block) {
-  const variable = block.getFieldValue("VAR");
+  const variableBlock = block.getInputTargetBlock("VARIABLE");
+
+  let variable = "item";
+
+  if (variableBlock) {
+    variable =
+      variableBlock.getFieldValue("VAR") || "item";
+  }
+  
   const list = block.getFieldValue("QUEUE");
   const statements = javascriptGenerator.statementToCode(block, "DO");
 

@@ -1,177 +1,513 @@
 import { QueueSimulator } from "./QueueSimulator";
 
-function resolveArg(arg, simulator) {
-  const value = arg.trim();
+/* ==========================================================
+   RESOLVE CONDITION
+   ========================================================== */
+function resolveCondition(condition, simulator) {
+  let parsed = condition;
 
+  // 🔥 substitui variáveis simples
+  for (const key in simulator.variables) {
+    const value = simulator.variables[key];
+
+    parsed = parsed.replace(
+      new RegExp(`\\b${key}\\b`, "g"),
+      value
+    );
+  }
+
+  return parsed;
+}
+
+/* ==========================================================
+   SPLIT ARGUMENTS
+   ========================================================== */
+function splitArguments(argsString) {
+  const args = [];
+
+  let current = "";
+  let depth = 0;
+  let inString = false;
+
+  for (let i = 0; i < argsString.length; i++) {
+    const char = argsString[i];
+
+    // 🔥 STRING
+    if (char === '"') {
+      inString = !inString;
+      current += char;
+      continue;
+    }
+
+    // 🔥 PROFUNDIDADE
+    if (!inString) {
+      if (char === "(") depth++;
+      if (char === ")") depth--;
+    }
+
+    // 🔥 VÍRGULA FORA
+    if (
+      char === "," &&
+      depth === 0 &&
+      !inString
+    ) {
+      args.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current.trim()) {
+    args.push(current.trim());
+  }
+
+  return args;
+}
+
+/* ==========================================================
+   RESOLVE ARG
+   ========================================================== */
+function resolveArg(arg, simulator) {
+  let value = arg.trim();
+
+  // 🔥 remove parênteses externos
+  while (
+    value.startsWith("(") &&
+    value.endsWith(")")
+  ) {
+    value = value.slice(1, -1).trim();
+  }
+
+  // ==========================================================
+  // 🔥 get_var("x")
+  // ==========================================================
   if (value.startsWith('get_var(')) {
-    const name = value.match(/get_var\("(.+)"\)/)?.[1];
+    const name =
+      value.match(/get_var\("(.+)"\)/)?.[1];
+
     return simulator.get_var(name);
   }
 
-  if (value.startsWith('"') && value.endsWith('"')) {
+  // ==========================================================
+  // 🔥 NULL
+  // ==========================================================
+  if (value === "null") {
+    return null;
+  }
+
+  // ==========================================================
+  // 🔥 STRING
+  // ==========================================================
+  if (
+    value.startsWith('"') &&
+    value.endsWith('"')
+  ) {
     return value.slice(1, -1);
   }
 
+  // ==========================================================
+  // 🔥 NUMBER
+  // ==========================================================
   const num = Number(value);
-  if (!Number.isNaN(num)) return num;
+
+  if (!Number.isNaN(num)) {
+    return num;
+  }
+
+  // ==========================================================
+  // 🔥 VARIABLE
+  // ==========================================================
+  if (
+    simulator.variables &&
+    value in simulator.variables
+  ) {
+    return simulator.get_var(value);
+  }
 
   return value;
 }
 
-export function executeQueue(code) {
-  const simulator = new QueueSimulator();
+/* ==========================================================
+   EXECUTE BLOCK
+   ========================================================== */
+function executeBlock(
+  lines,
+  simulator
+) {
 
-  if (!code.includes("// INICIAR_EXECUCAO")) {
+  let shouldExecute = true;
+
+  let conditionStack = [];
+
+  for (let i = 0; i < lines.length; i++) {
+
+    let line = lines[i].trim();
+
+    if (!line) continue;
+
+    // ==========================================================
+    // 🔥 IF
+    // ==========================================================
+    if (line.startsWith("if")) {
+
+      const condition =
+        line.match(/if\s*\((.*)\)/)?.[1];
+
+      let result = false;
+
+      try {
+
+        const parsedCondition =
+          resolveCondition(
+            condition,
+            simulator
+          );
+
+        result =
+          eval(parsedCondition);
+
+        simulator.steps.push({
+          type: "condition",
+          message:
+            `teste: ${parsedCondition} => ${
+              result
+                ? "verdadeiro"
+                : "falso"
+            }`,
+          state:
+            simulator.getState()
+        });
+
+      } catch {
+
+        result = false;
+
+        simulator.steps.push({
+          type: "error",
+          message:
+            `erro ao testar condição`,
+          state:
+            simulator.getState()
+        });
+      }
+
+      conditionStack.push({
+        result,
+        executed: result
+      });
+
+      shouldExecute = result;
+
+      continue;
+    }
+
+    // ==========================================================
+    // 🔥 ELSE
+    // ==========================================================
+    if (line.startsWith("} else {")) {
+
+      const current =
+        conditionStack[
+          conditionStack.length - 1
+        ];
+
+      // 🔥 IF já executou
+      if (current.executed) {
+
+        shouldExecute = false;
+
+        current.result = false;
+
+        continue;
+      }
+
+      // 🔥 IF foi falso
+      shouldExecute = true;
+
+      current.result = true;
+      current.executed = true;
+
+      continue;
+    }
+
+    // ==========================================================
+    // 🔥 FECHAMENTO
+    // ==========================================================
+    if (line === "}") {
+
+      conditionStack.pop();
+
+      shouldExecute =
+        conditionStack.length === 0
+          ? true
+          : conditionStack[
+              conditionStack.length - 1
+            ].result;
+
+      continue;
+    }
+
+    if (!shouldExecute) continue;
+
+    // ==========================================================
+    // 🔥 PARA CADA
+    // ==========================================================
+    if (
+      line.startsWith(
+        "para_cada("
+      )
+    ) {
+      
+      const match = line.match(/para_cada\("(.+?)",\s*"(.+?)"/);
+
+      if (!match) continue;
+
+      const variable =
+        match[1];
+
+      const queueName =
+        match[2];
+
+      const queue =
+        simulator.queues[
+          queueName
+        ];
+
+      if (!queue) continue;
+
+      // 🔥 captura bloco interno
+      const internalLines = [];
+
+      let depth = 1;
+
+      i++;
+
+      while (
+        i < lines.length &&
+        depth > 0
+      ) {
+
+        const internal =
+          lines[i];
+
+        if (
+          internal.includes("{")
+        ) {
+          depth++;
+        }
+
+        if (
+          internal.includes("}")
+        ) {
+          depth--;
+        }
+
+        if (depth > 0) {
+          internalLines.push(
+            internal
+          );
+        }
+
+        i++;
+      }
+
+      i--;
+
+      // 🔥 percorre fila
+      for (const item of [
+        ...queue.data
+      ]) {
+
+        simulator.set_var(
+          variable,
+          item
+        );
+
+        executeBlock(
+          internalLines,
+          simulator
+        );
+      }
+
+      continue;
+    }
+
+   // ==========================================================
+    // 🔥 ATRIBUIÇÃO
+    // x = 10;
+    // ==========================================================
+    const assignment =
+      line.match(/^(\w+)\s*=\s*(.+);?$/);
+
+    if (assignment) {
+
+      const variable =
+        assignment[1];
+
+      let rawValue =
+        assignment[2]
+          .replace(/;$/, "")
+          .trim();
+
+      const value =
+        resolveArg(
+          rawValue,
+          simulator
+        );
+
+      simulator.set_var(
+        variable,
+        value
+      );
+
+      continue;
+    }
+    
+    const match =
+      line.match(
+        /^(\w+)\((.*)\);?$/
+      );
+
+    if (!match) continue;
+
+    const operation =
+      match[1];
+
+    const args = match[2]
+      ? splitArguments(
+          match[2]
+        ).map(arg =>
+          resolveArg(
+            arg,
+            simulator
+          )
+        )
+      : [];
+
+    // ==========================================================
+    // 🔥 EXECUTA
+    // ==========================================================
+    if (
+      typeof simulator[
+        operation
+      ] === "function"
+    ) {
+
+      // 🔥 ENQUEUE
+      if (
+        operation ===
+        "enqueue"
+      ) {
+
+        const [
+          queueName,
+          value
+        ] = args;
+
+        if (
+          value === null ||
+          value === undefined
+        ) {
+
+          simulator.steps.push({
+            type: "warning",
+            message:
+              `valor nulo não pode ser enfileirado`,
+            state:
+              simulator.getState()
+          });
+
+          continue;
+        }
+
+        simulator.enqueue(
+          queueName,
+          value
+        );
+
+        continue;
+      }
+
+      // 🔥 SET VAR
+      if (
+        operation ===
+        "set_var"
+      ) {
+
+        const [
+          name,
+          value
+        ] = args;
+
+        simulator.set_var(
+          name,
+          value
+        );
+
+        continue;
+      }
+
+      simulator[
+        operation
+      ](...args);
+    }
+  }
+}
+
+/* ==========================================================
+   EXECUTE QUEUE
+   ========================================================== */
+export function executeQueue(code) {
+
+  const simulator =
+    new QueueSimulator();
+
+  // ==========================================================
+  // 🔥 EXECUTAR
+  // ==========================================================
+  if (
+    !code.includes(
+      "// INICIAR_EXECUCAO"
+    )
+  ) {
+
     return [
       {
         type: "error",
         message:
-          "Adicione o bloco 'Quando EXECUTAR for clicado' para iniciar o programa.",
+          "Adicione o bloco EXECUTAR.",
         state: {}
       }
     ];
   }
 
-  const lines = code.split("\n");
+  const lines = code
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean);
 
-  let isRunning = false;
-  let shouldExecute = true;
-  const conditionStack = [];
+  const start =
+    lines.indexOf(
+      "// INICIAR_EXECUCAO"
+    );
 
-  lines.forEach((line) => {
-    line = line.trim();
+  const end =
+    lines.indexOf(
+      "// FIM_EXECUCAO"
+    );
 
-    if (line === "// INICIAR_EXECUCAO") {
-      isRunning = true;
-      return;
-    }
+  const executableLines =
+    lines.slice(
+      start + 1,
+      end
+    );
 
-    if (line === "// FIM_EXECUCAO") {
-      isRunning = false;
-      return;
-    }
-
-    if (!isRunning) return;
-
-    // 🔹 IF
-    if (line.startsWith("if")) {
-      const condition = line.match(/if\s*\((.*)\)/)?.[1];
-      let result = false;
-
-      try {
-        result = eval(condition);
-      } catch {
-        result = false;
-      }
-
-      conditionStack.push(result);
-      shouldExecute = result;
-      return;
-    }
-
-    // 🔹 ELSE
-    if (line.startsWith("} else {")) {
-      const last = conditionStack.pop();
-      const result = !last;
-      conditionStack.push(result);
-      shouldExecute = result;
-      return;
-    }
-
-    // 🔹 FECHAMENTO DE BLOCO
-    if (line === "}") {
-      conditionStack.pop();
-      shouldExecute =
-        conditionStack.length === 0
-          ? true
-          : conditionStack[conditionStack.length - 1];
-      return;
-    }
-
-    if (!shouldExecute) return;
-
-    // 🔹 CAPTURA FUNÇÃO E ARGUMENTOS
-    // Exemplo:
-    // enfileirar("minha_fila", (10));
-    const match = line.match(/(\w+)\((.*)\);?/);
-    if (!match) return;
-
-    const operation = match[1];
-    const rawArgs = match[2];
-
-    // 🔹 SPLIT ROBUSTO (preserva strings com vírgulas)
-    const args = match[2]
-      ? match[2].split(",").map(arg =>
-          resolveArg(arg, simulator)
-        )
-      : [];
-      
-    let current = "";
-    let inString = false;
-
-    for (let i = 0; i < rawArgs.length; i++) {
-      const char = rawArgs[i];
-
-      if (char === '"') {
-        inString = !inString;
-        current += char;
-        continue;
-      }
-
-      if (char === "," && !inString) {
-        args.push(current.trim());
-        current = "";
-        continue;
-      }
-
-      current += char;
-    }
-
-    if (current.trim() !== "") {
-      args.push(current.trim());
-    }
-
-    // 🔹 CONVERTE ARGUMENTOS
-    const parsedArgs = args.map((arg) => {
-      let value = arg.trim();
-
-      // Remove parênteses externos: (10) -> 10
-      while (
-        value.startsWith("(") &&
-        value.endsWith(")")
-      ) {
-        value = value.slice(1, -1).trim();
-      }
-
-      // String
-      if (
-        value.startsWith('"') &&
-        value.endsWith('"')
-      ) {
-        return value.slice(1, -1);
-      }
-
-      // Número
-      const num = Number(value);
-      if (!Number.isNaN(num)) {
-        return num;
-      }
-
-      // Valor literal (variável, expressão, etc.)
-      return value;
-    });
-
-    // 🔹 EXECUTA OPERAÇÃO
-    if (typeof simulator[operation] === "function") {
-      simulator[operation](...parsedArgs);
-    }
-    
-    if (operation === "set_var") {
-        const [name, value] = args;
-        simulator.set_var(name, value);
-        return;
-      }
-  });
+  executeBlock(
+    executableLines,
+    simulator
+  );
 
   return simulator.steps;
 }

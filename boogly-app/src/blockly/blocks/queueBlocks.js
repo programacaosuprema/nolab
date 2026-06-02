@@ -109,7 +109,7 @@ Blockly.Blocks["queue_fixed"] = {
 Blockly.Blocks["enqueue"] = {
   init: function () {
     this.appendValueInput("VALUE")
-      .setCheck(null)
+      .setCheck(["Variable", "Value"])
       .appendField("enfileirar");
 
     this.appendDummyInput()
@@ -185,26 +185,38 @@ Blockly.Blocks["queue_is_empty"] = {
    🔹 BLOCO: EXIBIR
 ===================================================== */
 
-
-Blockly.Blocks['queue_for_each'] = {
+Blockly.Blocks["queue_for_each"] = {
   init: function () {
+
+    // 🔥 variável do loop
+    this.appendValueInput("VARIABLE")
+      .setCheck("Variable")
+      .appendField("para cada");
+
+    // 🔥 lista
     this.appendDummyInput()
-      .appendField("para cada")
-      .appendField(new Blockly.FieldTextInput("item"), "VAR")
       .appendField("em")
       .appendField(
-        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
-        "QUEUE"
+        new Blockly.FieldDropdown(
+          () => getQueues(this.workspace)
+        ),
+        "Queue"
       );
 
+    // 🔥 corpo
     this.appendStatementInput("DO")
       .appendField("faça");
 
+    this.setInputsInline(true);
+
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+
     this.setColour(30);
   }
 };
+
+
 
 
 

@@ -318,9 +318,37 @@ function executeBlock(
       continue;
     }
 
-    // ======================
-    // 🔥 EXECUÇÃO
-    // ======================
+    // ==========================================================
+    // 🔥 ATRIBUIÇÃO
+    // x = 10;
+    // ==========================================================
+    const assignment =
+      line.match(/^(\w+)\s*=\s*(.+);?$/);
+
+    if (assignment) {
+
+      const variable =
+        assignment[1];
+
+      let rawValue =
+        assignment[2]
+          .replace(/;$/, "")
+          .trim();
+
+      const value =
+        resolveArg(
+          rawValue,
+          simulator
+        );
+
+      simulator.set_var(
+        variable,
+        value
+      );
+
+      continue;
+    }
+    
     const match =
       line.match(
         /^(\w+)\((.*)\);?$/

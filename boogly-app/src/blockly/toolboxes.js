@@ -1,9 +1,52 @@
 export const stackToolbox = {
-  kind: "flyoutToolbox",
-  contents: [
-    { kind: "block", type: "push" },
-    { kind: "block", type: "pop" }
-  ]
+  list: {
+    kind: "flyoutToolbox",
+    contents: [
+      { kind: "block", type: "stack_run_program" },
+      { kind: "block", type: "stack_container" },
+      { kind: "block", type: "stack_fixed" },
+      { kind: "block", type: "push" },
+      { kind: "block", type: "pop" },
+    ]
+  },
+
+  state: {
+    kind: "flyoutToolbox",
+    contents: [
+      { kind: "block", type: "stack_empty" },
+      { kind: "block", type: "stack_size" },
+      { kind: "block", type: "peek" },
+      { kind: "block", type: "base_show" },
+      { kind: "block", type: "base_show_text"},
+    ]
+  },
+
+  variables: {
+    kind: "flyoutToolbox",
+    contents: [
+      { kind: "block", type: "base_variable" },
+      { kind: "block", type: "base_text" },
+      { kind: "block", type: "base_number"},
+      { kind: "block", type: "base_input"},
+      { kind: "block", type: "base_not"},
+    ]
+  },
+
+  conditions: {
+    kind: "flyoutToolbox",
+    contents: [
+      { kind: "block", type: "base_compare"},
+      { kind: "block", type: "base_if" },
+      { kind: "block", type: "base_if_else" }
+    ]
+  },
+
+  loops: {
+    kind: "flyoutToolbox",
+    contents: [
+      { kind: "block", type: "stack_for_each" }
+    ]
+  }
 };
 
 export const queueToolbox = {
@@ -37,7 +80,6 @@ export const queueToolbox = {
       { kind: "block", type: "base_number"},
       { kind: "block", type: "base_input"},
       { kind: "block", type: "base_not"},
-      
     ]
   },
 

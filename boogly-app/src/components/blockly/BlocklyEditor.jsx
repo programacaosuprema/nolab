@@ -17,6 +17,7 @@ import { useAuth } from "../../autenticator/useAuth";
 
 import { saveWorkspace, loadWorkspace }
   from "../../blockly/workspaceStorage";
+import { Code } from "lucide-react";
 
 export default function BlocklyEditor({
   toolbox,
@@ -29,7 +30,7 @@ export default function BlocklyEditor({
   const workspaceRef = useRef(null);
   const debounceRef = useRef(null);
 
-  const [category, setCategory] = useState("list");
+  const [category, setCategory] = useState(null);
   const [initError, setInitError] = useState(false);
   const [toolboxVisible, setToolboxVisible] = useState(true);
 
@@ -39,7 +40,37 @@ export default function BlocklyEditor({
   const { showError } = useError();
   const { user, structure } = useAuth();
 
-  const isListToolbox = toolbox?.list;
+  const hasCategories =
+  toolbox?.list ||
+  toolbox?.queue ||
+  toolbox?.stack;
+
+  const categoriesByStructure = {
+    list: [
+      ["list", "Lista"],
+      ["variables", "Variáveis"],
+      ["conditions", "Condições"],
+      ["loops", "Laços"],
+      ["state", "Estado"],
+      ["sort", "Ordenação"]
+    ],
+
+    queue: [
+      ["queue", "Fila"],
+      ["variables", "Variáveis"],
+      ["conditions", "Condições"],
+      ["state", "Estado"],
+      ["loops", "Laços"],
+    ],
+
+    stack: [
+      ["stack", "Pilha"],
+      ["variables", "Variáveis"],
+      ["conditions", "Condições"],
+      ["state", "Estado"],
+      ["loops", "Laços"]
+    ]
+  };
 
   // 🔥 INIT WORKSPACE
   useEffect(() => {
@@ -47,7 +78,11 @@ export default function BlocklyEditor({
       if (!blocklyDiv.current) return;
 
       workspaceRef.current = Blockly.inject(blocklyDiv.current, {
-        toolbox: toolbox?.list || toolbox,
+        toolbox:
+        toolbox?.list ||
+        toolbox?.queue ||
+        toolbox?.stack ||
+        toolbox,
         trashcan: true,
         collapse: true,
         grid: {
@@ -106,6 +141,7 @@ export default function BlocklyEditor({
               try {
                 codeC =
                   generateC(workspaceRef.current, structure) || "";
+                  console.log(codeC);
               } catch (err) {
                 showError({
                   message: "Erro ao gerar código C: " + err.message
@@ -161,11 +197,14 @@ export default function BlocklyEditor({
   // 🔥 UPDATE TOOLBOX
   useEffect(() => {
     try {
-      if (!workspaceRef.current || !toolbox?.list) return;
+      if (!workspaceRef.current) return;
 
       if (toolboxVisible) {
         workspaceRef.current.updateToolbox(
-          toolbox[category] || toolbox.list
+          toolbox[category] ||
+          toolbox.list ||
+          toolbox.queue ||
+          toolbox.stack
         );
       } else {
         workspaceRef.current.updateToolbox({
@@ -271,6 +310,20 @@ export default function BlocklyEditor({
     }
   }, [structure, setBlockCount, showError, user?.id]);
 
+  useEffect(() => {
+    if (structure === "list") {
+      setCategory("list");
+    }
+
+    if (structure === "queue") {
+      setCategory("queue");
+    }
+
+    if (structure === "stack") {
+      setCategory("stack");
+    }
+  }, [structure]);
+
   // ❌ FALLBACK UI
   if (initError) {
     return (
@@ -299,7 +352,7 @@ export default function BlocklyEditor({
       style={{ background: theme.workspace }}
     >
       {/* SIDEBAR */}
-      {isListToolbox && (
+      {hasCategories && (
         <div
           className="w-14 border-r flex flex-col items-center gap-4 py-3"
           style={{
@@ -307,47 +360,15 @@ export default function BlocklyEditor({
             borderColor: theme.border
           }}
         >
-          <CategoryButton
-            label="Lista"
-            active={category === "list"}
-            onClick={() => setCategory("list")}
-            theme={theme}
-          />
-
-          <CategoryButton
-            label="Variáveis"
-            active={category === "variables"}
-            onClick={() => setCategory("variables")}
-            theme={theme}
-          />
-
-          <CategoryButton
-            label="Condições"
-            active={category === "conditions"}
-            onClick={() => setCategory("conditions")}
-            theme={theme}
-          />
-
-          <CategoryButton
-            label="Laços"
-            active={category === "loops"}
-            onClick={() => setCategory("loops")}
-            theme={theme}
-          />
-
-          <CategoryButton
-            label="Estado"
-            active={category === "state"}
-            onClick={() => setCategory("state")}
-            theme={theme}
-          />
-
-          <CategoryButton
-            label="Ordenação"
-            active={category === "sort"}
-            onClick={() => setCategory("sort")}
-            theme={theme}
-          />
+          {categoriesByStructure[structure]?.map(([key, label]) => (
+            <CategoryButton
+              key={key}
+              label={label}
+              active={category === key}
+              onClick={() => setCategory(key)}
+              theme={theme}
+            />
+          ))}
         </div>
       )}
 
@@ -377,7 +398,7 @@ export default function BlocklyEditor({
             </span>
           </div>
 
-          {isListToolbox && (
+          {hasCategories && (
             <button
               onClick={() =>
                 setToolboxVisible(!toolboxVisible)

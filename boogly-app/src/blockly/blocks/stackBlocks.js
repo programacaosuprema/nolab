@@ -1,4 +1,6 @@
 import * as Blockly from "blockly";
+import { normalizeIdentifier }from "../utils/normalizeIdentifier";
+
 
 function blockSameName(block) {
   if (!block.workspace) return;
@@ -70,7 +72,17 @@ Blockly.Blocks['stack_container'] = {
   init: function () {
     this.appendDummyInput()
       .appendField("criar pilha")
-      .appendField(new Blockly.FieldTextInput("minha_pilha"), "NAME");
+      .appendField(
+        new Blockly.FieldTextInput(
+          "minha_pilha",
+          (text) =>
+          normalizeIdentifier(
+            text,
+          "variavel"
+        )
+      ),
+        "NAME"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -87,7 +99,14 @@ Blockly.Blocks["stack_fixed"] = {
     this.appendDummyInput()
       .appendField("criar pilha")
       .appendField(
-        new Blockly.FieldTextInput("minha_pilha_fixa"),
+        new Blockly.FieldTextInput(
+          "minha_pilha_fixa",
+          (text) =>
+          normalizeIdentifier(
+            text,
+            "variavel"
+          )
+        ),
         "NAME"
       )
       .appendField("tamanho");

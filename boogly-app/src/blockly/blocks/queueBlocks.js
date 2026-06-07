@@ -1,5 +1,6 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
+import { normalizeIdentifier }from "../utils/normalizeIdentifier";
 
 /* =====================================================
    🔹 UTIL: verificar nomes duplicados de filas
@@ -70,7 +71,17 @@ Blockly.Blocks["queue_container"] = {
   init: function () {
     this.appendDummyInput()
       .appendField("criar fila")
-      .appendField(new Blockly.FieldTextInput("minha_fila"), "NAME");
+      .appendField(
+        new Blockly.FieldTextInput(
+        "minha_fila", 
+        (text) =>
+          normalizeIdentifier(
+            text,
+          "variavel"
+        )
+      ),
+        "NAME"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -89,9 +100,21 @@ Blockly.Blocks["queue_fixed"] = {
   init: function () {
     this.appendDummyInput()
       .appendField("criar fila")
-      .appendField(new Blockly.FieldTextInput("minha_fila_fixa"), "NAME")
-      .appendField("tamanho")
-      .appendField(new Blockly.FieldNumber(3, 0), "SIZE");
+      .appendField(
+        new Blockly.FieldTextInput(
+          "minha_fila_fixa", 
+          (text) =>
+          normalizeIdentifier(
+            text,
+            "variavel"
+          )
+        ),
+        "NAME"
+      )
+      .appendField("tamanho");
+    
+    this.appendValueInput("SIZE")
+      .setCheck("Value");
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);

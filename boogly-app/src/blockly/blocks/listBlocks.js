@@ -1,5 +1,6 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
+import { normalizeIdentifier }from "../utils/normalizeIdentifier";
 
 /* =====================================================
    🔹 UTIL: verificar nomes duplicados de listas
@@ -64,17 +65,26 @@ Blockly.Blocks['list_run_program'] = {
   }
 };
 
-/* =====================================================
-   🔹 BLOCO: LISTA SIMPLES
-===================================================== */
 Blockly.Blocks['list_container'] = {
   init: function () {
+
     this.appendDummyInput()
       .appendField("criar lista")
-      .appendField(new Blockly.FieldTextInput("minha_lista"), "NAME");
+      .appendField(
+        new Blockly.FieldTextInput(
+          "minha_lista",
+          (text) =>
+            normalizeIdentifier(
+              text,
+              "variavel"
+            )
+        ),
+        "NAME"
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+
     this.setColour(130);
   },
 
@@ -83,15 +93,20 @@ Blockly.Blocks['list_container'] = {
   }
 };
 
-/* =====================================================
-   🔹 BLOCO: LISTA FIXA
-===================================================== */
 Blockly.Blocks["list_fixed"] = {
   init: function () {
+
     this.appendDummyInput()
       .appendField("criar lista")
       .appendField(
-        new Blockly.FieldTextInput("minha_lista_fixa"),
+        new Blockly.FieldTextInput(
+          "minha_lista_fixa",
+          (text) =>
+            normalizeIdentifier(
+              text,
+              "variavel"
+            )
+        ),
         "NAME"
       )
       .appendField("tamanho");
@@ -101,7 +116,9 @@ Blockly.Blocks["list_fixed"] = {
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+
     this.setInputsInline(true);
+
     this.setColour(130);
   },
 
@@ -109,7 +126,6 @@ Blockly.Blocks["list_fixed"] = {
     blockSameName(this);
   }
 };
-
 /* =====================================================
    🔹 BLOCO: INSERIR
 ===================================================== */

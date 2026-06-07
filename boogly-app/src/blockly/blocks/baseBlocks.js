@@ -1,5 +1,6 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
+import { normalizeIdentifier }from "../utils/normalizeIdentifier";
 
 /* ==========================================================
    BLOCO: NÃO (negação lógica)
@@ -88,97 +89,21 @@ Blockly.Blocks["base_input"] = {
 Blockly.Blocks['base_variable'] = {
   init: function () {
 
-    const reservedWords = [
-      "auto",
-      "break",
-      "case",
-      "char",
-      "const",
-      "continue",
-      "default",
-      "do",
-      "double",
-      "else",
-      "enum",
-      "extern",
-      "float",
-      "for",
-      "goto",
-      "if",
-      "int",
-      "long",
-      "register",
-      "return",
-      "short",
-      "signed",
-      "sizeof",
-      "static",
-      "struct",
-      "switch",
-      "typedef",
-      "union",
-      "unsigned",
-      "void",
-      "volatile",
-      "while"
-    ];
-
     this.appendDummyInput()
       .appendField(
         new Blockly.FieldTextInput(
           "variavel",
-          function(text) {
-
-            // Remove acentos
-            text = text
-              .normalize("NFD")
-              .replace(/[\u0300-\u036f]/g, "");
-
-            // Remove espaços extras
-            text = text.trim();
-
-            // Espaços viram _
-            text = text.replace(/\s+/g, "_");
-
-            // Remove caracteres inválidos
-            text = text.replace(
-              /[^a-zA-Z0-9_]/g,
-              ""
-            );
-
-            // Minúsculo
-            text = text.toLowerCase();
-
-            // Não pode iniciar com número
-            if (/^[0-9]/.test(text)) {
-              text = "_" + text;
-            }
-
-            // Palavra reservada
-            if (
-              reservedWords.includes(text)
-            ) {
-              text = "_" + text;
-            }
-
-            // Evita vazio
-            if (!text) {
-              text = "variavel";
-            }
-
-            return text;
-          }
+          (text) =>
+            normalizeIdentifier(
+              text,
+              "variavel"
+            )
         ),
         "VAR"
       );
 
     this.setOutput(true, "Variable");
-
     this.setColour(988);
-
-    this.setTooltip(
-      "Nome da variável. Apenas letras, números e _. Não pode iniciar com número nem usar palavras reservadas da linguagem C."
-    );
   }
 };
 

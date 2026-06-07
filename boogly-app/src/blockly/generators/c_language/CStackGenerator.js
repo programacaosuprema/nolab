@@ -215,21 +215,51 @@ export function generateStackC(workspace) {
       }
 
       if (current.type === "stack_for_each") {
-        const varName = current.getFieldValue("VAR");
-        const list = current.getFieldValue("LIST");
+        const variableBlock =
+          current.getInputTargetBlock("VARIABLE");
 
-        code = addLine(code, `Nodo *aux_${varName} = ${list}.inicio;`);
-        code = addLine(code, `while (aux_${varName} != NULL) {`);
+        let varName = "item";
+
+        if (variableBlock) {
+          varName =
+            variableBlock.getFieldValue("VAR") ||
+            "item";
+        }
+
+        const list =
+          current.getFieldValue("LIST");
+
+        code = addLine(
+          code,
+          `Nodo *aux_${varName} = ${list}.inicio;`
+        );
+
+        code = addLine(
+          code,
+          `while (aux_${varName} != NULL) {`
+        );
+
         indentLevel++;
 
-        code = addLine(code, `int ${varName} = aux_${varName}->dado;`);
+        code = addLine(
+          code,
+          `int ${varName} = aux_${varName}->dado;`
+        );
 
-        const branch = current.getInputTargetBlock("DO");
-        if (branch) code += generateBlock(branch);
+        const branch =
+          current.getInputTargetBlock("DO");
 
-        code = addLine(code, `aux_${varName} = aux_${varName}->proximo;`);
+        if (branch) {
+          code += generateBlock(branch);
+        }
+
+        code = addLine(
+          code,
+          `aux_${varName} = aux_${varName}->proximo;`
+        );
 
         indentLevel--;
+
         code = addLine(code, `}`);
       }
 

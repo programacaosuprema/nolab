@@ -141,7 +141,6 @@ export default function BlocklyEditor({
               try {
                 codeC =
                   generateC(workspaceRef.current, structure) || "";
-                  console.log(codeC);
               } catch (err) {
                 showError({
                   message: "Erro ao gerar código C: " + err.message

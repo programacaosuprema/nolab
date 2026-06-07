@@ -1,4 +1,5 @@
 import CGenerator from "./CGeneratorBase";
+import { LINKED_LIST_HEADER } from "./headers/LinkedListHeader";
 
 // 🔹 EXPRESSÕES (retornam valores)
 CGenerator.forBlock["queue_front"] = function (block) {
@@ -189,6 +190,25 @@ export function generateQueueC(workspace) {
         );
       }
 
+      if (current.type === "queue_for_each") {
+        const varName = current.getFieldValue("VAR");
+        const list = current.getFieldValue("LIST");
+
+        code = addLine(code, `Nodo *aux_${varName} = ${list}.inicio;`);
+        code = addLine(code, `while (aux_${varName} != NULL) {`);
+        indentLevel++;
+
+        code = addLine(code, `int ${varName} = aux_${varName}->dado;`);
+
+        const branch = current.getInputTargetBlock("DO");
+        if (branch) code += generateBlock(branch);
+
+        code = addLine(code, `aux_${varName} = aux_${varName}->proximo;`);
+
+        indentLevel--;
+        code = addLine(code, `}`);
+      }
+
       if (current.type === "base_input") {
         const generated = CGenerator.blockToCode(current);
         code = addGeneratedCode(code, generated);
@@ -289,174 +309,73 @@ export function generateQueueC(workspace) {
   // 🔹 HEADER
 // Fila implementada como adaptação da Lista Encadeada
 // baseada no material enviado :contentReference[oaicite:0]{index=0}
-const header = `#include <stdio.h>
-#include <malloc.h>
+    const header =
+      LINKED_LIST_HEADER;
 
-typedef int Elemento;
+      // 🔹 FUNÇÕES CONDICIONAIS
 
-typedef struct No {
-    Elemento elemento;
-    struct No *proximo;
-} No;
-
-typedef No *Ponteiro;
-
-typedef struct {
-    int tamanho;
-    No *primeiro;
-} Lista;
-
-const Elemento VALOR_NULO = 0;
-
-typedef Lista ListaEncadeada;
+functions += `
 typedef ListaEncadeada Fila;
-
-/* =========================
-   IMPLEMENTAÇÃO DA LISTA
-   ========================= */
-
-void inicializar_lista(ListaEncadeada *lista) {
-    lista->primeiro = NULL;
-    lista->tamanho = 0;
-}
-
-int inserir_elemento(ListaEncadeada *lista, int posicao, Elemento elemento) {
-    Ponteiro no, auxiliar;
-
-    if (posicao > 0 && posicao <= lista->tamanho + 1) {
-        no = (Ponteiro) malloc(sizeof(No));
-
-        if (no != NULL) {
-            no->elemento = elemento;
-
-            if (posicao == 1) {
-                no->proximo = lista->primeiro;
-                lista->primeiro = no;
-            } else {
-                auxiliar = lista->primeiro;
-
-                for (int i = 2; i < posicao; i++) {
-                    auxiliar = auxiliar->proximo;
-                }
-
-                no->proximo = auxiliar->proximo;
-                auxiliar->proximo = no;
-            }
-
-            lista->tamanho++;
-            return 1;
-        }
-
-        return 0;
-    }
-
-    return 0;
-}
-
-int remover_elemento(ListaEncadeada *lista, int posicao) {
-    Ponteiro no, auxiliar;
-
-    if (posicao > 0 && posicao <= lista->tamanho) {
-        if (posicao == 1) {
-            no = lista->primeiro;
-            lista->primeiro = no->proximo;
-        } else {
-            auxiliar = lista->primeiro;
-
-            for (int i = 2; i < posicao; i++) {
-                auxiliar = auxiliar->proximo;
-            }
-
-            no = auxiliar->proximo;
-            auxiliar->proximo = no->proximo;
-        }
-
-        free(no);
-        lista->tamanho--;
-        return 1;
-    }
-
-    return 0;
-}
-
-int obter_elemento(ListaEncadeada lista, int posicao, Elemento *e) {
-    Ponteiro no;
-
-    if (posicao > 0 && posicao <= lista.tamanho) {
-        no = lista.primeiro;
-
-        for (int i = 2; i <= posicao; i++) {
-            no = no->proximo;
-        }
-
-        *e = no->elemento;
-        return 1;
-    }
-
-    *e = VALOR_NULO;
-    return 0;
-}
-
-/* =========================
-   IMPLEMENTAÇÃO DA FILA
-   ========================= */
 `;
 
-  // 🔹 FUNÇÕES CONDICIONAIS
-  if (used.create) {
-    functions += `
+if (used.create) {
+  functions += `
 void inicializar_fila(Fila *f) {
-    f->inicio = 0;
-    f->fim = 0;
+    inicializar_lista(f);
 }
 `;
-  }
+}
 
-  if (used.enqueue) {
-    functions += `
+if (used.enqueue) {
+  functions += `
 void enfileirar(Fila *f, int valor) {
-    f->dados[f->fim++] = valor;
+    inserir_elemento(f, f->tamanho + 1, valor);
 }
 `;
-  }
+}
 
-  if (used.dequeue) {
-    functions += `
+if (used.dequeue) {
+  functions += `
 void desenfileirar(Fila *f) {
-    if (f->inicio < f->fim) {
-        f->inicio++;
+
+    if (f->tamanho > 0) {
+      remover_elemento(f, 1);
     }
 }
 `;
-  }
+}
 
-  if (used.front) {
-    functions += `
+if (used.front) {
+  functions += `
 int frente_fila(Fila *f) {
-    if (f->inicio >= f->fim) {
-        return 0;
+
+    Elemento e;
+
+    if (obter_elemento(*f, 1, &e)) {
+        return e;
     }
 
-    return f->dados[f->inicio];
+    return VALOR_NULO;
 }
 `;
-  }
+}
 
-  if (used.size) {
-    functions += `
+if (used.size) {
+  functions += `
 int tamanho_fila(Fila *f) {
-    return f->fim - f->inicio;
+    return f->tamanho;
 }
 `;
-  }
+}
 
-  if (used.empty) {
-    functions += `
+if (used.empty) {
+  functions += `
 int fila_vazia(Fila *f) {
-    return f->inicio == f->fim;
+    return f->tamanho == 0;
 }
 `;
-  }
+}
+
 
   // 🔹 CÓDIGO FINAL
   return (

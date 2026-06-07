@@ -69,8 +69,8 @@ Blockly.Blocks["stack_run_program"] = {
 Blockly.Blocks['stack_container'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("criar lista")
-      .appendField(new Blockly.FieldTextInput("minha_lista"), "NAME");
+      .appendField("criar pilha")
+      .appendField(new Blockly.FieldTextInput("minha_pilha"), "NAME");
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -85,9 +85,9 @@ Blockly.Blocks['stack_container'] = {
 Blockly.Blocks["stack_fixed"] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("criar lista")
+      .appendField("criar pilha")
       .appendField(
-        new Blockly.FieldTextInput("minha_lista_fixa"),
+        new Blockly.FieldTextInput("minha_pilha_fixa"),
         "NAME"
       )
       .appendField("tamanho");

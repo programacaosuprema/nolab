@@ -173,6 +173,16 @@ javascriptGenerator.forBlock["base_show_text"] = function (block) {
   return `exibir_texto(${text});\n`;
 };
 
+javascriptGenerator.forBlock['base_show'] = function (block) {
+  const text =
+    javascriptGenerator.valueToCode(block, "TEXT", javascriptGenerator.ORDER_NONE) || '""';
+
+  const value =
+    javascriptGenerator.valueToCode(block, "VALUE", javascriptGenerator.ORDER_NONE) || "0";
+
+  return `exibir(${text}, ${value});\n`;
+};
+
 /* ==========================================================
    RECEBER VALOR
    ========================================================== */
@@ -199,7 +209,7 @@ javascriptGenerator.forBlock["base_variable"] = function (block) {
   return [name, javascriptGenerator.ORDER_ATOMIC];
 };
 
-javascriptGenerator.forBlock['base_queue_text'] = function (block) {
+javascriptGenerator.forBlock['base_text'] = function (block) {
   const text = block.getFieldValue('TEXT');
   return [`"${text}"`, javascriptGenerator.ORDER_NONE];
 };

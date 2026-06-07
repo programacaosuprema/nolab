@@ -1,6 +1,7 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
 import { normalizeIdentifier }from "../utils/normalizeIdentifier";
+import { hasDuplicateName } from "../utils/normalizeNames";
 
 /* ==========================================================
    BLOCO: NÃO (negação lógica)
@@ -34,11 +35,6 @@ Blockly.Blocks["base_show_text"] = {
   }
 };
 
-/* ==========================================================
-   BLOCO: RECEBER VALOR
-   Exemplo: receber valor
-   Usado como expressão para leitura do teclado.
-   ========================================================== */
 Blockly.Blocks["base_input"] = {
   init: function () {
     this.appendValueInput("VARIABLE")
@@ -66,21 +62,19 @@ Blockly.Blocks["base_input"] = {
 
       const name = variableBlock.getFieldValue("VAR");
 
-      const duplicates = this.workspace
-        .getAllBlocks(false)
-        .filter((block) => {
-          if (block.id === this.id) return false;
-          if (block.type !== "base_input") return false;
-
-          const otherVar = block.getInputTargetBlock("VARIABLE");
-          return otherVar && otherVar.getFieldValue("VAR") === name;
-        });
-
-      if (duplicates.length > 0) {
-        this.setWarningText("Essa variável já foi criada em outro lugar.");
-      } else {
-        this.setWarningText(null);
+      if (!name) {
+        this.setWarningText("Nome de variável inválido.");
+        return;
       }
+
+      if (hasDuplicateName(this.workspace, name, this.id)) {
+        this.setWarningText(
+          `Já existe uma variável/estrutura com o nome "${name}".`
+        );
+        return;
+      }
+
+      this.setWarningText(null);
     });
   }
 };

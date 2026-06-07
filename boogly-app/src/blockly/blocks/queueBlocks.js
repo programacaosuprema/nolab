@@ -1,6 +1,8 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
 import { normalizeIdentifier }from "../utils/normalizeIdentifier";
+import { hasDuplicateName } from "../utils/normalizeNames";
+
 
 /* =====================================================
    🔹 UTIL: verificar nomes duplicados de filas
@@ -90,6 +92,17 @@ Blockly.Blocks["queue_container"] = {
 
   onchange: function () {
     blockSameName(this);
+
+    const name = this.getFieldValue("NAME");
+
+    if (hasDuplicateName(this.workspace, name, this.id)) {
+      this.setWarningText(
+        `Já existe uma variável/estrutura com o nome "${name}".`
+      );
+      return;
+    }
+
+    this.setWarningText(null);
   }
 };
 
@@ -123,6 +136,17 @@ Blockly.Blocks["queue_fixed"] = {
 
   onchange: function () {
     blockSameName(this);
+
+    const name = this.getFieldValue("NAME");
+
+    if (hasDuplicateName(this.workspace, name, this.id)) {
+      this.setWarningText(
+        `Já existe uma variável/estrutura com o nome "${name}".`
+      );
+      return;
+    }
+
+    this.setWarningText(null);
   }
 };
 
@@ -236,6 +260,25 @@ Blockly.Blocks["queue_for_each"] = {
     this.setNextStatement(true);
 
     this.setColour(30);
+
+    this.setOnChange(function () {
+      const variableBlock = this.getInputTargetBlock("VARIABLE");
+      const name = variableBlock?.getFieldValue("VAR");
+
+      if (!name) {
+        this.setWarningText("Conecte uma variável no laço.");
+        return;
+      }
+
+      if (hasDuplicateName(this.workspace, name, this.id)) {
+        this.setWarningText(
+          `Já existe uma variável/estrutura com o nome "${name}".`
+        );
+        return;
+      }
+
+      this.setWarningText(null);
+    });
   }
 };
 

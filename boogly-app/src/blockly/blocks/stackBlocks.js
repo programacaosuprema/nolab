@@ -1,6 +1,6 @@
 import * as Blockly from "blockly";
 import { normalizeIdentifier }from "../utils/normalizeIdentifier";
-
+import { hasDuplicateName } from "../utils/normalizeNames";
 
 function blockSameName(block) {
   if (!block.workspace) return;
@@ -91,6 +91,16 @@ Blockly.Blocks['stack_container'] = {
 
   onchange: function () {
     blockSameName(this);
+    const name = this.getFieldValue("NAME");
+    
+    if (hasDuplicateName(this.workspace, name, this.id)) {
+      this.setWarningText(
+        `Já existe uma variável/estrutura com o nome "${name}".`
+      );
+      return;
+    }
+
+    this.setWarningText(null);
   }
 };
 
@@ -104,9 +114,9 @@ Blockly.Blocks["stack_fixed"] = {
           (text) =>
           normalizeIdentifier(
             text,
-            "variavel"
-          )
-        ),
+          "variavel"
+        )
+      ),
         "NAME"
       )
       .appendField("tamanho");
@@ -122,6 +132,17 @@ Blockly.Blocks["stack_fixed"] = {
 
   onchange: function () {
     blockSameName(this);
+
+    const name = this.getFieldValue("NAME");
+    
+    if (hasDuplicateName(this.workspace, name, this.id)) {
+      this.setWarningText(
+        `Já existe uma variável/estrutura com o nome "${name}".`
+      );
+      return;
+    }
+
+    this.setWarningText(null);
   }
 };
 
@@ -251,5 +272,24 @@ Blockly.Blocks["stack_for_each"] = {
     this.setNextStatement(true);
 
     this.setColour(30);
+
+    this.setOnChange(function () {
+      const variableBlock = this.getInputTargetBlock("VARIABLE");
+      const name = variableBlock?.getFieldValue("VAR");
+
+      if (!name) {
+        this.setWarningText("Conecte uma variável no laço.");
+        return;
+      }
+
+      if (hasDuplicateName(this.workspace, name, this.id)) {
+        this.setWarningText(
+          `Já existe uma variável/estrutura com o nome "${name}".`
+        );
+        return;
+      }
+
+      this.setWarningText(null);
+    });
   }
 }

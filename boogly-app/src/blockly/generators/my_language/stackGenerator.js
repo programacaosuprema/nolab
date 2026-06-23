@@ -237,11 +237,11 @@ javascriptGenerator.forBlock["stack_for_each"] = function (block) {
       variableBlock.getFieldValue("VAR") || "item";
   }
   
-  const list = block.getFieldValue("QUEUE");
+  const stack  = block.getFieldValue("STACK");
   const statements = javascriptGenerator.statementToCode(block, "DO");
 
     return `
-      para_cada("${variable}", "${list}", function(${variable}) {
+      para_cada("${variable}", "${stack}", function(${variable}) {
         ${statements}
       })
     `;

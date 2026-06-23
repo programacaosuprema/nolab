@@ -1,38 +1,22 @@
 import CGenerator from "./CGeneratorBase";
 import { LINKED_LIST_HEADER } from "./headers/LinkedListHeader";
 
-/* ==========================================================
-   EXPRESSÕES
-   ========================================================== */
-
 CGenerator.forBlock["peek"] = function (block) {
-  const stack =
-    block.getFieldValue("STACK") || "pilha";
+  const stack = block.getFieldValue("STACK") || "pilha";
 
-  return [
-    `topo_pilha(&${stack})`,
-    CGenerator.ORDER_ATOMIC
-  ];
+  return [`topo_pilha(&${stack})`, CGenerator.ORDER_ATOMIC];
 };
 
 CGenerator.forBlock["stack_size"] = function (block) {
-  const stack =
-    block.getFieldValue("STACK") || "pilha";
+  const stack = block.getFieldValue("STACK") || "pilha";
 
-  return [
-    `tamanho_pilha(&${stack})`,
-    CGenerator.ORDER_ATOMIC
-  ];
+  return [`tamanho_pilha(&${stack})`, CGenerator.ORDER_ATOMIC];
 };
 
 CGenerator.forBlock["stack_empty"] = function (block) {
-  const stack =
-    block.getFieldValue("STACK") || "pilha";
+  const stack = block.getFieldValue("STACK") || "pilha";
 
-  return [
-    `pilha_vazia(&${stack})`,
-    CGenerator.ORDER_ATOMIC
-  ];
+  return [`pilha_vazia(&${stack})`, CGenerator.ORDER_ATOMIC];
 };
 
 export function generateStackC(workspace) {
@@ -51,10 +35,7 @@ export function generateStackC(workspace) {
 
   function addGeneratedCode(code, generated) {
 
-    const lines = generated
-      .trim()
-      .split("\n")
-      .filter(Boolean);
+    const lines = generated.trim().split("\n").filter(Boolean);
 
     for (const line of lines) {
       code = addLine(code, line);
@@ -63,19 +44,13 @@ export function generateStackC(workspace) {
     return code;
   }
 
-  function blockToCodeValue(
-    block,
-    defaultValue = "0"
-  ) {
+  function blockToCodeValue(block, defaultValue = "0") {
 
     if (!block) return defaultValue;
 
-    const result =
-      CGenerator.blockToCode(block);
+    const result = CGenerator.blockToCode(block);
 
-    return Array.isArray(result)
-      ? result[0]
-      : (result || defaultValue);
+    return Array.isArray(result) ? result[0] : (result || defaultValue);
   }
 
   const used = {
@@ -84,7 +59,8 @@ export function generateStackC(workspace) {
     pop: false,
     peek: false,
     size: false,
-    empty: false
+    empty: false,
+    for: false
   };
 
   let functions = "";
@@ -123,19 +99,21 @@ export function generateStackC(workspace) {
       case "stack_empty":
         used.empty = true;
         break;
+
+      case "stack_for_each":
+        used.for = true;
+        break;
     }
 
     for (const input of block.inputList || []) {
-      const child =
-        input.connection?.targetBlock();
+      const child = input.connection?.targetBlock();
 
       if (child) {
         markUsed(child);
       }
     }
 
-    const next =
-      block.getNextBlock();
+    const next = block.getNextBlock();
 
     if (next) {
       markUsed(next);
@@ -153,110 +131,62 @@ export function generateStackC(workspace) {
 
     while (current) {
 
-      /* CREATE */
+      if (current.type === "stack_container" || current.type === "stack_fixed") {
 
-      if (
-        current.type === "stack_container" ||
-        current.type === "stack_fixed"
-      ) {
+        const name = current.getFieldValue("NAME") || "pilha";
 
-        const name =
-          current.getFieldValue("NAME") ||
-          "pilha";
+        code = addLine(code, `Pilha ${name};`);
 
-        code = addLine(
-          code,
-          `Pilha ${name};`
-        );
-
-        code = addLine(
-          code,
-          `inicializar_pilha(&${name});`
-        );
+        code = addLine(code, `inicializar_pilha(&${name});`);
       }
 
       /* PUSH */
 
       if (current.type === "push") {
 
-        const valueBlock =
-          current.getInputTargetBlock(
-            "VALUE"
-          );
+        const valueBlock = current.getInputTargetBlock("VALUE");
 
-        const value =
-          blockToCodeValue(
-            valueBlock,
-            "0"
-          );
+        const value = blockToCodeValue(valueBlock, "0");
 
-        const stack =
-          current.getFieldValue("STACK") ||
-          "pilha";
+        const stack = current.getFieldValue("STACK") || "pilha";
 
-        code = addLine(
-          code,
-          `empilhar(&${stack}, ${value});`
-        );
+        code = addLine(code, `empilhar(&${stack}, ${value});`);
       }
 
       /* POP */
 
       if (current.type === "pop") {
+        const stack = current.getFieldValue("STACK") || "pilha";
 
-        const stack =
-          current.getFieldValue("STACK") ||
-          "pilha";
-
-        code = addLine(
-          code,
-          `desempilhar(&${stack});`
-        );
+        code = addLine(code,`desempilhar(&${stack});`);
       }
 
       if (current.type === "stack_for_each") {
-        const variableBlock =
-          current.getInputTargetBlock("VARIABLE");
+        const variableBlock = current.getInputTargetBlock("VARIABLE");
 
         let varName = "item";
 
         if (variableBlock) {
-          varName =
-            variableBlock.getFieldValue("VAR") ||
-            "item";
+          varName = variableBlock.getFieldValue("VAR") || "item";
         }
 
-        const list =
-          current.getFieldValue("LIST");
+        const list = current.getFieldValue("LIST");
 
-        code = addLine(
-          code,
-          `Nodo *aux_${varName} = ${list}.inicio;`
-        );
+        code = addLine(code, `Nodo *aux_${varName} = ${list}.inicio;`);
 
-        code = addLine(
-          code,
-          `while (aux_${varName} != NULL) {`
-        );
+        code = addLine(code, `while (aux_${varName} != NULL) {`);
 
         indentLevel++;
 
-        code = addLine(
-          code,
-          `int ${varName} = aux_${varName}->dado;`
-        );
+        code = addLine(code, `int ${varName} = aux_${varName}->dado;`);
 
-        const branch =
-          current.getInputTargetBlock("DO");
+        const branch = current.getInputTargetBlock("DO");
 
         if (branch) {
           code += generateBlock(branch);
         }
 
-        code = addLine(
-          code,
-          `aux_${varName} = aux_${varName}->proximo;`
-        );
+        code = addLine(code, `aux_${varName} = aux_${varName}->proximo;`);
 
         indentLevel--;
 
@@ -264,18 +194,13 @@ export function generateStackC(workspace) {
       }
 
       // 🔹 SHOW
-      if (
-        current.type === "stack_show" ||
-        current.type === "base_show"
-      ) {
+      if (current.type === "stack_show" || current.type === "base_show") {
         let text = '""';
         let value = "0";
 
-        const textBlock =
-          current.getInputTargetBlock("TEXT");
+        const textBlock = current.getInputTargetBlock("TEXT");
 
-        const valueBlock =
-          current.getInputTargetBlock("VALUE");
+        const valueBlock = current.getInputTargetBlock("VALUE");
 
         if (textBlock) {
           text = blockToCodeValue(textBlock, '""');
@@ -285,73 +210,42 @@ export function generateStackC(workspace) {
           value = blockToCodeValue(valueBlock, "0");
         }
 
-        code = addLine(
-          code,
-          `printf("%s %d\\n", ${text}, ${value});`
-        );
+        code = addLine(code, `printf("%s %d\\n", ${text}, ${value});`);
       }
 
       /* BASE INPUT */
 
-      if (
-        current.type === "base_input"
-      ) {
+      if (current.type === "base_input") {
 
-        const generated =
-          CGenerator.blockToCode(current);
+        const generated = CGenerator.blockToCode(current);
 
-        code =
-          addGeneratedCode(
-            code,
-            generated
-          );
+        code = addGeneratedCode(code, generated);
       }
 
       /* SHOW TEXT */
 
-      if (
-        current.type === "base_show_text"
-      ) {
+      if (current.type === "base_show_text") {
 
-        const generated =
-          CGenerator.blockToCode(current);
+        const generated = CGenerator.blockToCode(current);
 
-        code =
-          addGeneratedCode(
-            code,
-            generated
-          );
-      }
+        const codeText = Array.isArray(generated) ? generated[0] : generated;
+
+        code = addGeneratedCode(code, codeText);
+        }
 
       /* IF */
 
-      if (
-        current.type === "base_if"
-      ) {
+      if (current.type === "base_if") {
 
-        const conditionBlock =
-          current.getInputTargetBlock(
-            "CONDITION"
-          );
+        const conditionBlock = current.getInputTargetBlock("CONDITION");
 
-        const condition =
-          blockToCodeValue(
-            conditionBlock,
-            "0"
-          );
+        const condition = blockToCodeValue(conditionBlock, "0");
 
-        code =
-          addLine(
-            code,
-            `if (${condition}) {`
-          );
+        code = addLine(code,`if (${condition}) {`);
 
         indentLevel++;
 
-        const branch =
-          current.getInputTargetBlock(
-            "DO"
-          );
+        const branch = current.getInputTargetBlock("DO");
 
         if (branch) {
           code += generateBlock(branch);
@@ -359,42 +253,22 @@ export function generateStackC(workspace) {
 
         indentLevel--;
 
-        code =
-          addLine(
-            code,
-            `}`
-          );
+        code = addLine(code, `}`);
       }
 
       /* IF ELSE */
 
-      if (
-        current.type === "base_if_else"
-      ) {
+      if (current.type === "base_if_else") {
 
-        const conditionBlock =
-          current.getInputTargetBlock(
-            "CONDITION"
-          );
+        const conditionBlock = current.getInputTargetBlock("CONDITION");
 
-        const condition =
-          blockToCodeValue(
-            conditionBlock,
-            "0"
-          );
+        const condition = blockToCodeValue(conditionBlock, "0");
 
-        code =
-          addLine(
-            code,
-            `if (${condition}) {`
-          );
+        code = addLine(code, `if (${condition}) {`);
 
         indentLevel++;
 
-        const doBlock =
-          current.getInputTargetBlock(
-            "DO"
-          );
+        const doBlock = current.getInputTargetBlock("DO");
 
         if (doBlock) {
           code += generateBlock(doBlock);
@@ -402,18 +276,11 @@ export function generateStackC(workspace) {
 
         indentLevel--;
 
-        code =
-          addLine(
-            code,
-            `} else {`
-          );
+        code = addLine(code, `} else {`);
 
         indentLevel++;
 
-        const elseBlock =
-          current.getInputTargetBlock(
-            "ELSE"
-          );
+        const elseBlock = current.getInputTargetBlock("ELSE");
 
         if (elseBlock) {
           code += generateBlock(elseBlock);
@@ -421,15 +288,10 @@ export function generateStackC(workspace) {
 
         indentLevel--;
 
-        code =
-          addLine(
-            code,
-            `}`
-          );
+        code = addLine(code, `}`);
       }
 
-      current =
-        current.getNextBlock();
+      current = current.getNextBlock();
     }
 
     return code;
@@ -439,13 +301,7 @@ export function generateStackC(workspace) {
      BLOCO PRINCIPAL
      ========================================================== */
 
-  const blocks =
-    workspace.getTopBlocks(true)
-      .filter(
-        b =>
-          b.type ===
-          "stack_run_program"
-      );
+  const blocks = workspace.getTopBlocks(true).filter(b => b.type === "stack_run_program");
 
   if (!blocks.length) {
     return "";
@@ -453,8 +309,7 @@ export function generateStackC(workspace) {
 
   for (const block of blocks) {
 
-    const first =
-      block.getInputTargetBlock("DO");
+    const first = block.getInputTargetBlock("DO");
 
     if (first) {
       markUsed(first);
@@ -465,8 +320,7 @@ export function generateStackC(workspace) {
 
   for (const block of blocks) {
 
-    const first =
-      block.getInputTargetBlock("DO");
+    const first = block.getInputTargetBlock("DO");
 
     if (first) {
       main += generateBlock(first);
@@ -477,8 +331,7 @@ export function generateStackC(workspace) {
      HEADER
      ========================================================== */
 
-const header =
-  LINKED_LIST_HEADER;
+  const header = LINKED_LIST_HEADER;
 
   /* ==========================================================
      FUNÇÕES DA PILHA

@@ -26,7 +26,7 @@ export default function Header({ structure }) {
     ? user.nickname.toUpperCase()
     : "VISITANTE";
 
-  const points = user?.points ?? 0;
+  //const points = user?.points ?? 0;
 
   async function handleLogout() {
     try {

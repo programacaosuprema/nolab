@@ -47,7 +47,7 @@ export default function QueueVisualizer({ data, step }) {
 
   return (
     <div className="flex flex-col gap-8">
-      {Object.entries(safeData).map(([name, queue]) => {
+      {Object.entries(safeData).filter(([name]) => name !== "variables").map(([name, queue]) => {
         const safeQueue = Array.isArray(queue) ? queue : [];
 
         // Só existe destaque vermelho no passo de highlight_remove

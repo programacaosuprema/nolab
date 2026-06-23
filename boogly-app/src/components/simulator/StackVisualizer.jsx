@@ -27,7 +27,7 @@ export default function StackVisualizer({ data }) {
 
   // 🔒 sanitização global
   const safeData =
-    data && typeof data === "object" && !Array.isArray(data)
+    data && typeof data === "object" && !Array.isArray(data) 
       ? data
       : {};
 
@@ -44,7 +44,7 @@ export default function StackVisualizer({ data }) {
 
   return (
     <div className="flex flex-col gap-8 items-center">
-      {Object.entries(safeData).map(([name, stack]) => {
+      {Object.entries(safeData).filter(([name]) => name !== "variables").map(([name, stack]) => {
 
         // 🔒 garante array
         const safeStack = Array.isArray(stack) ? stack : [];

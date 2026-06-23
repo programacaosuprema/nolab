@@ -52,7 +52,7 @@ export default function ListVisualizer({ data, step }) {
 
   return (
     <div className="flex flex-col gap-8">
-      {Object.entries(safeData).map(([name, list]) => {
+      {Object.entries(safeData).filter(([name]) => name !== "variables").map(([name, list]) => {
 
         // 🔒 garante array
         const safeList = Array.isArray(list) ? list : [];

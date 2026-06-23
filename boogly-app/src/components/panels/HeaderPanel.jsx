@@ -76,17 +76,20 @@ export default function Header({ structure }) {
           modo: <span className="font-semibold">{mode}</span>
         </div>
 
-        {/* ⭐ PONTOS */}
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm"
-          style={{
-            background: theme.card,
-            border: `1px solid ${theme.border}`
-          }}
-        >
-          <Star className="w-4 h-4" style={{ color: theme.warning }} />
-          {points} pontos
-        </div>
+        {
+          /*
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm"
+              style={{
+                background: theme.card,
+                border: `1px solid ${theme.border}`
+              }}
+            >
+              <Star className="w-4 h-4" style={{ color: theme.warning }} />
+              {points} pontos
+            </div> 
+          */
+        }
 
         {/* 🎯 DESAFIOS */}
         {!isChallengePage && (
@@ -100,13 +103,14 @@ export default function Header({ structure }) {
           </ActionButton>
         )}
 
-        {/* 🏆 RANKING */}
-        <ActionButton
-          icon={Trophy}
-          onClick={() => navigate("/app/ranking")}
-        >
-          ranking
-        </ActionButton>
+        {/*
+          <ActionButton
+            icon={Trophy}
+            onClick={() => navigate("/app/ranking")}
+          >
+            ranking
+          </ActionButton>
+        */}
 
         {/* 🎨 THEME */}
         <select

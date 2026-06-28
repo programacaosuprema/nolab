@@ -131,6 +131,7 @@ Blockly.Blocks["queue_fixed"] = {
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
+    this.setInputsInline(true);
     this.setColour(130);
   },
 

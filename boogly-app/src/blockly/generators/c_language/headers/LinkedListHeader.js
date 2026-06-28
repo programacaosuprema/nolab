@@ -1,4 +1,5 @@
-export const LINKED_LIST_HEADER = `
+export function linkedListHeader() {
+    const LINKED_LIST_HEADER = `
 #include <stdio.h>
 #include <malloc.h>
 
@@ -13,7 +14,7 @@ typedef No *Ponteiro;
 
 typedef struct {
     int tamanho;
-    No *primeiro;
+    No *primeiro;   
 } Lista;
 
 const Elemento VALOR_NULO = 0;
@@ -24,9 +25,9 @@ typedef Lista ListaEncadeada;
    LISTA ENCADEADA
    ================================================== */
 
-void inicializar_lista(ListaEncadeada *lista) {
+void inicializar_lista(ListaEncadeada *lista, int tamanho_da_lista) {
     lista->primeiro = NULL;
-    lista->tamanho = 0;
+    lista->tamanho = tamanho_da_lista;
 }
 
 int inserir_elemento(ListaEncadeada *lista, int posicao, Elemento elemento) {
@@ -108,3 +109,6 @@ int obter_elemento(ListaEncadeada lista, int posicao, Elemento *e) {
 }
 
 `;
+
+  return LINKED_LIST_HEADER;
+}

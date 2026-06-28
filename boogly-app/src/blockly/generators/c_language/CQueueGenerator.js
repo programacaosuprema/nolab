@@ -1,5 +1,9 @@
 import CGenerator from "./CGeneratorBase";
-import { LINKED_LIST_HEADER } from "./headers/LinkedListHeader";
+import { linkedListHeader }  from "./headers/LinkedListHeader";
+
+//precisa mudar o cabeçalho de LINKED_LIST_HEADER
+
+let listSize = 0;
 
 // 🔹 EXPRESSÕES (retornam valores)
 CGenerator.forBlock["queue_front"] = function (block) {
@@ -123,6 +127,11 @@ export function generateQueueC(workspace) {
       // 🔹 QUEUE FIXED
       // (mantém mesma implementação da fila simples)
       if (current.type === "queue_fixed") {
+        const sizeBlock = current.getInputTargetBlock("SIZE");
+        const size = blockToCodeValue(sizeBlock, "0");
+
+        listSize = size;
+
         const name = current.getFieldValue("NAME") || "fila";
 
         used.create = true;
@@ -340,8 +349,7 @@ export function generateQueueC(workspace) {
   // 🔹 HEADER
 // Fila implementada como adaptação da Lista Encadeada
 // baseada no material enviado :contentReference[oaicite:0]{index=0}
-    const header =
-      LINKED_LIST_HEADER;
+    const header = linkedListHeader();
 
       // 🔹 FUNÇÕES CONDICIONAIS
 
@@ -352,7 +360,7 @@ typedef ListaEncadeada Fila;
 if (used.create) {
   functions += `
 void inicializar_fila(Fila *f) {
-    inicializar_lista(f);
+    inicializar_lista(f, ${listSize});
 }
 `;
 }

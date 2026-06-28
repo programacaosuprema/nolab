@@ -1,5 +1,7 @@
 import CGenerator from "./CGeneratorBase";
-import { LINKED_LIST_HEADER } from "./headers/LinkedListHeader";
+import { linkedListHeader }  from "./headers/LinkedListHeader";
+
+let listSize = 0; 
 
 CGenerator.forBlock["peek"] = function (block) {
   const stack = block.getFieldValue("STACK") || "pilha";
@@ -138,6 +140,12 @@ export function generateStackC(workspace) {
         code = addLine(code, `Pilha ${name};`);
 
         code = addLine(code, `inicializar_pilha(&${name});`);
+
+        if (current.type === "stack_fixed"){
+          const sizeBlock = current.getInputTargetBlock("SIZE");
+          const size = blockToCodeValue(sizeBlock, "0");
+          listSize = size;
+        }
       }
 
       /* PUSH */
@@ -331,7 +339,7 @@ export function generateStackC(workspace) {
      HEADER
      ========================================================== */
 
-  const header = LINKED_LIST_HEADER;
+  const header = linkedListHeader();
 
   /* ==========================================================
      FUNÇÕES DA PILHA
@@ -340,8 +348,7 @@ export function generateStackC(workspace) {
   if (used.create) {
     functions += `
 void inicializar_pilha(Pilha *p) {
-    p->primeiro = NULL;
-    p->tamanho = 0;
+    inicializar_lista(p, ${listSize});
 }
 `;
   }

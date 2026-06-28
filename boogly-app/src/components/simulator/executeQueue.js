@@ -16,6 +16,11 @@ function resolveCondition(condition, simulator) {
     );
   }
 
+  parsed = parsed.replace(
+    /tamanho_fila\("(.+?)"\)/g,
+    (_, queueName) => simulator.tamanho_fila(queueName)
+);
+
   return parsed;
 }
 
@@ -88,6 +93,14 @@ function resolveArg(arg, simulator) {
       value.match(/get_var\("(.+)"\)/)?.[1];
 
     return simulator.get_var(name);
+  }
+
+  if (value.startsWith("tamanho_fila(")) {
+
+    const queueName =
+        value.match(/tamanho_fila\("(.+?)"\)/)?.[1];
+
+    return simulator.tamanho_fila(queueName);
   }
 
   // ==========================================================

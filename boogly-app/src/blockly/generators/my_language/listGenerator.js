@@ -61,7 +61,7 @@ javascriptGenerator.forBlock["list_size"] = function (block) {
 
   const listName = block.getFieldValue("LIST");
 
-  return [`tamanho("${listName}")`, javascriptGenerator.ORDER_NONE];
+  return [`tamanho_lista("${listName}")`, javascriptGenerator.ORDER_NONE];
 };
 
 javascriptGenerator.forBlock["list_is_empty"] = function (block) {

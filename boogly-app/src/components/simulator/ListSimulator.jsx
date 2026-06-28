@@ -276,10 +276,36 @@ export class ListSimulator {
     });
   }
 
-  tamanho(nome) {
-    const list = this.getList(nome);
-    return list ? list.data.length : 0;
-  }
+  snapshot() {
+    return this.getState();
+}
+
+  tamanho_lista(name) {
+
+    const list = this.lists[name];
+
+    if (!list) {
+
+        this.steps.push({
+            type: "warning",
+            message: `Lista ${name} não existe.`,
+            state: this.snapshot()
+        });
+
+        return 0;
+    }
+
+    const size = list.data.length;
+
+    this.steps.push({
+        type: "size",
+        value: size,
+        message: `Tamanho da lista ${name}: ${size}`,
+        state: this.snapshot()
+    });
+
+    return size;
+}
 
   ta_vazia(nome) {
     const list = this.getList(nome);

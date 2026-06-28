@@ -41,6 +41,33 @@ export class StackSimulator {
       return this.getState();
   }
 
+  tamanho_pilha(name) {
+
+        const stack = this.stacks[name];
+
+        if (!stack) {
+
+            this.steps.push({
+                type: "warning",
+                message: `Pilha ${name} não existe.`,
+                state: this.snapshot()
+            });
+
+            return 0;
+        }
+
+        const size = stack.length;
+
+        this.steps.push({
+            type: "size",
+            value: size,
+            message: `Tamanho da pilha ${name}: ${size}`,
+            state: this.snapshot()
+        });
+
+        return size;
+    }
+
   criar_pilha(name) {
 
     this.stacks[name] = [];

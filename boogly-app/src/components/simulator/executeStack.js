@@ -20,6 +20,11 @@ function resolveCondition(condition, simulator) {
 
   }
 
+  parsed = parsed.replace(
+      /tamanho_pilha\("(.+?)"\)/g,
+      (_, stackName) => simulator.tamanho_pilha(stackName)
+  );
+
   return parsed;
 }
 
@@ -94,6 +99,14 @@ function resolveArg(arg, simulator) {
     value =
       value.slice(1, -1).trim();
 
+  }
+
+  if (value.startsWith("tamanho_pilha(")) {
+
+      const stackName =
+          value.match(/tamanho_pilha\("(.+?)"\)/)?.[1];
+
+      return simulator.tamanho_pilha(stackName);
   }
 
   // get_var("x")

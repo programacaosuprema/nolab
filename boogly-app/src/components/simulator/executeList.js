@@ -1,17 +1,25 @@
 import { ListSimulator } from "./ListSimulator";
 
 function resolveCondition(condition, simulator) {
+
   let parsed = condition;
 
-  // 🔥 substitui variáveis simples
+  // substitui variáveis
   for (const key in simulator.variables) {
-    const value = simulator.variables[key];
-
     parsed = parsed.replace(
       new RegExp(`\\b${key}\\b`, "g"),
-      value
+      simulator.variables[key]
     );
   }
+
+  // resolve tamanho_lista(...)
+  parsed = parsed.replace(
+    /tamanho_lista\("(.+?)"\)/g,
+    (_, listName) => simulator.tamanho_lista(listName)
+  );
+
+  console.log(parsed);
+  console.log("Olá")
 
   return parsed;
 }
@@ -55,6 +63,13 @@ function resolveArg(arg, simulator) {
       value.match(/get_var\("(.+)"\)/)?.[1];
 
     return simulator.get_var(name);
+  }
+
+   if (value.startsWith("tamanho_lista(")) {
+
+    const list = value.match(/tamanho_lista\("(.+)"\)/)?.[1];
+
+    return simulator.tamanho_lista(list);
   }
 
   // ======================
@@ -139,14 +154,10 @@ function executeBlock(
 
       try {
 
-        const parsedCondition =
-          resolveCondition(
-            condition,
-            simulator
-          );
+        const parsedCondition = resolveCondition(condition, simulator);
+        console.log("CONDIÇÃO:", parsedCondition);
 
-        result =
-          eval(parsedCondition);
+        result = eval(parsedCondition);
 
         simulator.steps.push({
           type: "condition",
@@ -160,18 +171,18 @@ function executeBlock(
             simulator.getState()
         });
 
-      } catch {
+      } catch (e) {
 
-        result = false;
+    console.error(e);
 
-        simulator.steps.push({
-          type: "error",
-          message:
-            `erro ao testar condição`,
-          state:
-            simulator.getState()
-        });
-      }
+    simulator.steps.push({
+        type: "error",
+        message: e.message,
+        state: simulator.getState()
+    });
+
+    result = false;
+}
 
       conditionStack.push({
         result,

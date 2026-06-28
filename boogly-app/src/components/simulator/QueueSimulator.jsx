@@ -110,6 +110,10 @@ export class QueueSimulator {
     });
   }
 
+  snapshot() {
+    return this.getState();
+  }
+
   desenfileirar(name) {
     if (!this.queues[name] || this.queues[name].length === 0) return;
 
@@ -147,13 +151,27 @@ export class QueueSimulator {
   }
 
   tamanho_fila(name) {
-    const size = this.queues[name]?.length || 0;
+
+    const queue = this.queues[name];
+
+    if (!queue) {
+
+        this.steps.push({
+            type: "warning",
+            message: `Fila ${name} não existe.`,
+            state: this.snapshot()
+        });
+
+        return 0;
+    }
+
+    const size = queue.length;
 
     this.steps.push({
-      type: "size",
-      value: size,
-      message: `Tamanho da fila ${name}: ${size}`,
-      state: this.snapshot()
+        type: "size",
+        value: size,
+        message: `Tamanho da fila ${name}: ${size}`,
+        state: this.snapshot()
     });
 
     return size;
@@ -170,9 +188,5 @@ export class QueueSimulator {
     });
 
     return empty;
-  }
-
-  snapshot() {
-    return this.getState();
   }
 }

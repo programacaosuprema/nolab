@@ -134,7 +134,7 @@ Blockly.Blocks["base_compare"] = {
   init: function () {
     this.appendValueInput("A")
       // 🔥 Aceita qualquer bloco que retorne "Value"
-      .setCheck(["Value", "Variable"]);
+      .setCheck(["Value", "Variable", "Number"]);
 
     this.appendDummyInput()
       .appendField(

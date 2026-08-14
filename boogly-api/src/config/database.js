@@ -6,9 +6,7 @@ export const connectDB = async () => {
       throw new Error("MONGO_URI não definida");
     }
 
-    await mongoose.connect(process.env.MONGO_URI, {
-      dbName: process.env.DB_NAME || "boogly",
-    });
+    await mongoose.connect(process.env.MONGO_URI);
 
     console.log("✅ MongoDB conectado");
 

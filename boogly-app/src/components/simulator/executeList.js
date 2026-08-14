@@ -18,9 +18,6 @@ function resolveCondition(condition, simulator) {
     (_, listName) => simulator.tamanho_lista(listName)
   );
 
-  console.log(parsed);
-  console.log("Olá")
-
   return parsed;
 }
 

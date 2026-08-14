@@ -253,3 +253,48 @@ Blockly.Blocks["base_show"] = {
     this.setHelpUrl("");
   }
 };
+
+//arithmetic
+
+Blockly.Blocks["base_arithmetic"] = {
+  init: function () {
+    this.appendValueInput("A")
+      // 🔥 Aceita qualquer bloco que retorne "Value"
+      .setCheck(["Value", "Variable", "Number"]);
+
+    this.appendDummyInput()
+      .appendField(
+        new Blockly.FieldDropdown([
+          ["+", "+"],
+          ["-", "-"],
+          ["*", "*"],
+          ["/", "/"]
+        ]),
+        "OP"
+      );
+
+    this.appendValueInput("B")
+      // 🔥 Aceita qualquer bloco que retorne "Value"
+      .setCheck(["Value", "Variable", "Number"]);
+
+    this.setInputsInline(true);
+
+    // 🔥 Resultado da comparação é booleano
+    this.setOutput(true, "Boolean");
+
+    this.setColour(210);
+
+    this.setOnChange(function () {
+      const a = this.getInputTargetBlock("A");
+      const b = this.getInputTargetBlock("B");
+
+      if (!a || !b) {
+        this.setWarningText(
+          "Preencha os dois lados da aritmética"
+        );
+      } else {
+        this.setWarningText(null);
+      }
+    });
+  }
+};

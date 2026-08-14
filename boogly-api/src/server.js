@@ -7,8 +7,15 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 (async () => {
-  await connectDB();
-  app.listen(PORT, () => {
-    console.log(`🚀 Server on http://localhost:${PORT}`);
-  });
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server on port ${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("❌ Erro ao iniciar o servidor:", error);
+    process.exit(1); // importante pra mostrar erro no Railway
+  }
 })();

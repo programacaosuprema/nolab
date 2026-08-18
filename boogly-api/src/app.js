@@ -8,12 +8,18 @@ import userRoutes from "./routes/user.routes.js"
 const app = express();
 
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://nolab-mbozxrqie-nolab1.vercel.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    if (
+      origin.includes("localhost") ||
+      origin.includes("vercel.app")
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS bloqueado"));
+  }
 }));
 
 app.use(express.json());

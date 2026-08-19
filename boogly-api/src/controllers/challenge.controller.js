@@ -2,13 +2,21 @@ import * as service from "../services/challenge.service.js";
 import { Challenge } from "../models/challenge.model.js"; // 🔥 ajuste o caminho
 import mongoose from "mongoose";
 
-// 🔥 CRIAR DESAFIO
 export const create = async (req, res) => {
   try {
-    const challenge = await service.createChallenge(req.body);
-    res.status(201).json(challenge);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const { title, description, testCases, rules, difficulty } = req.body;
+
+    const challenge = await Challenge.create({
+      title,
+      description,
+      testCases,
+      rules,
+      difficulty
+    });
+
+    res.json(challenge);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 

@@ -7,6 +7,7 @@ import { ErrorPage } from "../pages/ErrorPage";
 
 import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
+import { useLocation } from "react-router-dom";
 
 export default function ChallengePage() {
   const [challenges, setChallenges] = useState([]);
@@ -19,14 +20,19 @@ export default function ChallengePage() {
 
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const structure =
+  location.state?.structure ||
+  new URLSearchParams(location.search).get("structure") ||
+  "list";
+
   useEffect(() => {
+    setLoading(true);  
+    setHasError(false);  
+
     async function loadChallenges() {
       try {
-        const res = await fetch(`${domainUrl}/challenges`, {
-          headers: {
-            Authorization: "Bearer TOKEN_AQUI"
-          }
-        });
+        const res = await fetch(`${domainUrl}/challenges?structure=${structure}`);
 
         if (!res.ok) {
           throw new Error("Erro ao carregar desafios");
@@ -52,7 +58,7 @@ export default function ChallengePage() {
     }
 
     loadChallenges();
-  }, [domainUrl, showError]);
+  }, [domainUrl, showError, structure]);
 
   // 🔥 LOADING
   if (loading) return <LoadingPage />;

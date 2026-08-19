@@ -5,6 +5,7 @@ import { useTheme } from "../../theme/useTheme";
 import ActionButton from "../../components/ui/ActionButton";
 import { LogOut, Trophy, Target, Star } from "lucide-react";
 
+
 const STRUCTURE_LABELS = {
   list: "Lista",
   stack: "Pilha",
@@ -51,7 +52,12 @@ export default function Header({ structure }) {
 
         <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-md" />
 
-        <h1 className="text-lg font-semibold">
+        <h1
+          className="text-lg font-semibold"
+          style={{
+            color: themeName === "dark" ? "#3b82f6" : theme.primary
+          }}
+        >
           {(appName || "APP").toUpperCase()}
         </h1>
 
@@ -95,7 +101,7 @@ export default function Header({ structure }) {
         {!isChallengePage && (
           <ActionButton
             onClick={() =>
-              navigate("/app/challenges", { state: { structure } })
+              navigate(`/app/challenges?structure=${structure}`)
             }
             icon={Target}
           >

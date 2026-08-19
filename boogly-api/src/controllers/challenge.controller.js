@@ -15,20 +15,33 @@ export const create = async (req, res) => {
 // 🔥 LISTAR DESAFIOS (COM STATUS + RESOLUÇÕES)
 export const getAll = async (req, res) => {
   try {
-    // 🔥 se tiver auth real:
-    const userId = req.user?.id || null;
+    const { structure, difficulty } = req.query;
 
-    const challenges = await service.getAllChallenges(userId);
+    const filter = {};
 
-    res.json(challenges);
+    // 🔥 filtro por estrutura
+    if (structure) {
+      filter.structure = structure;
+    }
+
+    // 🔥 filtro opcional por dificuldade
+    if (difficulty) {
+      filter.difficulty = difficulty;
+    }
+
+    const challenges = await Challenge.find(filter);
+
+    return res.json(challenges);
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
 export const getChallenge = async (req, res) => {
   try {
     const { id } = req.params;
+    const { structure } = req.query; // 👈 opcional
 
     let challenge;
 
@@ -42,7 +55,15 @@ export const getChallenge = async (req, res) => {
       return res.status(404).json({ error: "Challenge not found" });
     }
 
+    // 🔥 valida estrutura (opcional)
+    if (structure && challenge.structure !== structure) {
+      return res.status(400).json({
+        error: "Estrutura não corresponde ao desafio"
+      });
+    }
+
     res.json(challenge);
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

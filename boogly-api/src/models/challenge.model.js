@@ -54,6 +54,13 @@ const challengeSchema = new mongoose.Schema({
     maxlength: 2000
   },
 
+  structure: {
+    type: String,
+    enum: ["list", "stack", "queue"],
+    required: true,
+    index: true
+  },
+
   testCases: {
     type: [testCaseSchema],
     required: true,

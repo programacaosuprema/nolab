@@ -4,11 +4,12 @@ import mongoose from "mongoose";
 
 export const create = async (req, res) => {
   try {
-    const { title, description, testCases, rules, difficulty } = req.body;
+    const { title, description, structure, testCases, rules, difficulty } = req.body;
 
     const challenge = await Challenge.create({
       title,
       description,
+      structure,
       testCases,
       rules,
       difficulty

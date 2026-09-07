@@ -123,9 +123,6 @@ export default function BlocklyEditor({
                   javascriptGenerator.workspaceToCode(
                     workspaceRef.current
                   ) || "";
-
-                console.log("🟡 JS GERADO:");
-                console.log(codeJS);
               } catch (err) {
                 showError({
                   message:

@@ -1,5 +1,4 @@
-// src/components/panels/CodePanel.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { useTheme } from "../../theme/useTheme";
 import ActionButton from "../ui/ActionButton";
@@ -8,6 +7,7 @@ import { Download, Clipboard } from "lucide-react";
 export default function CodePanel({ cCode }) {
   const [language, setLanguage] = useState("c");
   const [copied, setCopied] = useState(false);
+  const editorRef = useRef(null);
 
   const { theme } = useTheme();
 
@@ -109,11 +109,19 @@ export default function CodePanel({ cCode }) {
           language={language}
           theme={theme.editor}
           value={cCode || ""}
+          onMount={(editor) => {
+            editorRef.current = editor;
+
+            // 🔥 força recalcular layout
+            setTimeout(() => {
+              editor.layout();
+            }, 50);
+          }}
           options={{
             readOnly: true,
             minimap: { enabled: false },
             fontSize: 14,
-            fontFamily: "Fira Code, monospace", // 🔥 melhora visual
+            fontFamily: "Fira Code, monospace",
             wordWrap: "on",
             automaticLayout: true,
             scrollBeyondLastLine: false,

@@ -15,17 +15,7 @@ import { generateC } from "../../blockly/generators/c_language/CGenerateDispatch
 import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
 
-/**
- * ChallengeBlocklyEditor
- *
- * Props:
- * - toolbox: objeto com categorias (toolbox.list, toolbox.state, etc.) ou toolbox completo
- * - structure (opcional): "list" | "queue" | "stack" — se fornecido, define as bolinhas
- * - setCode, setCCode, setBlockCount
- * - onRun(commands)  -> chamada quando o usuário aperta Testar solução
- *
- * Importante: NÃO HÁ salvamento/recuperação automática aqui.
- */
+import CodePanel from "../panels/CodePanel";
 
 function CategoryButton({ label, active, onClick, theme }) {
   return (
@@ -91,7 +81,7 @@ function resolveValueFromBlock(block) {
       const n = Number(val);
       if (!Number.isNaN(n)) return n;
     }
-  }
+    }
 
   // fallback: try to generate JS and parse number
   try {
@@ -187,6 +177,8 @@ export default function ChallengeBlocklyEditor({
   const [toolboxVisible, setToolboxVisible] = useState(true);
   const [blockCountLocal, setBlockCountLocal] = useState(0);
   const [running, setRunning] = useState(false);
+  const [view, setView] = useState("editor"); 
+  const [localCCode, setLocalCCode] = useState("");
 
   const detectedStructure = propStructure || detectStructureFromToolbox(toolbox);
   const categoriesByStructure = {
@@ -245,6 +237,7 @@ export default function ChallengeBlocklyEditor({
           let codeJS = "";
           try {
             codeJS = javascriptGenerator.workspaceToCode(ws) || "";
+            console.log(codeJS);
             setCode && setCode(codeJS);
           } catch (err) {
             // non-fatal: still set empty
@@ -253,8 +246,10 @@ export default function ChallengeBlocklyEditor({
 
           // C
           try {
-            const codeC = generateC(ws) || "";
+            const codeC = generateC(ws, propStructure) || "";
             setCCode && setCCode(codeC);
+            
+            setLocalCCode(codeC);
           } catch (err) {
             setCCode && setCCode("");
           }
@@ -368,9 +363,6 @@ export default function ChallengeBlocklyEditor({
       // extrai comandos
       const commands = extractCommandsFromWorkspace(ws);
 
-      
-console.log("🔥 COMMANDS:", commands); 
-      // chama parent
       await onRun?.(commands);
     } catch (err) {
       showError({ message: err.message || "Erro ao executar" });
@@ -380,127 +372,154 @@ console.log("🔥 COMMANDS:", commands);
   }
 
   return (
-  <div
-    className="flex h-full w-full rounded-xl"
-    style={{
-      background: theme.workspace,
-      color: theme.text,
-      fontSize: theme.typography.body.fontSize
-    }}
-  >
-    {/* SIDEBAR */}
     <div
-      className="flex flex-col items-center"
+      className="flex h-full w-full rounded-xl"
       style={{
-        width: "56px",
-        gap: theme.spacing.sm,
-        padding: theme.spacing.sm,
-        background: theme.toolbox,
-        borderRight: `1px solid ${theme.border}`
+        background: theme.workspace,
+        color: theme.text,
+        fontSize: theme.typography.body.fontSize
       }}
     >
-      {(categoriesByStructure[detectedStructure] || []).map(([key, label]) => (
-        <CategoryButton
-          key={key}
-          label={label}
-          active={category === key}
-          onClick={() => setCategory(key)}
-          theme={theme}
-        />
-      ))}
-    </div>
-
-    {/* WORKSPACE + HEADER */}
-    <div className="flex-1 flex flex-col">
-      
-      {/* HEADER */}
+      {/* SIDEBAR */}
       <div
-        className="flex justify-between items-center"
+        className="flex flex-col items-center"
         style={{
-          padding: theme.spacing.md,
-          background: theme.header,
-          borderBottom: `1px solid ${theme.border}`,
-          color: theme.text
+          width: "56px",
+          gap: theme.spacing.sm,
+          padding: theme.spacing.sm,
+          background: theme.toolbox,
+          borderRight: `1px solid ${theme.border}`
         }}
       >
-        <div className="flex items-center" style={{ gap: theme.spacing.md }}>
-          <div
-            style={{
+        {(categoriesByStructure[detectedStructure] || []).map(([key, label]) => (
+          <CategoryButton
+            key={key}
+            label={label}
+            active={category === key}
+            onClick={() => {
+              if (view !== "editor") return; // 🔥 trava
+              setCategory(key);
+            }}
+            theme={theme}
+          />
+        ))}
+      </div>
+
+      {/* WORKSPACE + HEADER */}
+      <div className="flex-1 flex flex-col">
+        
+        {/* HEADER */}
+        <div
+          className="flex justify-between items-center"
+          style={{
+            padding: theme.spacing.md,
+            background: theme.header,
+            borderBottom: `1px solid ${theme.border}`,
+            color: theme.text
+          }}
+        >
+          <div className="flex items-center" style={{ gap: theme.spacing.md }}>
+            <div style={{
               padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
               borderRadius: "999px",
               background: theme.primary,
               color: "#fff",
               ...theme.typography.h3
-            }}
-          >
-            Área de Programação
+            }}>
+              Área de Programação
+            </div>
+
+            {/* 🔥 NOVO TOGGLE */}
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
+                onClick={() => setView("editor")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  background: view === "editor" ? theme.primary : theme.card,
+                  color: view === "editor" ? "#fff" : theme.text,
+                  border: `1px solid ${theme.border}`,
+                  cursor: "pointer"
+                }}
+              >
+                🧱 Editor
+              </button>
+
+              <button
+                onClick={() => setView("code")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  background: view === "code" ? theme.primary : theme.card,
+                  color: view === "code" ? "#fff" : theme.text,
+                  border: `1px solid ${theme.border}`,
+                  cursor: "pointer"
+                }}
+              >
+                💻 Código
+              </button>
+            </div>
+          </div>
+          { view === "editor" && (
+            <div className="flex items-center" style={{ gap: theme.spacing.sm }}>
+              <button
+                onClick={() => setToolboxVisible(!toolboxVisible)}
+                style={{
+                  padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                  borderRadius: "8px",
+                  background: theme.primary,
+                  color: "#fff",
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                {toolboxVisible ? "📂 Ocultar Blocos" : "📁 Mostrar Blocos"}
+              </button>
+
+              <button
+                onClick={handleRun}
+                style={{
+                  padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                  borderRadius: "8px",
+                  background: theme.primary,
+                  color: "#fff",
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}
+              >
+                {running ? "Executando..." : "▶ Testar solução"}
+              </button>
+            </div>
+          )}
+          
+        </div>
+
+        <div className="flex-1 relative">
+          <div
+            style={{
+              position: "absolute",
+              top: theme.spacing.sm,
+              right: theme.spacing.sm,
+              padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+              borderRadius: "8px",
+              background: theme.card,
+              color: theme.text,
+              border: `1px solid ${theme.border}`,
+              zIndex: 50,
+              ...theme.typography.small
+            }}>
+            🧩 {blockCountLocal} blocos
+          </div>
+      
+          <div className={`absolute inset-0 ${ view === "editor" ? "block" : "hidden"}`}>
+            <div ref={blocklyDiv} className="h-full w-full" />
           </div>
 
-          <span
-            style={{
-              color: theme.muted,
-              ...theme.typography.small
-            }}
-          >
-            arraste e conecte os blocos
-          </span>
+          <div className={`absolute inset-0 ${ view === "code" ? "block" : "hidden"}`}>
+            <CodePanel cCode={localCCode} />
+          </div>
         </div>
-
-        <div className="flex items-center" style={{ gap: theme.spacing.sm }}>
-          <button
-            onClick={() => setToolboxVisible(!toolboxVisible)}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              borderRadius: "8px",
-              background: theme.primary,
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
-          >
-            {toolboxVisible ? "📂 Ocultar Blocos" : "📁 Mostrar Blocos"}
-          </button>
-
-          <button
-            onClick={handleRun}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-              borderRadius: "8px",
-              background: theme.primary,
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
-          >
-            {running ? "Executando..." : "▶ Testar solução"}
-          </button>
-        </div>
-      </div>
-
-      {/* WORKSPACE */}
-      <div className="flex-1 relative">
-        
-        {/* CONTADOR DE BLOCOS */}
-        <div
-          style={{
-            position: "absolute",
-            top: theme.spacing.sm,
-            right: theme.spacing.sm,
-            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-            borderRadius: "8px",
-            background: theme.card,
-            color: theme.text,
-            border: `1px solid ${theme.border}`,
-            zIndex: 50,
-            ...theme.typography.small
-          }}
-        >
-          🧩 {blockCountLocal} blocos
-        </div>
-
-        <div ref={blocklyDiv} className="h-full w-full" />
       </div>
     </div>
-  </div>
-);
+  );
 }

@@ -1,10 +1,11 @@
-// src/components/header/Header.jsx
+import { useState } from "react";
 import { useApp } from "../../app_configuration/useApp";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../autenticator/useAuth";
 import { useTheme } from "../../theme/useTheme";
 import ActionButton from "../../components/ui/ActionButton";
-import { LogOut, Trophy, Target, Star } from "lucide-react";
+import { LogOut, Target, User } from "lucide-react";
+import StudentProfileModal from "../modals/StudentProfileModal"
 
 const STRUCTURE_LABELS = {
   list: "Lista",
@@ -21,9 +22,7 @@ export default function Header({ structure }) {
 
   const mode = STRUCTURE_LABELS[structure] || "Lista";
   const isChallengePage = location.pathname.startsWith("/app/challenges");
-
-  // 🔒 nickname seguro
-  const nickname = user?.nickname ? user.nickname.toUpperCase() : "VISITANTE";
+  const [open, setOpen] = useState(false);
 
   async function handleLogout() {
     try {
@@ -75,11 +74,6 @@ export default function Header({ structure }) {
       {/* 🔥 DIREITA */}
       <div className="flex items-center gap-3">
 
-        {/* 👤 USER */}
-        <span>
-          👤 {nickname}
-        </span>
-
         {/* 🎮 MODO */}
         <div
           className="px-4 py-2 rounded-full text-sm"
@@ -90,6 +84,16 @@ export default function Header({ structure }) {
         >
           modo: <span className="font-semibold">{mode}</span>
         </div>
+
+        <ActionButton onClick={() => setOpen(true)} icon={User}>
+          {user?.nickname ?? "Perfil"}
+        </ActionButton>
+
+        <StudentProfileModal
+          isOpen={open}
+          onClose={() => setOpen(false)}
+          userProp={user}
+        />
 
         {/* 🎯 DESAFIOS */}
         {!isChallengePage && (

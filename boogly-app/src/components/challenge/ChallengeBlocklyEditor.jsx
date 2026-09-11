@@ -17,6 +17,8 @@ import { useError } from "../../error/useError";
 
 import CodePanel from "../panels/CodePanel";
 
+import SimulatorPanel from "../simulator/SimulatorPanel";
+
 function CategoryButton({ label, active, onClick, theme }) {
   return (
     <div className="group relative">
@@ -132,6 +134,7 @@ function extractCommandsFromWorkspace(ws) {
         }
       }
     }
+    
 
     // 🚀 salva comando
     commands.push({ type, value });
@@ -159,14 +162,8 @@ function extractCommandsFromWorkspace(ws) {
   return commands;
 }
 
-export default function ChallengeBlocklyEditor({
-  toolbox,
-  setCode,
-  setCCode,
-  setBlockCount,
-  onRun,
-  structure: propStructure
-}) {
+export default function ChallengeBlocklyEditor({toolbox, structure: propStructure, setBlockCount, onRun: onRun}) {
+
   const blocklyDiv = useRef(null);
   const workspaceRef = useRef(null);
 
@@ -176,11 +173,14 @@ export default function ChallengeBlocklyEditor({
   const [category, setCategory] = useState(null);
   const [toolboxVisible, setToolboxVisible] = useState(true);
   const [blockCountLocal, setBlockCountLocal] = useState(0);
-  const [running, setRunning] = useState(false);
   const [view, setView] = useState("editor"); 
   const [localCCode, setLocalCCode] = useState("");
+  const [localDSLCode, setLocalDSLCode] = useState("");
 
   const detectedStructure = propStructure || detectStructureFromToolbox(toolbox);
+
+  const [isRunning, setIsRunning] = useState(false);
+
   const categoriesByStructure = {
     list: [
       ["list", "Lista"],
@@ -234,24 +234,22 @@ export default function ChallengeBlocklyEditor({
           if (!ws) return;
 
           // JS
-          let codeJS = "";
+          let dslCode = "";
+          javascriptGenerator.init(ws);
           try {
-            codeJS = javascriptGenerator.workspaceToCode(ws) || "";
-            console.log(codeJS);
-            setCode && setCode(codeJS);
+
+           dslCode = javascriptGenerator.workspaceToCode(ws) || "";
+            setLocalDSLCode(dslCode)
           } catch (err) {
-            // non-fatal: still set empty
-            setCode && setCode("");
+            console.log(err);
+           
           }
 
-          // C
           try {
             const codeC = generateC(ws, propStructure) || "";
-            setCCode && setCCode(codeC);
-            
             setLocalCCode(codeC);
           } catch (err) {
-            setCCode && setCCode("");
+             console.log(err);
           }
 
           // block count
@@ -353,11 +351,10 @@ export default function ChallengeBlocklyEditor({
     }
   }, [detectedStructure]);
 
-  // RUN handler: extrai comandos e chama onRun
   async function handleRun() {
     try {
       if (!workspaceRef.current) return;
-      setRunning(true);
+      setIsRunning(true);
       const ws = workspaceRef.current;
 
       // extrai comandos
@@ -367,7 +364,7 @@ export default function ChallengeBlocklyEditor({
     } catch (err) {
       showError({ message: err.message || "Erro ao executar" });
     } finally {
-      setRunning(false);
+      setIsRunning(false);
     }
   }
 
@@ -458,8 +455,23 @@ export default function ChallengeBlocklyEditor({
               >
                 💻 Código
               </button>
+
+              <button
+                onClick={() => setView("simulation")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  background: view === "simulation" ? theme.primary : theme.card,
+                  color: view === "simulation" ? "#fff" : theme.text,
+                  border: `1px solid ${theme.border}`,
+                  cursor: "pointer"
+                }}
+              >
+                ▶ Simulação
+              </button>
             </div>
           </div>
+
           { view === "editor" && (
             <div className="flex items-center" style={{ gap: theme.spacing.sm }}>
               <button
@@ -487,30 +499,34 @@ export default function ChallengeBlocklyEditor({
                   cursor: "pointer"
                 }}
               >
-                {running ? "Executando..." : "▶ Testar solução"}
+                {isRunning ? "Executando..." : "▶ Testar solução"}
               </button>
+              
             </div>
+            
           )}
           
         </div>
 
         <div className="flex-1 relative">
-          <div
-            style={{
-              position: "absolute",
-              top: theme.spacing.sm,
-              right: theme.spacing.sm,
-              padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-              borderRadius: "8px",
-              background: theme.card,
-              color: theme.text,
-              border: `1px solid ${theme.border}`,
-              zIndex: 50,
-              ...theme.typography.small
-            }}>
-            🧩 {blockCountLocal} blocos
-          </div>
-      
+          { view === "editor" && (
+            <div
+              style={{
+                position: "absolute",
+                top: theme.spacing.sm,
+                right: theme.spacing.sm,
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                borderRadius: "8px",
+                background: theme.card,
+                color: theme.text,
+                border: `1px solid ${theme.border}`,
+                zIndex: 50,
+                ...theme.typography.small
+              }}>
+              🧩 {blockCountLocal} blocos
+            </div>
+          )};
+          
           <div className={`absolute inset-0 ${ view === "editor" ? "block" : "hidden"}`}>
             <div ref={blocklyDiv} className="h-full w-full" />
           </div>
@@ -518,6 +534,11 @@ export default function ChallengeBlocklyEditor({
           <div className={`absolute inset-0 ${ view === "code" ? "block" : "hidden"}`}>
             <CodePanel cCode={localCCode} />
           </div>
+          
+          <div className={`absolute inset-0 ${view === "simulation" ? "block" : "hidden"}`}>
+            <SimulatorPanel dslCode={localDSLCode}/>
+          </div>
+          
         </div>
       </div>
     </div>

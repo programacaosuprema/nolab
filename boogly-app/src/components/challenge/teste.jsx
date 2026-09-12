@@ -1,21 +1,7 @@
-import { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { AppContext } from "../../app_configuration/AppContext";
-import { useTheme } from "../../theme/useTheme";
-import { useError } from "../../error/useError";
-import { useAuth } from "../../autenticator/useAuth";
-import { ChallengeIntro } from "../challenge/ChallengeIntro";
-import ChallengeBlocklyEditor from "../challenge/ChallengeBlocklyEditor";
-import ChallengeResult from "../challenge/ChallengeResult";
-import { challengeToolbox } from "../../blockly/index";
-import ExpireModal from "../modals/ExpireModal";               // novo
-import useCountdown from "../../hooks/useCountdown";           // seu hook (ajustado)
-import ChallengeTimer from "../challenge/ChallengeTimer"; 
-
 export default function ChallengeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const timeDefault = 10;
+
   const { domainUrl } = useContext(AppContext);
   const { theme } = useTheme();
   const { showError } = useError();
@@ -33,9 +19,12 @@ export default function ChallengeDetail() {
   // Modal estado
   const [expireModalOpen, setExpireModalOpen] = useState(false);
 
+  // ---------------------------
+  // countdown hook (não inicia automaticamente)
+  // keyId para persistência por desafio:
   const countdownKey = `challenge_${id}_end`;
   const countdown = useCountdown({
-    totalSeconds: timeDefault, 
+    totalSeconds: 120, // default; vamos iniciar com o valor real no start()
     enabled: false,
     keyId: countdownKey,
     onExpire: () => {
@@ -81,13 +70,6 @@ export default function ChallengeDetail() {
     load();
   }, [domainUrl, id, showError, token]);
 
-  useEffect(() => {
-    return () => {
-      // cleanup quando sair da página
-      sessionStorage.removeItem(countdownKey);
-    };
-  }, [countdownKey, id]);
-
   // Chamado quando usuário clica em iniciar no ChallengeIntro
   async function handleStart(userAttemptResult) {
     setStarted(true);
@@ -108,8 +90,11 @@ export default function ChallengeDetail() {
       setChallenge((prev) => (prev ? { ...prev, userStatus: "attempted" } : prev));
     }
 
-    const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || timeDefault;
+    // INICIAR contador com o timeLimit do desafio
+    const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || 120;
 
+    // Para teste rápido, use 10s (desbloquear manualmente)
+    // const TEST_SHORT = true; if (TEST_SHORT) start(10); else start(seconds);
     start(seconds);
   }
 
@@ -177,31 +162,24 @@ export default function ChallengeDetail() {
     // pequeno delay para remount
     setTimeout(() => {
       setStarted(true);
-      const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || timeDefault;
+      const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || 120;
       start(seconds);
     }, 80);
   }
 
   function handleBackToChallenges() {
-    reset(); // 🔥 importante
-    sessionStorage.removeItem(countdownKey);
-
-    setStarted(false);
-    setResult(null);
-    setUserAttempt(null);
+    // fecha modal e volta para listagem
     setExpireModalOpen(false);
-
-    navigate("/app/challenges", { replace: true });
+    navigate("/app/challenges");
   }
 
   // quando o componente desmonta / resultado aparece — garantir reset do timer
   useEffect(() => {
     return () => {
       reset();
-      sessionStorage.removeItem(countdownKey);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countdownKey]);
+  }, []);
 
   if (loading) return <div style={{ padding: theme.spacing.lg, ...theme.typography.text }}>Carregando...</div>;
   if (!challenge) return <div style={{ padding: theme.spacing.lg, ...theme.typography.text }}>Desafio não encontrado</div>;
@@ -323,7 +301,7 @@ export default function ChallengeDetail() {
               <div>
                 <ChallengeTimer
                   secondsLeft={secondsLeft}
-                  totalSeconds={challenge.timeLimit || timeDefault}
+                  totalSeconds={challenge.timeLimit || 120}
                   percent={percent}
                   warningFirst={warningFirst}
                   warningLast={warningLast}
@@ -350,7 +328,8 @@ export default function ChallengeDetail() {
         isOpen={expireModalOpen}
         onClose={() => setExpireModalOpen(false)}
         onRetry={handleRetry}
-        onGoBack={handleBackToChallenges}
+        onBackToChallenges={handleBackToChallenges}
+        timeLeft={secondsLeft}
       />
     </div>
   );

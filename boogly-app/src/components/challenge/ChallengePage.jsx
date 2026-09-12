@@ -10,10 +10,6 @@ import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
 import { useAuth } from "../../autenticator/useAuth";
 
-/**
- * Retorna percentual (solved / attempts) formatado em pt-BR com 2 casas decimais.
- * Se attempts for 0 retorna "0,00 %".
- */
 function getPercentageByResolutionsPTBR(solved = 0, attempts = 0) {
   solved = Number(solved) || 0;
   attempts = Number(attempts) || 0;

@@ -2,7 +2,7 @@
 import React from "react";
 import { useTheme } from "../../theme/useTheme";
 
-export default function ExpireModal({ isOpen, onClose, onRetry, onGoBack }) {
+export default function ExpireModal({ isOpen, onRetry, onGoBack }) {
   const { theme } = useTheme();
 
   if (!isOpen) return null;

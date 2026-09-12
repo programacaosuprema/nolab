@@ -18,6 +18,10 @@ const ChallengeDetail = lazy(() =>
   }))
 );
 
+const ChallengePlay = lazy(() =>
+  import("./components/challenge/ChallengePlay")
+);
+
 // 🔒 PROTECTED ROUTE
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loadingAuth, structure } = useAuth();
@@ -70,6 +74,9 @@ export default function App() {
 
           {/* DETALHE */}
           <Route path="challenges/:id" element={<ChallengeDetail />} />
+
+          {/* EXECUÇÃO DO DESAFIO (NOVO) */}
+          <Route path="challenges/:id/play" element={<ChallengePlay />} />
 
         </Route>
 

@@ -6,7 +6,7 @@ import { useError } from "../../error/useError";
 import { useAuth } from "../../autenticator/useAuth";
 import { AppContext } from "../../app_configuration/AppContext";
 
-export function ChallengeIntro({ challenge, onStart }) {
+export function ChallengeStart({ challenge, onStart }) {
   const [tab, setTab] = useState("descricao");
   const { theme } = useTheme();
   const { showError } = useError();

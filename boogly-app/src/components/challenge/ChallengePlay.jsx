@@ -1,7 +1,19 @@
-export default function ChallengeDetail() {
+import { useEffect, useState, useContext, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { AppContext } from "../../app_configuration/AppContext";
+import { useTheme } from "../../theme/useTheme";
+import { useError } from "../../error/useError";
+import { useAuth } from "../../autenticator/useAuth";
+import ChallengeBlocklyEditor from "../challenge/ChallengeBlocklyEditor";
+import ChallengeResult from "../challenge/ChallengeResult";
+import { challengeToolbox } from "../../blockly/index";
+import ExpireModal from "../modals/ExpireModal";               // novo
+import useCountdown from "../../hooks/useCountdown";           // seu hook (ajustado)
+import ChallengeTimer from "../challenge/ChallengeTimer"; 
+
+export default function ChallengePlay() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const { domainUrl } = useContext(AppContext);
   const { theme } = useTheme();
   const { showError } = useError();
@@ -19,12 +31,10 @@ export default function ChallengeDetail() {
   // Modal estado
   const [expireModalOpen, setExpireModalOpen] = useState(false);
 
-  // ---------------------------
-  // countdown hook (não inicia automaticamente)
-  // keyId para persistência por desafio:
   const countdownKey = `challenge_${id}_end`;
+  const totalTime = Number(challenge?.timeLimit) || 10;
   const countdown = useCountdown({
-    totalSeconds: 120, // default; vamos iniciar com o valor real no start()
+    totalSeconds: totalTime, 
     enabled: false,
     keyId: countdownKey,
     onExpire: () => {
@@ -35,7 +45,23 @@ export default function ChallengeDetail() {
   });
 
   const { secondsLeft, percent, warningFirst, warningLast, start, reset } = countdown;
-  // ---------------------------
+  const startedRef = useRef(false);
+  
+ useEffect(() => {
+  if (!challenge) return;
+
+  if (startedRef.current) return; // 🚫 evita reiniciar
+
+  startedRef.current = true;
+
+  const seconds = Number(challenge.timeLimit) || 10;
+
+  console.log("START TIMER:", seconds);
+
+  start(seconds);
+  setStarted(true);
+
+}, [challenge, start]);
 
   useEffect(() => {
     async function load() {
@@ -70,33 +96,12 @@ export default function ChallengeDetail() {
     load();
   }, [domainUrl, id, showError, token]);
 
-  // Chamado quando usuário clica em iniciar no ChallengeIntro
-  async function handleStart(userAttemptResult) {
-    setStarted(true);
-    setUserAttempt(userAttemptResult);
-
-    // se backend retornou status/attempts, atualize local
-    if (userAttemptResult) {
-      setChallenge((prev) =>
-        prev
-          ? {
-              ...prev,
-              userStatus: userAttemptResult.status,
-              userAttempts: userAttemptResult.attempts
-            }
-          : prev
-      );
-    } else {
-      setChallenge((prev) => (prev ? { ...prev, userStatus: "attempted" } : prev));
-    }
-
-    // INICIAR contador com o timeLimit do desafio
-    const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || 120;
-
-    // Para teste rápido, use 10s (desbloquear manualmente)
-    // const TEST_SHORT = true; if (TEST_SHORT) start(10); else start(seconds);
-    start(seconds);
-  }
+  useEffect(() => {
+    return () => {
+      // cleanup quando sair da página
+      sessionStorage.removeItem(countdownKey);
+    };
+  }, [countdownKey, id]);
 
   // Submissão do código (mantive sua lógica)
   async function handleRun(commands) {
@@ -162,24 +167,31 @@ export default function ChallengeDetail() {
     // pequeno delay para remount
     setTimeout(() => {
       setStarted(true);
-      const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || 120;
+      const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || timeDefault;
       start(seconds);
     }, 80);
   }
 
   function handleBackToChallenges() {
-    // fecha modal e volta para listagem
+    reset(); // 🔥 importante
+    sessionStorage.removeItem(countdownKey);
+
+    setStarted(false);
+    setResult(null);
+    setUserAttempt(null);
     setExpireModalOpen(false);
-    navigate("/app/challenges");
+
+    navigate(-1, { replace: true });
   }
 
   // quando o componente desmonta / resultado aparece — garantir reset do timer
   useEffect(() => {
     return () => {
       reset();
+      sessionStorage.removeItem(countdownKey);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [countdownKey]);
 
   if (loading) return <div style={{ padding: theme.spacing.lg, ...theme.typography.text }}>Carregando...</div>;
   if (!challenge) return <div style={{ padding: theme.spacing.lg, ...theme.typography.text }}>Desafio não encontrado</div>;
@@ -188,9 +200,6 @@ export default function ChallengeDetail() {
 
   return (
     <div className="h-full flex flex-col" style={{ background: theme.background, color: theme.text, padding: theme.spacing.lg }}>
-      {!started ? (
-        <ChallengeIntro challenge={challenge} onStart={handleStart} />
-      ) : (
         <div className="h-full flex gap-4 min-h-0">
           {/* LEFT: descrição / regras como antes */}
           <aside
@@ -301,7 +310,7 @@ export default function ChallengeDetail() {
               <div>
                 <ChallengeTimer
                   secondsLeft={secondsLeft}
-                  totalSeconds={challenge.timeLimit || 120}
+                  totalSeconds={challenge.timeLimit || timeDefault}
                   percent={percent}
                   warningFirst={warningFirst}
                   warningLast={warningLast}
@@ -321,15 +330,13 @@ export default function ChallengeDetail() {
             <ChallengeResult result={result} onClose={() => setResult(null)} />
           </main>
         </div>
-      )}
 
       {/* Expire modal */}
       <ExpireModal
         isOpen={expireModalOpen}
         onClose={() => setExpireModalOpen(false)}
         onRetry={handleRetry}
-        onBackToChallenges={handleBackToChallenges}
-        timeLeft={secondsLeft}
+        onGoBack={handleBackToChallenges}
       />
     </div>
   );

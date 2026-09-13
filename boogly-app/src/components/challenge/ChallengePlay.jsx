@@ -3,36 +3,33 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AppContext } from "../../app_configuration/AppContext";
 import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
-import { useAuth } from "../../autenticator/useAuth";
 import ChallengeBlocklyEditor from "../challenge/ChallengeBlocklyEditor";
 import ChallengeResult from "../challenge/ChallengeResult";
 import { challengeToolbox } from "../../blockly/index";
 import ExpireModal from "../modals/ExpireModal";               // novo
 import useCountdown from "../../hooks/useCountdown";           // seu hook (ajustado)
 import ChallengeTimer from "../challenge/ChallengeTimer"; 
+import { createAttempt, submitChallenge, getChallenge } from "../../services/challengeService";
+import { LoadingPage } from "../pages/LoadingPage";
 
 export default function ChallengePlay() {
+  const isDevTest = true; //para testar algumas coisas. É verdadeiro enquanto for teste
   const { id } = useParams();
+  const defaultTimeSec = 8;
   const navigate = useNavigate();
   const { domainUrl } = useContext(AppContext);
   const { theme } = useTheme();
   const { showError } = useError();
-  const { token } = useAuth() || {};
-
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const [started, setStarted] = useState(false);
   const [userAttempt, setUserAttempt] = useState(null);
-
   const [result, setResult] = useState(null);
   const [running, setRunning] = useState(false);
-
-  // Modal estado
   const [expireModalOpen, setExpireModalOpen] = useState(false);
-
   const countdownKey = `challenge_${id}_end`;
-  const totalTime = Number(challenge?.timeLimit) || 10;
+  const totalTime = Number(challenge?.timeLimit) || defaultTimeSec;
+  const startedRef = useRef(false);
+
   const countdown = useCountdown({
     totalSeconds: totalTime, 
     enabled: false,
@@ -43,58 +40,61 @@ export default function ChallengePlay() {
     },
     warningThresholds: { first: 60, last: 10 }
   });
-
-  const { secondsLeft, percent, warningFirst, warningLast, start, reset } = countdown;
-  const startedRef = useRef(false);
   
- useEffect(() => {
-  if (!challenge) return;
+  const { secondsLeft, percent, warningFirst, warningLast, start, reset } = countdown;
 
-  if (startedRef.current) return; // 🚫 evita reiniciar
+  function applyAttemptUpdate(attempt) {
+    if (!attempt) return;
 
-  startedRef.current = true;
+    setUserAttempt(attempt);
 
-  const seconds = Number(challenge.timeLimit) || 10;
+    setChallenge((prev) => {
+      if (!prev) return prev;
 
-  console.log("START TIMER:", seconds);
+      return {
+        ...prev,
+        userStatus: attempt.status ?? prev.userStatus,
+        userAttempts: attempt.attempts ?? prev.userAttempts
+      };
+    });
+  }
 
-  start(seconds);
-  setStarted(true);
+  useEffect(() => {
+    if (!challenge) return;
+    if (startedRef.current) return;
 
-}, [challenge, start]);
+    startedRef.current = true;
+
+    const stored = sessionStorage.getItem(countdownKey);
+
+    if (stored) {
+      start(); 
+    } else {
+      const seconds = Number(challenge.timeLimit) || defaultTimeSec;
+
+      start(isDevTest ? defaultTimeSec : seconds);
+    }
+
+  }, [challenge, countdownKey, isDevTest, start]);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers.Authorization = `Bearer ${token}`;
+        const data = await getChallenge({domainUrl, id});
 
-        const res = await fetch(`${domainUrl}/challenges/${id}`, {
-          method: "GET",
-          credentials: "include",
-          headers 
-        });
-        if (!res.ok) throw new Error("Erro ao carregar desafio");
-
-        const data = await res.json();
-
-        const normalized = {
-          ...data,
-          structure: data.structure || "list",
-          userStatus: data.userStatus || "pending",
-          userAttempts: data.userAttempts ?? 0
-        };
-
-        setChallenge(normalized);
+        setChallenge(data);
       } catch (err) {
         showError(err);
       } finally {
         setLoading(false);
       }
     }
-    load();
-  }, [domainUrl, id, showError, token]);
+
+    if (id && domainUrl) {
+      load();
+    }
+  }, [domainUrl, id, showError]);
 
   useEffect(() => {
     return () => {
@@ -103,27 +103,11 @@ export default function ChallengePlay() {
     };
   }, [countdownKey, id]);
 
-  // Submissão do código (mantive sua lógica)
   async function handleRun(commands) {
     try {
       setRunning(true);
 
-      const headers = { "Content-Type": "application/json" };
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      const res = await fetch(`${domainUrl}/challenges/${id}/submit`, {
-        method: "POST",
-        credentials: "include",
-        headers,
-        body: JSON.stringify({ commands })
-      });
-
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.message || `Erro ao submeter`);
-      }
-
-      const data = await res.json();
+      const data = await submitChallenge({domainUrl, id, commands});
 
       setResult({
         success: !!data.success,
@@ -133,22 +117,13 @@ export default function ChallengePlay() {
         steps: data.steps || []
       });
 
-      // parar/resetar o timer quando submeter
-      reset();
-
-      if (data.userAttempt) {
-        setUserAttempt(data.userAttempt);
-
-        setChallenge((prev) =>
-          prev
-            ? {
-                ...prev,
-                userStatus: data.userAttempt.status,
-                userAttempts: data.userAttempt.attempts
-              }
-            : prev
-        );
+      // 🔥 só para timer se acertar
+      if (data.success) {
+        reset();
       }
+
+      applyAttemptUpdate(data.userAttempt);
+
     } catch (err) {
       showError({ message: err.message });
     } finally {
@@ -156,32 +131,36 @@ export default function ChallengePlay() {
     }
   }
 
-  // Ações do ExpireModal:
-  function handleRetry() {
-    // fecha modal, reset timer e reinicia o editor
+  async function handleRetry() {
+    try {
+      // cria nova tentativa no backend
+      const newAttempt = await createAttempt( {domainUrl, id});
+      
+      applyAttemptUpdate(newAttempt);
+
+    } catch (err) {
+      console.error("Erro ao criar nova tentativa:", err);
+    }
+
+    //  FECHA MODAL
     setExpireModalOpen(false);
+
+    //  LIMPA ESTADO DO DESAFIO
     setResult(null);
 
-    // remonta editor reiniciando started (isso depende do seu editor: remontar força estado limpo)
-    setStarted(false);
-    // pequeno delay para remount
-    setTimeout(() => {
-      setStarted(true);
-      const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || timeDefault;
-      start(seconds);
-    }, 80);
+    //  RESETA TIMER
+    reset();
+
+    //  INICIA NOVO TEMPO
+    const seconds = (challenge?.timeLimit && Number(challenge.timeLimit)) || defaultTimeSec;
+
+    start(isDevTest ? defaultTimeSec : seconds);
+
   }
 
   function handleBackToChallenges() {
-    reset(); // 🔥 importante
-    sessionStorage.removeItem(countdownKey);
-
-    setStarted(false);
-    setResult(null);
-    setUserAttempt(null);
-    setExpireModalOpen(false);
-
-    navigate(-1, { replace: true });
+    reset();
+    navigate(-2, { replace: true });
   }
 
   // quando o componente desmonta / resultado aparece — garantir reset do timer
@@ -193,7 +172,7 @@ export default function ChallengePlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [countdownKey]);
 
-  if (loading) return <div style={{ padding: theme.spacing.lg, ...theme.typography.text }}>Carregando...</div>;
+  if (loading) return <LoadingPage />;
   if (!challenge) return <div style={{ padding: theme.spacing.lg, ...theme.typography.text }}>Desafio não encontrado</div>;
 
   const chosenToolbox = (challengeToolbox && challengeToolbox[challenge.structure]) || challengeToolbox?.list;
@@ -310,7 +289,7 @@ export default function ChallengePlay() {
               <div>
                 <ChallengeTimer
                   secondsLeft={secondsLeft}
-                  totalSeconds={challenge.timeLimit || timeDefault}
+                  totalSeconds={challenge.timeLimit || defaultTimeSec}
                   percent={percent}
                   warningFirst={warningFirst}
                   warningLast={warningLast}

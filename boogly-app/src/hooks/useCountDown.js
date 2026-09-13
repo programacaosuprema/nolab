@@ -2,16 +2,26 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 export default function useCountdown({
   totalSeconds = 120,
-  onExpire = null
-} = {}) {
+  keyId,
+  onExpire
+}) {
   const [secondsLeft, setSecondsLeft] = useState(totalSeconds);
   const intervalRef = useRef(null);
   const endRef = useRef(null);
 
   const start = useCallback((seconds) => {
-    const duration = Number(seconds) || totalSeconds;
+    const key = keyId;
 
-    const end = Date.now() + duration * 1000;
+    let end = sessionStorage.getItem(key);
+
+    // 🔥 se já existe tempo salvo → continua
+    if (end) {
+      end = Number(end);
+    } else {
+      end = Date.now() + seconds * 1000;
+      sessionStorage.setItem(key, String(end));
+    }
+
     endRef.current = end;
 
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -25,21 +35,27 @@ export default function useCountdown({
         clearInterval(intervalRef.current);
         intervalRef.current = null;
 
+        sessionStorage.removeItem(key);
+
         if (onExpire) onExpire();
       }
     };
 
-    tick(); // executa imediatamente
+    tick();
     intervalRef.current = setInterval(tick, 1000);
 
-  }, [totalSeconds, onExpire]);
+  }, [keyId, onExpire]);
 
   const reset = useCallback(() => {
+    const key = keyId;
+
     clearInterval(intervalRef.current);
     intervalRef.current = null;
     endRef.current = null;
+
+    sessionStorage.removeItem(key);
     setSecondsLeft(totalSeconds);
-  }, [totalSeconds]);
+  }, [keyId, totalSeconds]);
 
   useEffect(() => {
     return () => {
@@ -47,9 +63,10 @@ export default function useCountdown({
     };
   }, []);
 
-  const percent = Math.max(0, Math.min(100,
-    Math.round((secondsLeft / totalSeconds) * 100)
-  ));
+  const percent = Math.max(
+    0,
+    Math.min(100, Math.round((secondsLeft / totalSeconds) * 100))
+  );
 
   return {
     secondsLeft,

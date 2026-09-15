@@ -57,13 +57,19 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MainApp />
-              <GuidedTourModal/>
             </ProtectedRoute>
           }
         >
 
           {/* EDITOR */}
-          <Route index element={<EditorPage />} />
+          <Route 
+            index 
+            element={
+              <>
+                <EditorPage />
+                <GuidedTourModal/>
+              </>
+            } />
 
           {/* DESAFIOS */}
           <Route path="challenges" element={<ChallengePage />} />

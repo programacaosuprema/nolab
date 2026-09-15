@@ -1,7 +1,7 @@
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
-import { normalizeIdentifier }from "../utils/normalizeIdentifier";
-import { hasDuplicateName } from "../utils/normalizeNames";
+import { normalizeIdentifier }from "../../utils/normalizeIdentifier";
+import { hasDuplicateName } from "../../utils/normalizeNames";
 
 /* ==========================================================
    BLOCO: NÃO (negação lógica)

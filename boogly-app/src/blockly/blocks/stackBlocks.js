@@ -1,6 +1,6 @@
 import * as Blockly from "blockly";
-import { normalizeIdentifier }from "../utils/normalizeIdentifier";
-import { hasDuplicateName } from "../utils/normalizeNames";
+import { normalizeIdentifier }from "../../utils/normalizeIdentifier";
+import { hasDuplicateName } from "../../utils/normalizeNames";
 
 function blockSameName(block) {
   if (!block.workspace) return;

@@ -15,7 +15,7 @@ import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
 import { useAuth } from "../../autenticator/useAuth";
 
-import { saveWorkspace, loadWorkspace } from "../../blockly/workspaceStorage";
+import { saveWorkspace, loadWorkspace } from "../../utils/workspaceStorage";
 
 
 export default function MainBlocklyEditorPanel({

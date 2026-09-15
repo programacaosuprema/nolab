@@ -187,7 +187,8 @@ export default function MainBlocklyEditorPanel({
         console.warn("Erro ao destruir workspace:", err);
       }
     };
-  }, [toolbox, theme.border, setCode, setCCode, setBlockCount, structure, showError, user?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolbox, setCode, setCCode, setBlockCount, structure, showError, user?.id]);
 
   useEffect(() => {
     try {
@@ -263,6 +264,12 @@ export default function MainBlocklyEditorPanel({
       );
 
       workspaceRef.current.setTheme(customTheme);
+
+      workspaceRef.current.render();
+
+      setTimeout(() => {
+        Blockly.svgResize(workspaceRef.current);
+      }, 0);
     } catch (err) {
       console.error("Erro ao aplicar tema:", err);
 

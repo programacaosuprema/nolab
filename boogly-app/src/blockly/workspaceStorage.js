@@ -12,8 +12,10 @@ function getWorkspaceKey(userId, structure) {
 export function saveWorkspace(workspace, structure, userId) {
   if (!workspace) return;
 
-  // 🔥 Ignora eventos internos de carregamento
   if (workspace.isLoading) return;
+
+  // 🔥 NOVO: não salva vazio
+  if (workspace.getAllBlocks(false).length === 0) return;
 
   try {
     const xml = Blockly.Xml.workspaceToDom(workspace);
@@ -21,7 +23,6 @@ export function saveWorkspace(workspace, structure, userId) {
 
     const key = getWorkspaceKey(userId, structure);
 
-    // 🔥 Evita salvar repetidamente o mesmo XML
     const current = localStorage.getItem(key);
     if (current === xmlText) return;
 

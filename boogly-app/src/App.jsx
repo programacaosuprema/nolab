@@ -30,7 +30,7 @@ function ProtectedRoute({ children }) {
     return <LoadingPage />;
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !loadingAuth) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 

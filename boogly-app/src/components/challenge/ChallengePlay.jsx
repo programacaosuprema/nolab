@@ -13,7 +13,7 @@ import { createAttempt, submitChallenge, getChallenge } from "../../services/cha
 import { LoadingPage } from "../pages/LoadingPage";
 
 export default function ChallengePlay() {
-  const isDevTest = true; //para testar algumas coisas. É verdadeiro enquanto for teste
+  const isDevTest = false; //para testar algumas coisas. É verdadeiro enquanto for teste
   const { id } = useParams();
   const defaultTimeSec = 10;
   const navigate = useNavigate();
@@ -29,6 +29,7 @@ export default function ChallengePlay() {
   const countdownKey = `challenge_${id}_end`;
   const totalTime = Number(challenge?.timeLimit) || defaultTimeSec;
   const startedRef = useRef(false);
+  const [attempts, setAttempts] = useState(0);
 
   const countdown = useCountdown({
     totalSeconds: totalTime, 
@@ -107,19 +108,30 @@ export default function ChallengePlay() {
     try {
       setRunning(true);
 
-      const data = await submitChallenge({domainUrl, id, commands});
+      let newAttempts;
+      setAttempts((prev) => {
+        newAttempts = prev + 1;
+        return newAttempts;
+      });
+
+      const data = await submitChallenge({ domainUrl, id, commands });
+
+      //  tempo gasto baseado no countdown
+      const timeSpent = challenge.timeLimit - secondsLeft;
 
       setResult({
         success: !!data.success,
         message: data.message || (data.success ? "Correto 🎉" : "Incorreto"),
         output: data.output ?? [],
         expected: data.expected ?? null,
-        steps: data.steps || []
+        steps: data.steps || [],
+        timeSpent,
+        attempts: newAttempts
       });
 
-      // 🔥 só para timer se acertar
+      //  se acertou → reseta countdown
       if (data.success) {
-        reset();
+        reset(); // vem do countdown
       }
 
       applyAttemptUpdate(data.userAttempt);

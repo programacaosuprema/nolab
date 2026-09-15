@@ -2,6 +2,14 @@ import { useTheme } from "../../theme/useTheme";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
+function formatTime(seconds) {
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+
+  if (min > 0) return `${min}m ${sec}s`;
+  return `${sec}s`;
+}
+
 function formatValue(value) {
   if (value === null || value === undefined) return "nulo";
 
@@ -22,12 +30,12 @@ export default function ChallengeResult({ result, onClose }) {
 
   const isSuccess = result?.success;
 
-  // ✅ SEMPRE executa (mesmo se result for null)
+  //  SEMPRE executa (mesmo se result for null)
   useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => {
-        navigate("/desafios");
-      }, 1500);
+        navigate(-2);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -79,15 +87,21 @@ export default function ChallengeResult({ result, onClose }) {
             ✖
           </button>
         </div>
+        
+       
 
         {/* STATUS */}
-        <div
-          className="flex items-center gap-2"
-          style={{ marginBottom: theme.spacing.md }}
-        >
+        <div className="flex flex-col gap-1"style={{ marginBottom: theme.spacing.md }}>
+          <span style={{ color: theme.muted }}>
+            <strong>{result.message}</strong>
+          </span>
 
           <span style={{ color: theme.muted }}>
-            {result.message}
+            <strong>Tempo gasto:</strong> {formatTime(result.timeSpent)}
+          </span>
+
+          <span style={{ color: theme.muted }}>
+            <strong>Tentativas:</strong> {result.attempts}
           </span>
         </div>
 
@@ -141,6 +155,7 @@ export default function ChallengeResult({ result, onClose }) {
                 {formatValue(result.output)}
               </pre>
             </div>
+             
           </div>
         )}
       </div>

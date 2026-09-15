@@ -2,7 +2,7 @@
 import { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "./AuthContext";
 import { AppContext } from "../app_configuration/AppContext";
-import { clearGuestWorkspaces } from "../blockly/workspaceStorage";
+import { clearGuestWorkspaces } from "../utils/workspaceStorage";
 import { fetchMe } from "../services/userService";
 import { authenticateUser, loginGuest, logoutUser } from "../services/authService";
 

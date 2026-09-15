@@ -5,16 +5,17 @@ import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
 import { useAuth } from "../../autenticator/useAuth";
 import { AppContext } from "../../app_configuration/AppContext";
+import { createAttempt } from "../../services/challengeService";
 
 export function ChallengeStart({ challenge, onStart }) {
   const [tab, setTab] = useState("descricao");
   const { theme } = useTheme();
   const { showError } = useError();
-  const { token } = useAuth();
   const { domainUrl } = useContext(AppContext);
   const navigate = useNavigate();
 
   const test = challenge.testCases?.[0] || null;
+
 
   async function handleStart() {
     if (!onStart) {
@@ -25,22 +26,17 @@ export function ChallengeStart({ challenge, onStart }) {
     try {
       const id = challenge._id || challenge.publicId;
 
-      const res = await fetch(`${domainUrl}/challenges/${id}/attempt`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        }
+      const attempt = await createAttempt({
+        domainUrl,
+        id
       });
 
-      if (!res.ok) {
+      if (!attempt) {
         console.warn("attempt request falhou");
-        onStart(null);
-        return;
       }
 
-      const data = await res.json();
-      onStart(data?.userAttempt ?? null);
+      onStart(attempt);
+
     } catch (err) {
       console.warn("Erro ao registrar attempt:", err);
       onStart(null);

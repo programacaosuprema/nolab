@@ -1,10 +1,9 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { Suspense, lazy } from "react";
-
+import { Suspense, lazy, useContext } from "react";
 import { useAuth } from "./autenticator/useAuth";
 import { LoadingPage } from "./components/pages/LoadingPage";
-import { ErrorPage } from "./components/pages/ErrorPage";
-import GuidedTour from "./components/tour/GuideTour"; 
+import GuidedTourModal from "./components/modals/GuideTourModal";
+import { AppContext } from "./app_configuration/AppContext";
 
 // 🔥 lazy load (performance)
 const Home = lazy(() => import("./components/pages/HomePage"));
@@ -42,12 +41,9 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// 🔥 ERROR FALLBACK
-function RouteErrorFallback() {
-  return <ErrorPage message="Erro ao carregar a página." />;
-}
 
 export default function App() {
+  const { mainRoute } = useContext(AppContext);
   return (
     <Suspense fallback={<LoadingPage />}>
       <Routes>
@@ -57,11 +53,11 @@ export default function App() {
 
         {/* APP PROTEGIDO */}
         <Route
-          path="/app"
+          path={mainRoute}
           element={
             <ProtectedRoute>
               <MainApp />
-              <GuidedTour/>
+              <GuidedTourModal/>
             </ProtectedRoute>
           }
         >

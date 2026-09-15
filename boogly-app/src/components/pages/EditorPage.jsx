@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import * as Blockly from "blockly/core";
 import "blockly/blocks";
 import "blockly/javascript";
-import BlocklyEditor from "../blockly/BlocklyEditor";
+import MainBlocklyEditorPanel from "../panels/MainBlocklyEditorPanel";
 import CodePanel from "../panels/CodePanel";
 import { useAuth } from "../../autenticator/useAuth";
 import { useTheme } from "../../theme/useTheme";
@@ -104,7 +104,7 @@ export default function EditorPage() {
       <div className="flex flex-1 min-h-0 gap-3">
   
         <section data-tour="editor" className="w-1/2 min-h-0 rounded-xl overflow-hidden" style={{ background: theme.workspace }}>
-          <BlocklyEditor
+          <MainBlocklyEditorPanel
             toolbox={currentToolbox}
             setCode={setLocalDslCode}
             setCCode={setLocalCCode}

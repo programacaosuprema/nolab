@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useTheme } from "../../theme/useTheme";
 import { useAuth } from "../../autenticator/useAuth";
 import { AppContext } from "../../app_configuration/AppContext";
+import { fetchMe } from "../../services/userService";
 
 // exemplo de helper
 function formatDateIso(iso) {
@@ -13,10 +14,9 @@ function formatDateIso(iso) {
   }
 }
 
-
 export default function StudentProfileModal({ isOpen, onClose, userProp = null }) {
   const { theme } = useTheme();
-  const { user: ctxUser, token } = useAuth();
+  const { user: ctxUser } = useAuth();
   const { domainUrl } = useContext(AppContext);
 
   const [user, setUser] = useState(userProp || ctxUser);
@@ -32,43 +32,37 @@ export default function StudentProfileModal({ isOpen, onClose, userProp = null }
     setUser(ctxUser ?? null);
   }, [ctxUser, userProp]);
 
-  
   useEffect(() => {
     let mounted = true;
-    async function fetchMe() {
+
+    async function loadUser() {
       if (user || !domainUrl) return;
+
       setLoading(true);
+
       try {
-        const res = await fetch(`${domainUrl}/users/me`, {
-          method: "GET",
-          credentials: "include", // importante para cookie httpOnly ou cross-site cookie
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
-          }
-        });
+        const data = await fetchMe({ domainUrl });
 
         if (!mounted) return;
-        if (!res.ok) {
-          setError(`Erro ao carregar usuário (${res.status})`);
-          setUser(null);
-        } else {
-          const data = await res.json();
-          setUser(data);
-        }
+        setUser(data);
+
       } catch (err) {
         if (!mounted) return;
-        setError("Erro de rede ao buscar usuário: ", err);
+
+        setError(err.message);
         setUser(null);
+
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    fetchMe();
+    loadUser();
 
-    return () => { mounted = false; };
-  }, [domainUrl, token, user]);
+    return () => {
+      mounted = false;
+    };
+  }, [domainUrl, user]);
 
   if (!isOpen) return null;
 

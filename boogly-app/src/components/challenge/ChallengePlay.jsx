@@ -15,7 +15,7 @@ import { LoadingPage } from "../pages/LoadingPage";
 export default function ChallengePlay() {
   const isDevTest = true; //para testar algumas coisas. É verdadeiro enquanto for teste
   const { id } = useParams();
-  const defaultTimeSec = 8;
+  const defaultTimeSec = 10;
   const navigate = useNavigate();
   const { domainUrl } = useContext(AppContext);
   const { theme } = useTheme();

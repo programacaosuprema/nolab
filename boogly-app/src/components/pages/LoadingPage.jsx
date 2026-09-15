@@ -142,7 +142,14 @@ export function LoadingPage() {
 
         {/* 📝 TEXTO */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold tracking-tight">
+          <h2
+            style={{
+              ...safeTheme.typography?.h2,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: safeTheme.text
+            }}
+          >
             Carregando workspace
           </h2>
 

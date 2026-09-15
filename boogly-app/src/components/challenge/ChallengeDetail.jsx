@@ -7,10 +7,11 @@ import { useAuth } from "../../autenticator/useAuth";
 import { ChallengeStart } from "./ChallengeStart";
 import { AppContext } from "../../app_configuration/AppContext";
 import { LoadingPage } from "../pages/LoadingPage";
+import { getChallenge } from "../../services/challengeService";
 
 export default function ChallengeDetail() {
   const { id } = useParams();
-  const { domainUrl } = useContext(AppContext) // ajuste conforme seu hook
+  const { domainUrl, mainRoute } = useContext(AppContext) // ajuste conforme seu hook
   const { theme } = useTheme();
   const { showError } = useError();
   const { token } = useAuth() || {};
@@ -25,16 +26,7 @@ export default function ChallengeDetail() {
     async function load() {
       setLoading(true);
       try {
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers.Authorization = `Bearer ${token}`;
-
-        const res = await fetch(`${domainUrl}/challenges/${id}`, {
-          method: "GET",
-          credentials: "include",
-          headers
-        });
-        if (!res.ok) throw new Error("Erro ao carregar desafio");
-        const data = await res.json();
+        const data = await getChallenge({domainUrl, id});
         setChallenge(data);
       } catch (err) {
         showError(err);
@@ -45,7 +37,7 @@ export default function ChallengeDetail() {
     load();
   }, [domainUrl, id, token, showError]);
 
-  if (loading) return <div>Carregando...</div>;
+  if (loading) return <LoadingPage/>
   if (!challenge) return <div>Desafio não encontrado</div>;
 
   return (
@@ -54,7 +46,7 @@ export default function ChallengeDetail() {
         challenge={challenge}
         onStart={() => {
           // navega para a rota /play mantendo querystring (structure etc)
-          navigate(`/app/challenges/${id}/play${location.search}`, { replace: false });
+          navigate(`${mainRoute}/challenges/${id}/play${location.search}`, { replace: false });
           // use replace:true se quiser evitar empilhar histórico
         }}
       />

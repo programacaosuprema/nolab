@@ -1,30 +1,21 @@
 // src/pages/Home.jsx
 import { useState, useContext, useEffect } from "react";
-import AuthModal from "./AuthModal";
-import OnboardingFlow from "./OnBoardFlow";
+import AuthModal from "../modals/AuthModal";
+import OnboardingModal from "../modals/OnBoardFlowModal";
 
 import { useAuth } from "../../autenticator/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../app_configuration/useApp";
 import { useError } from "../../error/useError";
-
 import { homeTheme } from "../../theme/HomeTheme";
 import { AppContext } from "../../app_configuration/AppContext";
 import { useTheme } from "../../theme/useTheme";
-
-/**
- * Home page atualizada:
- * - persiste structure em localStorage
- * - tenta restaurar structure da storage ao montar
- * - usa credentials: 'include' ao checar /users/me quando necessário (suporta cookies httpOnly)
- * - HomeCard mais legível em gradientes/temas escuros (overlay)
- * - inclui card "Árvore Binária" desabilitado como "Em breve"
- */
+import { checkOnboarding } from "../../services/userService";
 
 export default function Home() {
   const { user, loginAsGuest, setStructure } = useAuth();
   const { showError } = useError();
-  const { domainUrl } = useContext(AppContext);
+  const { domainUrl, mainRoute } = useContext(AppContext);
   const [openModal, setOpenModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedStructure, setSelectedStructure] = useState(null);
@@ -56,64 +47,46 @@ export default function Home() {
     }
   }
 
-  // 🚀 INICIAR FLUXO (usado pelos cards)
+
   async function handleStart(type) {
     if (!type) {
       showError({ message: "Estrutura inválida" });
       return;
     }
 
-    // salva a intenção imediatamente (evita perda se navegar)
     persistAndSetStructure(type);
     setSelectedStructure(type);
 
-    // se não logado, abre modal de autenticação
+    // 🚫 não logado
     if (!user) {
       setOpenModal(true);
       return;
     }
 
-    try {
-      // 👻 usuário guest (usa sessionStorage/localStorage)
-      if (user.guest) {
-        const done = sessionStorage.getItem("onboarding_done") || localStorage.getItem("onboarding_done");
-        if (done === "true") {
-          // já pode ir pro app
-          navigate("/app");
-          return;
-        }
-        setShowOnboarding(true);
-        return;
-      }
+    // 👻 guest
+    if (user.guest) {
+      const done = sessionStorage.getItem("onboarding_done") || localStorage.getItem("onboarding_done");
 
-      // 👤 usuário real -> verifica se terminou onboarding
-      // Usamos credentials: 'include' porque você está suportando cookie-based auth
-      const res = await fetch(`${domainUrl}/users/me`, {
-        method: "GET",
-        credentials: "include", // importante para cookies httpOnly
-        headers: {
-          // Se você também usa token guardado no localStorage, pode incluir Authorization
-          // Authorization: token ? `Bearer ${token}` : undefined,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (!res.ok) {
-        // se 401/404 -> mostra onboarding (não bloqueia)
-        setShowOnboarding(true);
-        return;
-      }
-
-      const data = await res.json();
-
-      if (data.onboardingDone === true) {
-        navigate("/app");
+      if (done === "true") {
+        navigate(mainRoute);
       } else {
         setShowOnboarding(true);
       }
+      return;
+    }
+
+    // 👤 usuário real
+    try {
+      const data = await checkOnboarding({ domainUrl });
+
+      if (data.onboardingDone) {
+        navigate(mainRoute);
+      } else {
+        setShowOnboarding(true);
+      }
+
     } catch (err) {
-      console.error("Erro em handleStart:", err);
-      // em caso de erro de rede, vamos permitir onboarding local
+      console.error("Erro ao verificar onboarding:", err);
       setShowOnboarding(true);
     }
   }
@@ -128,7 +101,7 @@ export default function Home() {
     try {
       persistAndSetStructure(selectedStructure);
       setShowOnboarding(false);
-      navigate("/app");
+      navigate(mainRoute);
     } catch (err) {
       showError(err);
     }
@@ -139,9 +112,6 @@ export default function Home() {
     try {
       setLoadingGuest(true);
       await loginAsGuest();
-      // após loginGuest o AuthProvider deve atualizar user automaticamente
-      // e você pode navegar direto se quiser:
-      // persistAndSetStructure("list"); navigate("/app");
     } catch (err) {
       showError(err);
     } finally {
@@ -260,7 +230,7 @@ export default function Home() {
 
         {/* AUTH MODAL / ONBOARDING */}
         <AuthModal isOpen={openModal} onClose={() => setOpenModal(false)} />
-        {showOnboarding && <OnboardingFlow onFinish={finishOnboarding} />}
+        {showOnboarding && <OnboardingModal onFinish={finishOnboarding} />}
       </div>
     </div>
   );

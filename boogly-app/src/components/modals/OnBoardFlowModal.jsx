@@ -4,6 +4,7 @@ import { AppContext } from "../../app_configuration/AppContext";
 import { useAuth } from "../../autenticator/useAuth";
 import { useTheme } from "../../theme/useTheme";
 import { motion, AnimatePresence } from "framer-motion";
+import { updateOnboarding } from "../../services/userService";
 
 const steps = [
   { title: "Bem-vindo 👋", description: "Você vai aprender estruturas de dados de forma visual." },
@@ -12,7 +13,7 @@ const steps = [
   { title: "Evolua 🚀", description: "Resolva desafios e evolua." }
 ];
 
-export default function OnboardingFlow({ onFinish }) {
+export default function OnboardingFlowModal({ onFinish }) {
   const [step, setStep] = useState(0);
   const [dontShow, setDontShow] = useState(() => {
     // inicializa do localStorage / sessionStorage (prioriza localStorage)
@@ -49,7 +50,7 @@ export default function OnboardingFlow({ onFinish }) {
 
   const finish = useCallback(async () => {
     try {
-      // 👻 GUEST (local/session storage)
+      // 👻 GUEST (local/session)
       try {
         if (dontShow) {
           sessionStorage.setItem("onboarding_done", "true");
@@ -62,30 +63,19 @@ export default function OnboardingFlow({ onFinish }) {
         console.warn("Storage write failed:", e);
       }
 
-      // 👤 USUÁRIO LOGADO (cookie-based)
+      // 👤 USUÁRIO LOGADO
       if (user && !user?.guest) {
-        const res = await fetch(`${domainUrl}/users/me/onboarding`, {
-          method: "PATCH",
-          credentials: "include", // 🔥 ESSENCIAL
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ onboardingDone: !!dontShow })
+        await updateOnboarding({
+          domainUrl,
+          onboardingDone: !!dontShow
         });
 
-        if (!res.ok) {
-          console.warn("Onboarding save returned non-ok:", res.status);
-        }
-
-        // atualiza user no contexto
-        try {
-          await refreshUser();
-        } catch (err) {
-          console.warn("Falha ao atualizar user após onboarding:", err);
-        }
+        // 🔥 atualiza contexto
+        await refreshUser();
       }
 
       onFinish?.();
+
     } catch (err) {
       console.error("Erro onboarding:", err);
 

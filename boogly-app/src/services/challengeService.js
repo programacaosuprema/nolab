@@ -62,3 +62,28 @@ export async function getChallenge({ domainUrl, id }) {
     userAttempts: data.userAttempts ?? 0
   };
 }
+
+export async function getChallenges({ domainUrl, structure }) {
+  const headers = { "Content-Type": "application/json" };
+
+  const res = await fetch(
+    `${domainUrl}/challenges?structure=${structure}`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Erro ao carregar desafios");
+  }
+
+  const data = await res.json();
+
+  if (!Array.isArray(data)) {
+    throw new Error("Formato inválido da resposta");
+  }
+
+  return data;
+}

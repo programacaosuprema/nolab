@@ -1,4 +1,3 @@
-// src/components/tour/GuidedTour.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useTheme } from "../../theme/useTheme";
 import { useAuth } from "../../autenticator/useAuth";
@@ -129,7 +128,7 @@ async function findElementWithRetries(selector, { retries = 10, delay = 200 } = 
   return null;
 }
 
-export default function GuidedTour({ steps = defaultSteps, autoOpen = true }) {
+export default function GuidedTourModal({ steps = defaultSteps, autoOpen = true }) {
   const { theme } = useTheme();
   const { user } = useAuth();
   const userId = user?.id ?? user?.nickname ?? "anon";

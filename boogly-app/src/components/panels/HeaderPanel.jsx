@@ -17,11 +17,11 @@ export default function Header({ structure }) {
   const { theme, themeName = "dark", setThemeName } = useTheme();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { appName } = useApp();
+  const { appName, mainRoute } = useApp();
   const location = useLocation();
 
   const mode = STRUCTURE_LABELS[structure] || "Lista";
-  const isChallengePage = location.pathname.startsWith("/app/challenges");
+  const isChallengePage = location.pathname.startsWith(`${mainRoute}/challenges`);
   const [open, setOpen] = useState(false);
 
   async function handleLogout() {
@@ -104,7 +104,7 @@ export default function Header({ structure }) {
             className="nav-challenges"
             aria-label={`Ir para desafios ${mode}`}
             onClick={() =>
-              navigate(`/app/challenges?structure=${structure}`)
+              navigate(`${mainRoute}/challenges?structure=${structure}`)
             }
             icon={Target}
           >

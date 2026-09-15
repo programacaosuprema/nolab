@@ -15,11 +15,10 @@ import { useTheme } from "../../theme/useTheme";
 import { useError } from "../../error/useError";
 import { useAuth } from "../../autenticator/useAuth";
 
-import { saveWorkspace, loadWorkspace }
-  from "../../blockly/workspaceStorage";
-import { Code } from "lucide-react";
+import { saveWorkspace, loadWorkspace } from "../../blockly/workspaceStorage";
 
-export default function BlocklyEditor({
+
+export default function MainBlocklyEditorPanel({
   toolbox,
   setCode,
   setCCode,

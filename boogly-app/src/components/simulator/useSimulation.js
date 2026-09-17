@@ -33,7 +33,8 @@ export default function useSimulation({structure}) {
       setIsRunning(true);
       setIsPaused(false);
     } catch (err) {
-      throw new Error("Erro ao executar o algoritmo", err);
+      console.error("ERRO REAL:", err);
+      throw err;
     }
   }
 

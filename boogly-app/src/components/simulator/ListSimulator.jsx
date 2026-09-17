@@ -6,7 +6,7 @@ export class ListSimulator {
     this.steps = [];
   }
 
-  set_var(name, value) {
+  inserir_em_variavel(name, value) {
     this.variables[name] = value;
     this.steps.push({
       type: "assign",
@@ -29,7 +29,7 @@ export class ListSimulator {
     return state;
   }
 
-  get_var(name) {
+  pegar_da_variavel(name) {
     return this.variables[name];
   }
 

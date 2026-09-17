@@ -288,7 +288,7 @@ javascriptGenerator.forBlock["base_input"] = function (block) {
     value = Array.isArray(result) ? result[0] : result;
   }
 
-  return `set_var("${variable}", ${value});\n`;
+  return `inserir_em_variavel("${variable}", ${value});\n`;
 };
 
 // listGenerator.js
@@ -310,3 +310,27 @@ javascriptGenerator.forBlock["list_get"] = function (block) {
   ];
 };
 
+
+javascriptGenerator.forBlock["base_arithmetic"] = function (block) {
+  const a =
+    javascriptGenerator.valueToCode(
+      block,
+      "A",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
+
+  const b =
+    javascriptGenerator.valueToCode(
+      block,
+      "B",
+      javascriptGenerator.ORDER_NONE
+    ) || "0";
+
+  const op = block.getFieldValue("OP");
+
+  // 🔥 DSL padronizada (igual ao list_get)
+  return [
+    `aritmetica(${a}, "${op}", ${b})`,
+    javascriptGenerator.ORDER_ATOMIC
+  ];
+}

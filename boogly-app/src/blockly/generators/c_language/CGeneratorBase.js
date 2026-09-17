@@ -116,8 +116,30 @@ CGenerator.forBlock["base_show_text"] = function (block) {
   return `printf("%s\\n", ${text});\n`;
 };
 
+CGenerator.forBlock["base_arithmetic"] = function (block) {
+  const aBlock = block.getInputTargetBlock("A");
+  const bBlock = block.getInputTargetBlock("B");
 
-CGenerator.forBlock["list_get"] = function (block) {
+  let a = "0";
+  let b = "0";
+
+  if (aBlock) {
+    const result = CGenerator.blockToCode(aBlock);
+    a = Array.isArray(result) ? result[0] : result;
+  }
+
+  if (bBlock) {
+    const result = CGenerator.blockToCode(bBlock);
+    b = Array.isArray(result) ? result[0] : result;
+  }
+
+  const op = block.getFieldValue("OP");
+
+  // 🔥 Retorna expressão (igual padrão Blockly C)
+  return [`(${a} ${op} ${b})`, CGenerator.ORDER_ATOMIC];
+};
+
+/*CGenerator.forBlock["list_get"] = function (block) {
   const indexBlock = block.getInputTargetBlock("INDEX");
 
   let index = "0";
@@ -133,6 +155,6 @@ CGenerator.forBlock["list_get"] = function (block) {
     `pegar(${index}, &${list})`,
     CGenerator.ORDER_ATOMIC
   ];
-};
+};*/
 
 export default CGenerator;

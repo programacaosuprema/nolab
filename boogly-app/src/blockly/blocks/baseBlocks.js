@@ -125,7 +125,7 @@ Blockly.Blocks["base_number"] = {
       .appendField(new Blockly.FieldNumber(0), "VALUE");
 
     this.setOutput(true, null);
-    this.setColour(60);
+    this.setColour(350);
   }
 };
 
@@ -158,7 +158,7 @@ Blockly.Blocks["base_compare"] = {
     // 🔥 Resultado da comparação é booleano
     this.setOutput(true, "Boolean");
 
-    this.setColour(210);
+    this.setColour(525);
 
     this.setOnChange(function () {
       const a = this.getInputTargetBlock("A");
@@ -280,7 +280,7 @@ Blockly.Blocks["base_arithmetic"] = {
     this.setInputsInline(true);
 
     // 🔥 Resultado da comparação é booleano
-    this.setOutput(true, "Boolean");
+    this.setOutput(true, "Value");
 
     this.setColour(210);
 

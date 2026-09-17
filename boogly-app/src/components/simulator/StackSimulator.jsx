@@ -22,7 +22,7 @@ export class StackSimulator {
     return state;
   }
 
-  set_var(name, value) {
+  inserir_em_variavel(name, value) {
 
     this.variables[name] = value;
 
@@ -33,7 +33,7 @@ export class StackSimulator {
     });
   }
 
-  get_var(name) {
+  pegar_da_variavel(name) {
       return this.variables[name];
   }
 

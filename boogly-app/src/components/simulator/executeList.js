@@ -1,4 +1,5 @@
 import { ListSimulator } from "./ListSimulator";
+import { calcularAritmetica } from "./util"
 
 function resolveCondition(condition, simulator) {
 
@@ -53,13 +54,13 @@ function resolveArg(arg, simulator) {
   const value = arg.trim();
 
   // ======================
-  // 🔥 get_var("x")
+  // 🔥 pegar_da_variavel("x")
   // ======================
-  if (value.startsWith('get_var(')) {
+  if (value.startsWith('pegar_da_variavel(')) {
     const name =
-      value.match(/get_var\("(.+)"\)/)?.[1];
+      value.match(/pegar_da_variavel\("(.+)"\)/)?.[1];
 
-    return simulator.get_var(name);
+    return simulator.pegar_da_variavel(name);
   }
 
    if (value.startsWith("tamanho_lista(")) {
@@ -117,7 +118,7 @@ function resolveArg(arg, simulator) {
     simulator.variables &&
     value in simulator.variables
   ) {
-    return simulator.get_var(value);
+    return simulator.pegar_da_variavel(value);
   }
 
   return value;
@@ -311,7 +312,7 @@ function executeBlock(
         ...list.data
       ]) {
 
-        simulator.set_var(
+        simulator.inserir_em_variavel(
           variable,
           item
         );
@@ -349,7 +350,7 @@ function executeBlock(
           simulator
         );
 
-      simulator.set_var(
+      simulator.inserir_em_variavel(
         variable,
         value
       );
@@ -518,7 +519,7 @@ function executeBlock(
       // ======================
       if (
         operation ===
-        "set_var"
+        "inserir_em_variavel"
       ) {
 
         const [
@@ -526,13 +527,43 @@ function executeBlock(
           value
         ] = args;
 
-        simulator.set_var(
+        simulator.inserir_em_variavel(
           name,
           value
         );
 
         continue;
       }
+
+      if (operation === "aritmetica") {
+          let [a, op, b] = args;
+
+          // 🔥 limpa aspas do operador
+          op = op?.replace(/^"|"$/g, "");
+
+          // 🔥 resolve expressão aninhada (se existir)
+          a = this.evaluateExpression ? this.evaluateExpression(a) : a;
+          b = this.evaluateExpression ? this.evaluateExpression(b) : b;
+
+          // 🔥 converte pra número
+          const numA = Number(a);
+          const numB = Number(b);
+
+          const result = calcularAritmetica(numA, op, numB);
+
+          console.log("aritmetica: ", result);
+
+          this.steps.push({
+            type: "operation",
+            operation: "aritmetica",
+            op,
+            a: numA,
+            b: numB,
+            result
+          });
+
+          continue;
+        }
 
       // ======================
       // 🔥 EXECUÇÃO PADRÃO

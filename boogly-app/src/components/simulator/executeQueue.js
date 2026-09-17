@@ -86,13 +86,13 @@ function resolveArg(arg, simulator) {
   }
 
   // ==========================================================
-  // 🔥 get_var("x")
+  // 🔥 pegar_da_variavel("x")
   // ==========================================================
-  if (value.startsWith('get_var(')) {
+  if (value.startsWith('pegar_da_variavel(')) {
     const name =
-      value.match(/get_var\("(.+)"\)/)?.[1];
+      value.match(/pegar_da_variavel\("(.+)"\)/)?.[1];
 
-    return simulator.get_var(name);
+    return simulator.pegar_da_variavel(name);
   }
 
   if (value.startsWith("tamanho_fila(")) {
@@ -136,7 +136,7 @@ function resolveArg(arg, simulator) {
     simulator.variables &&
     value in simulator.variables
   ) {
-    return simulator.get_var(value);
+    return simulator.pegar_da_variavel(value);
   }
 
   return value;
@@ -333,7 +333,7 @@ function executeBlock(
         ...queue.data
       ]) {
 
-        simulator.set_var(
+        simulator.inserir_em_variavel(
           variable,
           item
         );
@@ -370,7 +370,7 @@ function executeBlock(
           simulator
         );
 
-      simulator.set_var(
+      simulator.inserir_em_variavel(
         variable,
         value
       );
@@ -446,7 +446,7 @@ function executeBlock(
       // 🔥 SET VAR
       if (
         operation ===
-        "set_var"
+        "inserir_em_variavel"
       ) {
 
         const [
@@ -454,7 +454,7 @@ function executeBlock(
           value
         ] = args;
 
-        simulator.set_var(
+        simulator.inserir_em_variavel(
           name,
           value
         );

@@ -131,6 +131,7 @@ export default function MainBlocklyEditorPanel({
               }
 
               setCode(codeJS);
+              console.log(codeJS);
 
               // 🔥 C CODE
               let codeC = "";

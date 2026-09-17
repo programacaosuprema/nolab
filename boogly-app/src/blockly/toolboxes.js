@@ -13,21 +13,19 @@ export const stackToolbox = {
   state: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "stack_empty" },
-      { kind: "block", type: "stack_size" },
-      { kind: "block", type: "peek" },
       { kind: "block", type: "base_show" },
-      { kind: "block", type: "base_show_text"},
+      { kind: "block", type: "base_show_text" },
     ]
   },
 
   variables: {
     kind: "flyoutToolbox",
     contents: [
+      { kind: "block", type: "base_input"},
+      { kind: "block", type: "base_arithmetic" },
       { kind: "block", type: "base_variable" },
       { kind: "block", type: "base_text" },
       { kind: "block", type: "base_number"},
-      { kind: "block", type: "base_input"},
       { kind: "block", type: "base_not"},
     ]
   },
@@ -35,6 +33,9 @@ export const stackToolbox = {
   conditions: {
     kind: "flyoutToolbox",
     contents: [
+      { kind: "block", type: "stack_empty" },
+      { kind: "block", type: "stack_size" },
+      { kind: "block", type: "peek" },
       { kind: "block", type: "base_compare"},
       { kind: "block", type: "base_if" },
       { kind: "block", type: "base_if_else" }
@@ -64,21 +65,20 @@ export const queueToolbox = {
   state: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "queue_front" },
-      { kind: "block", type: "queue_size" },
-      { kind: "block", type: "queue_is_empty" },
       { kind: "block", type: "base_show" },
       {kind: "block", type: "base_show_text"},
+      
     ]
   },
 
   variables: {
     kind: "flyoutToolbox",
     contents: [
+      { kind: "block", type: "base_arithmetic" },
+      { kind: "block", type: "base_input"},
       { kind: "block", type: "base_variable" },
       { kind: "block", type: "base_text" },
       { kind: "block", type: "base_number"},
-      { kind: "block", type: "base_input"},
       { kind: "block", type: "base_not"},
     ]
   },
@@ -86,6 +86,9 @@ export const queueToolbox = {
   conditions: {
     kind: "flyoutToolbox",
     contents: [
+      { kind: "block", type: "queue_front" },
+      { kind: "block", type: "queue_size" },
+      { kind: "block", type: "queue_is_empty" },
       { kind: "block", type: "base_compare" },
       { kind: "block", type: "base_if" },
       { kind: "block", type: "base_if_else" }
@@ -124,12 +127,10 @@ export const toolboxCategories = {
   state: {
     kind: "flyoutToolbox",
     contents: [
-      { kind: "block", type: "list_is_empty" },
-      { kind: "block", type: "list_size" },
       { kind: "block", type: "list_index" },
       { kind: "block", type: "list_item_position" },
       { kind: "block", type: "base_show" },
-      { kind: "block", type: "base_show_text"},
+      { kind: "block", type: "base_show_text"}
     ]
   },
 
@@ -146,10 +147,11 @@ export const toolboxCategories = {
   variables: {
     kind: "flyoutToolbox",
     contents: [
+      { kind: "block", type: "base_input"},
+      { kind: "block", type: "base_arithmetic" },
       { kind: "block", type: "base_variable" },
       { kind: "block", type: "base_text" },
       { kind: "block", type: "base_number"},
-      { kind: "block", type: "base_input"},
       { kind: "block", type: "base_not"},
     ]
   },
@@ -158,6 +160,8 @@ export const toolboxCategories = {
   conditions: {
     kind: "flyoutToolbox",
     contents: [
+      { kind: "block", type: "list_is_empty" },
+      { kind: "block", type: "list_size" },
       { kind: "block", type: "base_compare" },
       { kind: "block", type: "base_if" },
       { kind: "block", type: "base_if_else" },

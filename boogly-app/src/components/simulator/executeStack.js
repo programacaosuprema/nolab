@@ -109,15 +109,15 @@ function resolveArg(arg, simulator) {
       return simulator.tamanho_pilha(stackName);
   }
 
-  // get_var("x")
+  // pegar_da_variavel("x")
   if (
-    value.startsWith("get_var(")
+    value.startsWith("pegar_da_variavel(")
   ) {
 
     const name =
-      value.match(/get_var\("(.+)"\)/)?.[1];
+      value.match(/pegar_da_variavel\("(.+)"\)/)?.[1];
 
-    return simulator.get_var(name);
+    return simulator.pegar_da_variavel(name);
 
   }
 
@@ -153,7 +153,7 @@ function resolveArg(arg, simulator) {
     value in simulator.variables
   ) {
 
-    return simulator.get_var(value);
+    return simulator.pegar_da_variavel(value);
 
   }
 
@@ -390,7 +390,7 @@ function executeBlock(
         const item of [...stack]
       ) {
 
-        simulator.set_var(
+        simulator.inserir_em_variavel(
           variable,
           item
         );
@@ -429,7 +429,7 @@ function executeBlock(
           simulator
         );
 
-      simulator.set_var(
+      simulator.inserir_em_variavel(
         variable,
         value
       );
@@ -516,7 +516,7 @@ function executeBlock(
       // SET VAR
       if (
         operation ===
-        "set_var"
+        "inserir_em_variavel"
       ) {
 
         const [
@@ -524,7 +524,7 @@ function executeBlock(
           value
         ] = args;
 
-        simulator.set_var(
+        simulator.inserir_em_variavel(
           name,
           value
         );

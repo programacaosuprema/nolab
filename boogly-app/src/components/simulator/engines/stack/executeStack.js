@@ -186,9 +186,14 @@ function executeBlock(lines, simulator) {
     if (typeof simulator[operation] === 'function') {
       // PUSH
       if (operation === 'empilhar') {
-        const [stackName, value] = args;
+        let [stackName, value] = args;
 
-        if (value === null || value === undefined) {
+        stackName = stackName.replace(/^"|"$/g, '');
+
+        //  valor resolve (x → 2)
+        const resolvedValue = evaluator.evaluate(value);
+
+        if (resolvedValue === null || resolvedValue === undefined) {
           simulator.steps.push({
             type: 'warning',
 
@@ -200,7 +205,14 @@ function executeBlock(lines, simulator) {
           continue;
         }
 
-        simulator.empilhar(stackName, value);
+        simulator.empilhar(stackName, resolvedValue);
+
+        simulator.steps.push({
+          type: 'push',
+          queue: stackName,
+          value: resolvedValue,
+          state: simulator.getState(),
+        });
 
         continue;
       }

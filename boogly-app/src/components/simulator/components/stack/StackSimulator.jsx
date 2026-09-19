@@ -115,27 +115,23 @@ export class StackSimulator {
 
     const index = this.stacks[name].length - 1;
 
+    //  passo 1: destacar topo
     this.steps.push({
       type: 'highlight_remove',
-
       index,
-
       stack: name,
-
+      message: `Procurando topo da pilha (posição ${index})`,
       state: this.snapshot(),
     });
 
     const removed = this.stacks[name].pop();
 
+    //  passo 3: remoção clara
     this.steps.push({
       type: 'pop',
-
       value: removed,
-
-      message: `Elemento ${removed} saiu da pilha ${name}`,
-
+      message: `Desempilhou (${removed})`,
       stack: name,
-
       state: this.snapshot(),
     });
   }

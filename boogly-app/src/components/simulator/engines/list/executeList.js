@@ -4,7 +4,7 @@ import { ExpressionEvaluator } from '../core/expressionEvaluator';
 const structurename = 'list';
 
 function executeBlock(lines, simulator, operationMap) {
-  const evaluator = new ExpressionEvaluator(simulator.variables);
+  const evaluator = new ExpressionEvaluator(simulator);
 
   let shouldExecute = true;
 
@@ -185,29 +185,43 @@ function executeBlock(lines, simulator, operationMap) {
           .splitArguments(match[2])
           .map((arg) => evaluator.resolveArg(arg, simulator))
       : [];
+    
 
     if (typeof simulator[operation] === 'function') {
       // ======================
       //  INSERIR
       // ======================
       if (operation === 'inserir') {
-        const [nome, valor] = args;
 
-        if (valor === null || valor === undefined) {
+        let [listName, value] = args;
+
+        //  nome da lista SEMPRE string
+        listName = listName.replace(/^"|"$/g, '');
+
+        //  valor resolve (x → 2)
+        
+        const resolvedValue = evaluator.evaluate(value);
+
+        if (resolvedValue === null || resolvedValue === undefined) {
           simulator.steps.push({
             type: 'warning',
             message: `valor nulo não pode ser inserido`,
             state: simulator.getState(),
           });
-
           continue;
         }
+        
+        simulator.inserir(listName, resolvedValue);
 
-        simulator.inserir(valor, nome);
+        simulator.steps.push({
+          type: 'insert',
+          list: listName,
+          value: resolvedValue,
+          state: simulator.getState(),
+        });
 
         continue;
       }
-
       // ======================
       //  REMOVER ITEM
       // ======================

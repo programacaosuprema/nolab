@@ -18,12 +18,12 @@ export class QueueSimulator {
   getState() {
     const state = {};
 
-    // 🔥 copia filas
+    //  copia filas
     for (const key in this.queues) {
       state[key] = [...this.queues[key]];
     }
 
-    // 🔥 copia variáveis
+    //  copia variáveis
     state.variables = {
       ...this.variables,
     };
@@ -38,7 +38,7 @@ export class QueueSimulator {
   pegar(posicao, nome) {
     const fila = this.queues[nome];
 
-    // 🔥 fila não existe
+    //  fila não existe
     if (!fila) {
       this.steps.push({
         type: 'error',
@@ -49,7 +49,7 @@ export class QueueSimulator {
       return null;
     }
 
-    // 🔥 posição inválida
+    //  posição inválida
     if (posicao < 0 || posicao >= fila.length) {
       this.steps.push({
         type: 'warning',
@@ -85,9 +85,17 @@ export class QueueSimulator {
   }
 
   enfileirar(name, value) {
-    if (!this.queues[name]) return;
+    if (!this.queues[name]) {
+      this.steps.push({
+        type: 'error',
+        message: `fila "${name}" não existe`,
+        state: this.snapshot(),
+      });
+      return;
+    }
 
-    const limit = this.fixedSizes[name];
+    const limit = this.fixedSizes?.[name] ?? 0;
+
     if (limit > 0 && this.queues[name].length >= limit) {
       this.steps.push({
         type: 'warning',
@@ -106,7 +114,6 @@ export class QueueSimulator {
       state: this.snapshot(),
     });
   }
-
   snapshot() {
     return this.getState();
   }
@@ -114,17 +121,18 @@ export class QueueSimulator {
   desenfileirar(name) {
     if (!this.queues[name] || this.queues[name].length === 0) return;
 
-    // 🔥 PASSO 1 → highlight (ANTES de remover)
+    //  PASSO 1 → highlight (ANTES de remover)
     this.steps.push({
       type: 'highlight_remove',
       index: 0,
       queue: name, // importante se tiver múltiplas filas
+      message: `Procurando inicio da fila (posição 0)`,
       state: this.snapshot(),
     });
 
     const removed = this.queues[name].shift();
 
-    // 🔥 PASSO 2 → estado atualizado
+    //  PASSO 2 → estado atualizado
     this.steps.push({
       type: 'dequeue',
       value: removed,

@@ -90,8 +90,9 @@ export class ListSimulator {
     });
   }
 
-  inserir(value, nome) {
-    const list = this.getList(nome);
+  inserir(name, value) {
+
+    const list = this.getList(name);
     if (!list) return;
 
     if (list.limit !== undefined && list.data.length >= list.limit) {

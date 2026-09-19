@@ -181,11 +181,16 @@ function executeBlock(lines, simulator) {
     //  EXECUTA
     // ==========================================================
     if (typeof simulator[operation] === 'function') {
-      //  ENQUEUE
-      if (operation === 'enqueue') {
-        const [queueName, value] = args;
+      //  enfileirar
+      if (operation === 'enfileirar') {
+        let [queueName, value] = args;
 
-        if (value === null || value === undefined) {
+        queueName = queueName.replace(/^"|"$/g, '');
+
+        //  valor resolve (x → 2)
+        const resolvedValue = evaluator.evaluate(value);
+
+        if (resolvedValue === null || resolvedValue === undefined) {
           simulator.steps.push({
             type: 'warning',
             message: `valor nulo não pode ser enfileirado`,
@@ -195,7 +200,14 @@ function executeBlock(lines, simulator) {
           continue;
         }
 
-        simulator.enqueue(queueName, value);
+        simulator.enfileirar(queueName, resolvedValue);
+
+        simulator.steps.push({
+          type: 'enqueue',
+          queue: queueName,
+          value: resolvedValue,
+          state: simulator.getState(),
+        });
 
         continue;
       }

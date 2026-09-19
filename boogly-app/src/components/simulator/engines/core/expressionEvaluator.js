@@ -11,7 +11,7 @@ export class ExpressionEvaluator {
     return value;
   }
 
-  resolveArg(arg) {
+  resolveArg(arg, simulator) {
     if (arg == null) return null;
 
     let value = arg.toString().trim();
@@ -70,10 +70,10 @@ export class ExpressionEvaluator {
     if (!Number.isNaN(num)) return num;
 
     if (
-      this.variables &&
-      Object.prototype.hasOwnProperty.call(this.variables, value)
+      simulator.variables &&
+      Object.prototype.hasOwnProperty.call(simulator.variables, value)
     ) {
-      return this.simulator.pegar_da_variavel(value);
+      return simulator.pegar_da_variavel(value);
     }
 
     return value;
@@ -194,8 +194,8 @@ export class ExpressionEvaluator {
     }
 
     // variável
-    if (Object.prototype.hasOwnProperty.call(this.variables, expr)) {
-      return this.variables[expr];
+    if (this.simulator.variables && Object.prototype.hasOwnProperty.call(this.simulator.variables, expr)) {
+      return this.simulator.variables[expr];
     }
 
     return expr;

@@ -2,17 +2,16 @@ import { Challenge } from "../models/challenge.model.js";
 import { UserChallenge } from "../models/userChallenge.model.js";
 import mongoose from "mongoose";
 
-// 🔥 CRIAR
+//  CRIAR
 export const createChallenge = async (data) => {
   return await Challenge.create(data);
 };
 
-// 🔥 LISTAR COM STATUS + RESOLUÇÕES
+//  LISTAR COM STATUS + RESOLUÇÕES
 export const getAllChallenges = async (userId) => {
-
   const challenges = await Challenge.find();
 
-  // 🔥 progresso do usuário
+  //  progresso do usuário
   let userProgress = [];
 
   if (userId) {
@@ -27,13 +26,12 @@ export const getAllChallenges = async (userId) => {
 
   const result = await Promise.all(
     challenges.map(async (c) => {
-
       const progress = progressMap[c._id.toString()] || {};
 
-      // 🔥 total de usuários que completaram
+      //  total de usuários que completaram
       const solvedCount = await UserChallenge.countDocuments({
         challengeId: c._id,
-        status: "completed"
+        status: "completed",
       });
 
       return {
@@ -42,15 +40,15 @@ export const getAllChallenges = async (userId) => {
         userStatus: progress.status || "pending",
         attempts: progress.attempts || 0,
 
-        solvedCount
+        solvedCount,
       };
-    })
+    }),
   );
 
   return result;
 };
 
-// 🔥 BUSCAR POR ID
+//  BUSCAR POR ID
 export const getChallengeById = async (id) => {
   if (mongoose.Types.ObjectId.isValid(id)) {
     return await Challenge.findById(id);

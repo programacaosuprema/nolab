@@ -14,7 +14,7 @@ export const setOnboardingDone = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { onboardingDone: !!onboardingDone },
-      { new: true }
+      { new: true },
     );
 
     if (!user) {
@@ -23,9 +23,8 @@ export const setOnboardingDone = async (req, res) => {
 
     return res.json({
       success: true,
-      onboardingDone: user.onboardingDone
+      onboardingDone: user.onboardingDone,
     });
-
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

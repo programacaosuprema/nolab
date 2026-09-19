@@ -1,28 +1,26 @@
 import { UserChallenge } from "../models/userChallenge.model.js";
 
-// 🔥 REGISTRAR TENTATIVA
+//  REGISTRAR TENTATIVA
 export const registerAttempt = async (userId, challengeId) => {
-
   const existing = await UserChallenge.findOne({ userId, challengeId });
 
-  // 🔥 se já concluiu → não faz nada
+  //  se já concluiu → não faz nada
   if (existing?.status === "concluido") {
     return existing;
   }
 
-  // 🔥 cria ou atualiza
+  //  cria ou atualiza
   return await UserChallenge.findOneAndUpdate(
     { userId, challengeId },
     {
       $inc: { attempts: 1 },
-      status: "tentando"
+      status: "tentando",
     },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
 };
 
 export const markAsCompleted = async (userId, challengeId) => {
-
   const existing = await UserChallenge.findOne({ userId, challengeId });
 
   if (!existing) {
@@ -31,11 +29,11 @@ export const markAsCompleted = async (userId, challengeId) => {
       challengeId,
       status: "concluido",
       attempts: 1,
-      completedAt: new Date()
+      completedAt: new Date(),
     });
   }
 
-  // 🔥 NÃO incrementa attempts aqui
+  //  NÃO incrementa attempts aqui
   existing.status = "concluido";
   existing.completedAt = new Date();
 

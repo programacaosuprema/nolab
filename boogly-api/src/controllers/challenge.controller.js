@@ -35,10 +35,10 @@ function normalizeCommands(commands = []) {
     "base_not",
     "list_container",
     "queue_container",
-    "stack_container"
+    "stack_container",
   ]);
 
-  return (commands || []).filter(c => !skipTypes.has(c.type));
+  return (commands || []).filter((c) => !skipTypes.has(c.type));
 }
 
 /** Executa sequência de comandos sobre uma lista inicial (clonando sempre) */
@@ -54,7 +54,8 @@ function executeWithSteps(commands = [], startState = [], structure = "list") {
       case "enqueue":
       case "push":
         // insere ao final
-        if (cmd.value !== undefined && cmd.value !== null) lista.push(cmd.value);
+        if (cmd.value !== undefined && cmd.value !== null)
+          lista.push(cmd.value);
         break;
 
       case "list_remove_first":
@@ -92,7 +93,7 @@ function executeWithSteps(commands = [], startState = [], structure = "list") {
 
     steps.push({
       command: cmd,
-      state: [...lista]
+      state: [...lista],
     });
   }
 
@@ -115,21 +116,21 @@ export const getAll = async (req, res) => {
     const userId = req.userId || null;
     if (userId) {
       const ucs = await UserChallenge.find({ userId }).lean();
-      const byChallenge = new Map(ucs.map(u => [String(u.challengeId), u]));
+      const byChallenge = new Map(ucs.map((u) => [String(u.challengeId), u]));
 
-      const merged = challenges.map(c => {
+      const merged = challenges.map((c) => {
         const uc = byChallenge.get(String(c._id));
         return {
           ...c,
           userStatus: uc?.status || "pending",
-          userAttempts: uc?.attempts ?? 0
+          userAttempts: uc?.attempts ?? 0,
         };
       });
 
       return res.json(merged);
     }
 
-    const fallback = challenges.map(c => ({ ...c, userStatus: "pending" }));
+    const fallback = challenges.map((c) => ({ ...c, userStatus: "pending" }));
     return res.json(fallback);
   } catch (err) {
     console.error("getAll error:", err);
@@ -141,13 +142,17 @@ export const getChallenge = async (req, res) => {
   try {
     const { id } = req.params;
     const challenge = await findChallengeByIdOrPublicId(id);
-    if (!challenge) return res.status(404).json({ error: "Challenge not found" });
+    if (!challenge)
+      return res.status(404).json({ error: "Challenge not found" });
 
     const out = challenge.toObject ? challenge.toObject() : challenge;
 
     const userId = req.userId || null;
     if (userId) {
-      const uc = await UserChallenge.findOne({ userId, challengeId: challenge._id }).lean();
+      const uc = await UserChallenge.findOne({
+        userId,
+        challengeId: challenge._id,
+      }).lean();
       out.userStatus = uc?.status || "pending";
       out.userAttempts = uc?.attempts ?? 0;
     }
@@ -172,7 +177,9 @@ export async function recordAttempt(req, res) {
     // visitante: incrementa apenas global
     if (!userId) {
       // tenta tratar id como publicId também
-      const filter = mongoose.Types.ObjectId.isValid(challengeId) ? { _id: challengeId } : { publicId: challengeId };
+      const filter = mongoose.Types.ObjectId.isValid(challengeId)
+        ? { _id: challengeId }
+        : { publicId: challengeId };
       await Challenge.findOneAndUpdate(filter, { $inc: { attempts: 1 } });
       return res.json({ userAttempt: null });
     }
@@ -193,29 +200,34 @@ export async function recordAttempt(req, res) {
     const userChallenge = await UserChallenge.findOneAndUpdate(
       { userId, challengeId: challenge._id },
       {
-        $setOnInsert: { status: "attempted", attempts: 0 }
+        $setOnInsert: { status: "attempted", attempts: 0 },
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
     // incrementa tentativa local e marca attempted se não estiver completed
     userChallenge.attempts += 1;
-    if (userChallenge.status !== "completed") userChallenge.status = "attempted";
+    if (userChallenge.status !== "completed")
+      userChallenge.status = "attempted";
     await userChallenge.save();
 
     // incrementa attempts global
-    await Challenge.updateOne({ _id: challenge._id }, { $inc: { attempts: 1 } });
+    await Challenge.updateOne(
+      { _id: challenge._id },
+      { $inc: { attempts: 1 } },
+    );
 
     return res.json({
       userAttempt: {
         status: userChallenge.status,
-        attempts: userChallenge.attempts
-      }
+        attempts: userChallenge.attempts,
+      },
     });
-
   } catch (err) {
     console.error("recordAttempt error:", err);
-    return res.status(500).json({ error: err.message || "Erro ao registrar tentativa" });
+    return res
+      .status(500)
+      .json({ error: err.message || "Erro ao registrar tentativa" });
   }
 }
 
@@ -225,8 +237,14 @@ export async function recordAttempt(req, res) {
 export const incrementAttempts = async (req, res) => {
   try {
     const { id } = req.params;
-    const filter = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { publicId: id };
-    const updated = await Challenge.findOneAndUpdate(filter, { $inc: { attempts: 1 } }, { new: true });
+    const filter = mongoose.Types.ObjectId.isValid(id)
+      ? { _id: id }
+      : { publicId: id };
+    const updated = await Challenge.findOneAndUpdate(
+      filter,
+      { $inc: { attempts: 1 } },
+      { new: true },
+    );
     if (!updated) return res.status(404).json({ error: "Challenge not found" });
     return res.json({ success: true, attempts: updated.attempts });
   } catch (err) {
@@ -256,21 +274,25 @@ export const submitChallenge = async (req, res) => {
     const commandsRaw = req.body?.commands || [];
 
     const challenge = await findChallengeByIdOrPublicId(id);
-    if (!challenge) return res.status(404).json({ message: "Challenge not found" });
+    if (!challenge)
+      return res.status(404).json({ message: "Challenge not found" });
 
     // normaliza (filtra blocos-valor que aparecem como top blocks)
     const normalized = normalizeCommands(commandsRaw);
 
     // checa requiredBlocks (se houver)
-    if (Array.isArray(challenge.requiredBlocks) && challenge.requiredBlocks.length > 0) {
+    if (
+      Array.isArray(challenge.requiredBlocks) &&
+      challenge.requiredBlocks.length > 0
+    ) {
       for (const rule of challenge.requiredBlocks) {
-        const count = normalized.filter(c => c.type === rule.type).length;
+        const count = normalized.filter((c) => c.type === rule.type).length;
         if (count < (rule.min || 1)) {
           return res.json({
             success: false,
             message: `Use o bloco obrigatório: ${rule.type}`,
             output: [],
-            steps: []
+            steps: [],
           });
         }
       }
@@ -279,7 +301,9 @@ export const submitChallenge = async (req, res) => {
     // Prepara execução para cada testCase
     const testCases = challenge.testCases || [];
     if (!Array.isArray(testCases) || testCases.length === 0) {
-      return res.status(400).json({ message: "Challenge sem testCases definidos" });
+      return res
+        .status(400)
+        .json({ message: "Challenge sem testCases definidos" });
     }
 
     const aggregated = {
@@ -287,28 +311,40 @@ export const submitChallenge = async (req, res) => {
       message: "Correto 🎉",
       output: null,
       expected: null,
-      steps: null
+      steps: null,
     };
 
     let userId = req.userId || null;
 
     // flag: detecta se o usuário forneceu inserts manualmente
-    const userInsertedVals = normalized.filter(c => /insert|enqueue|push/i.test(c.type)).map(c => c.value);
+    const userInsertedVals = normalized
+      .filter((c) => /insert|enqueue|push/i.test(c.type))
+      .map((c) => c.value);
 
     for (const testCase of testCases) {
       // Determine startState:
       // - se usuário incluiu inserts -> start vazio (eles inserem manualmente)
       // - caso contrário -> start = testCase.input (pré-inicializa)
-      const startState = (userInsertedVals.length > 0) ? [] : (Array.isArray(testCase.input) ? [...testCase.input] : []);
+      const startState =
+        userInsertedVals.length > 0
+          ? []
+          : Array.isArray(testCase.input)
+            ? [...testCase.input]
+            : [];
 
       // Se o usuário não inseriu nada E usou apenas blocos de remoção (sem manipulacoes),
       // ainda permitimos (porque startState será preenchido com testCase.input).
       // Se você quiser proibir passar apenas com remove, adicione validação aqui.
-      const steps = executeWithSteps(normalized, startState, challenge.structure);
+      const steps = executeWithSteps(
+        normalized,
+        startState,
+        challenge.structure,
+      );
 
       const finalState = steps.at(-1)?.state || [];
 
-      const passed = JSON.stringify(finalState) === JSON.stringify(testCase.expectedOutput);
+      const passed =
+        JSON.stringify(finalState) === JSON.stringify(testCase.expectedOutput);
 
       // se falhou, retorna imediatamente com steps e estado
       if (!passed) {
@@ -326,7 +362,10 @@ export const submitChallenge = async (req, res) => {
     }
 
     // Sempre conta como uma tentativa global (cada submit)
-    await Challenge.updateOne({ _id: challenge._id }, { $inc: { attempts: 1 } });
+    await Challenge.updateOne(
+      { _id: challenge._id },
+      { $inc: { attempts: 1 } },
+    );
 
     // Atualiza UserChallenge conforme sucesso/falha
     let userChallengeDoc = null;
@@ -337,15 +376,23 @@ export const submitChallenge = async (req, res) => {
           { userId, challengeId: challenge._id },
           {
             $set: { status: "completed", completedAt: new Date() },
-            $inc: { attempts: 1 }
+            $inc: { attempts: 1 },
           },
-          { new: true, upsert: true, setDefaultsOnInsert: true }
+          { new: true, upsert: true, setDefaultsOnInsert: true },
         );
 
         // incrementa solvedCount apenas se o usuário não tinha completado antes
-        const hadCompletedBefore = await UserChallenge.exists({ userId, challengeId: challenge._id, status: "completed", _id: { $ne: userChallengeDoc._id } });
+        const hadCompletedBefore = await UserChallenge.exists({
+          userId,
+          challengeId: challenge._id,
+          status: "completed",
+          _id: { $ne: userChallengeDoc._id },
+        });
         if (!hadCompletedBefore) {
-          await Challenge.updateOne({ _id: challenge._id }, { $inc: { solvedCount: 1 } });
+          await Challenge.updateOne(
+            { _id: challenge._id },
+            { $inc: { solvedCount: 1 } },
+          );
         }
       } else {
         // falhou -> apenas incrementa attempts e set attempted
@@ -353,9 +400,9 @@ export const submitChallenge = async (req, res) => {
           { userId, challengeId: challenge._id },
           {
             $set: { status: "attempted" },
-            $inc: { attempts: 1 }
+            $inc: { attempts: 1 },
           },
-          { new: true, upsert: true, setDefaultsOnInsert: true }
+          { new: true, upsert: true, setDefaultsOnInsert: true },
         );
       }
     }
@@ -366,9 +413,13 @@ export const submitChallenge = async (req, res) => {
       output: formatValue(aggregated.output),
       expected: formatValue(aggregated.expected),
       steps: aggregated.steps,
-      userAttempt: userChallengeDoc ? { attempts: userChallengeDoc.attempts, status: userChallengeDoc.status } : null
+      userAttempt: userChallengeDoc
+        ? {
+            attempts: userChallengeDoc.attempts,
+            status: userChallengeDoc.status,
+          }
+        : null,
     });
-
   } catch (err) {
     console.error("submitChallenge error:", err);
     return res.status(500).json({ error: err.message });

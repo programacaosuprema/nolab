@@ -7,8 +7,9 @@ const router = express.Router();
 
 router.get("/me", requireAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId) 
-      .select("nickname email onboardingDone guest createdAt");
+    const user = await User.findById(req.userId).select(
+      "nickname email onboardingDone guest createdAt",
+    );
 
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
@@ -20,7 +21,7 @@ router.get("/me", requireAuth, async (req, res) => {
   }
 });
 
-// 🔥 AGORA FUNCIONA
+//  AGORA FUNCIONA
 router.patch("/me/onboarding", requireAuth, setOnboardingDone);
 
 export default router;

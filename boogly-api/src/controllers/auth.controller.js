@@ -2,14 +2,12 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 
 function setCookie(res, token) {
-  //const isProd = process.env.NODE_ENV === "production";
-
   res.cookie("access_token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: true, // 🔥 DEV
+    sameSite: "none", // ou "none" se usar HTTPS
     maxAge: 7 * 24 * 3600 * 1000,
-    path: "/"
+    path: "/",
   });
 }
 
@@ -18,21 +16,19 @@ export const authenticate = async (req, res) => {
     const { email, nick } = req.body;
 
     let user = await User.findOne({
-      $or: [{ email }, { nickname: email }]
+      $or: [{ email }, { nickname: email }],
     });
 
     if (!user) {
       user = await User.create({
         email,
-        nickname: nick || generateNick()
+        nickname: nick || generateNick(),
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
 
     setCookie(res, token);
 
@@ -41,10 +37,9 @@ export const authenticate = async (req, res) => {
         id: user._id,
         nickname: user.nickname,
         email: user.email,
-        guest: false
-      }
+        guest: false,
+      },
     });
-
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -59,7 +54,7 @@ export const getUsers = async (req, res) => {
 // 🔥 GERADOR DE NICK
 function generateNick() {
   const roles = ["Convidado", "Player", "Coder"];
-  const themes = ["Stack", "Queue", "List", "Node"];
+  const themes = ["Stack", "Queue", "List", "Node", "Tree"];
   const num = Math.floor(Math.random() * 999);
 
   return `${roles[Math.floor(Math.random() * roles.length)]}_${themes[Math.floor(Math.random() * themes.length)]}_${num}`;
@@ -72,13 +67,13 @@ export const loginGuest = async (req, res) => {
     const user = await User.create({
       email: `guest_${Date.now()}@guest.com`,
       nickname,
-      guest: true
+      guest: true,
     });
 
     const token = jwt.sign(
       { id: user._id, guest: true },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "1h" },
     );
 
     setCookie(res, token);
@@ -87,10 +82,9 @@ export const loginGuest = async (req, res) => {
       user: {
         id: user._id,
         nickname: user.nickname,
-        guest: true
-      }
+        guest: true,
+      },
     });
-
   } catch (err) {
     return res.status(500).json({ error: "Erro interno" });
   }
@@ -99,7 +93,7 @@ export const loginGuest = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("access_token", {
     httpOnly: true,
-    path: "/"
+    path: "/",
   });
 
   res.json({ message: "Logout OK" });

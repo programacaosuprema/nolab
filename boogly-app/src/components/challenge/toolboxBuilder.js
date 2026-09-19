@@ -1,17 +1,17 @@
 export function buildToolbox(toolboxConfig) {
   if (!toolboxConfig) {
     return {
-      kind: "categoryToolbox",
-      contents: []
+      kind: 'categoryToolbox',
+      contents: [],
     };
   }
 
   return {
-    kind: "categoryToolbox",
+    kind: 'categoryToolbox',
     contents: Object.entries(toolboxConfig).map(([key, value]) => ({
-      kind: "category",
+      kind: 'category',
       name: key.toUpperCase(),
-      contents: value.contents || []
-    }))
+      contents: value.contents || [],
+    })),
   };
 }

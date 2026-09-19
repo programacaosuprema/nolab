@@ -1,6 +1,6 @@
-import { useTheme } from "../../theme/useTheme";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useTheme } from '../../theme/useTheme';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 function formatTime(seconds) {
   const min = Math.floor(seconds / 60);
@@ -11,13 +11,13 @@ function formatTime(seconds) {
 }
 
 function formatValue(value) {
-  if (value === null || value === undefined) return "nulo";
+  if (value === null || value === undefined) return 'nulo';
 
-  if (typeof value === "string") return value;
+  if (typeof value === 'string') return value;
 
   // ✅ SE FOR ARRAY → UMA LINHA
   if (Array.isArray(value)) {
-    return `[${value.join(", ")}]`;
+    return `[${value.join(', ')}]`;
   }
 
   // resto continua igual
@@ -48,18 +48,18 @@ export default function ChallengeResult({ result, onClose }) {
     <div
       className="fixed inset-0 flex items-center justify-center"
       style={{
-        background: "rgba(0,0,0,0.6)",
-        zIndex: 9999
+        background: 'rgba(0,0,0,0.6)',
+        zIndex: 9999,
       }}
     >
       <div
         className="rounded-xl shadow-xl"
         style={{
-          width: "520px",
+          width: '520px',
           padding: theme.spacing.lg,
           background: theme.panel,
           color: theme.text,
-          border: `1px solid ${theme.border}`
+          border: `1px solid ${theme.border}`,
         }}
       >
         {/* HEADER */}
@@ -70,7 +70,7 @@ export default function ChallengeResult({ result, onClose }) {
           <h2
             style={{
               ...theme.typography.h3,
-              color: theme.primary
+              color: theme.primary,
             }}
           >
             Resultado da Execução
@@ -80,18 +80,19 @@ export default function ChallengeResult({ result, onClose }) {
             onClick={onClose}
             style={{
               color: theme.muted,
-              fontSize: "18px",
-              cursor: "pointer"
+              fontSize: '18px',
+              cursor: 'pointer',
             }}
           >
             ✖
           </button>
         </div>
-        
-       
 
         {/* STATUS */}
-        <div className="flex flex-col gap-1"style={{ marginBottom: theme.spacing.md }}>
+        <div
+          className="flex flex-col gap-1"
+          style={{ marginBottom: theme.spacing.md }}
+        >
           <span style={{ color: theme.muted }}>
             <strong>{result.message}</strong>
           </span>
@@ -112,11 +113,11 @@ export default function ChallengeResult({ result, onClose }) {
             style={{
               marginTop: theme.spacing.xs,
               padding: theme.spacing.sm,
-              borderRadius: "8px",
+              borderRadius: '8px',
               background: theme.background,
               border: `1px solid ${theme.border}`,
               color: theme.text,
-              fontSize: theme.typography.small.fontSize
+              fontSize: theme.typography.small.fontSize,
             }}
           >
             {formatValue(result.output ?? [])}
@@ -132,9 +133,9 @@ export default function ChallengeResult({ result, onClose }) {
                 style={{
                   marginTop: theme.spacing.xs,
                   padding: theme.spacing.sm,
-                  borderRadius: "8px",
-                  background: "rgba(34,197,94,0.1)",
-                  color: theme.text
+                  borderRadius: '8px',
+                  background: 'rgba(34,197,94,0.1)',
+                  color: theme.text,
                 }}
               >
                 {formatValue(result.expected)}
@@ -147,15 +148,14 @@ export default function ChallengeResult({ result, onClose }) {
                 style={{
                   marginTop: theme.spacing.xs,
                   padding: theme.spacing.sm,
-                  borderRadius: "8px",
-                  background: "rgba(239,68,68,0.1)",
-                  color: theme.text
+                  borderRadius: '8px',
+                  background: 'rgba(239,68,68,0.1)',
+                  color: theme.text,
                 }}
               >
                 {formatValue(result.output)}
               </pre>
             </div>
-             
           </div>
         )}
       </div>

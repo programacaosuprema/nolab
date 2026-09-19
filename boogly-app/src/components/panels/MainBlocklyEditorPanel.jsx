@@ -1,29 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as Blockly from "blockly/core";
-import "blockly/blocks";
-import "blockly/javascript";
+import React, { useEffect, useRef, useState } from 'react';
+import * as Blockly from 'blockly/core';
+import 'blockly/blocks';
+import 'blockly/javascript';
 
-import "../../blockly/blocks/stackBlocks";
-import "../../blockly/blocks/queueBlocks";
-import "../../blockly/blocks/listBlocks";
-import "../../blockly/blocks/baseBlocks";
+import '../../blockly/blocks/stackBlocks';
+import '../../blockly/blocks/queueBlocks';
+import '../../blockly/blocks/listBlocks';
+import '../../blockly/blocks/baseBlocks';
 
-import { javascriptGenerator } from "blockly/javascript";
-import { generateC } from "../../blockly/generators/c_language/CGenerateDispatcher";
+import { javascriptGenerator } from 'blockly/javascript';
+import { generateC } from '../../blockly/generators/c_language/CGenerateDispatcher';
 
-import { useTheme } from "../../theme/useTheme";
-import { useError } from "../../error/useError";
-import { useAuth } from "../../autenticator/useAuth";
+import { useTheme } from '../../theme/useTheme';
+import { useError } from '../../error/useError';
+import { useAuth } from '../../autenticator/useAuth';
 
-import { saveWorkspace, loadWorkspace } from "../../utils/workspaceStorage";
-
+import { saveWorkspace, loadWorkspace } from '../../utils/workspaceStorage';
 
 export default function MainBlocklyEditorPanel({
   toolbox,
   setCode,
   setCCode,
   setBlockCount,
-  blockCount
+  blockCount,
 }) {
   const blocklyDiv = useRef(null);
   const workspaceRef = useRef(null);
@@ -33,67 +32,60 @@ export default function MainBlocklyEditorPanel({
   const [initError, setInitError] = useState(false);
   const [toolboxVisible, setToolboxVisible] = useState(true);
 
-  const [saveStatus, setSaveStatus] = useState("Salvo");
+  const [saveStatus, setSaveStatus] = useState('Salvo');
 
   const { theme } = useTheme();
   const { showError } = useError();
   const { user, structure } = useAuth();
 
-  const hasCategories =
-  toolbox?.list ||
-  toolbox?.queue ||
-  toolbox?.stack;
+  const hasCategories = toolbox?.list || toolbox?.queue || toolbox?.stack;
 
   const categoriesByStructure = {
     list: [
-      ["list", "Lista"],
-      ["variables", "Variáveis"],
-      ["conditions", "Condições"],
-      ["loops", "Laços"],
-      ["state", "Estado"],
-      ["sort", "Ordenação"]
+      ['list', 'Lista'],
+      ['variables', 'Variáveis'],
+      ['conditions', 'Condições'],
+      ['loops', 'Laços'],
+      ['state', 'Estado'],
+      ['sort', 'Ordenação'],
     ],
 
     queue: [
-      ["queue", "Fila"],
-      ["variables", "Variáveis"],
-      ["conditions", "Condições"],
-      ["state", "Estado"],
-      ["loops", "Laços"],
+      ['queue', 'Fila'],
+      ['variables', 'Variáveis'],
+      ['conditions', 'Condições'],
+      ['state', 'Estado'],
+      ['loops', 'Laços'],
     ],
 
     stack: [
-      ["stack", "Pilha"],
-      ["variables", "Variáveis"],
-      ["conditions", "Condições"],
-      ["state", "Estado"],
-      ["loops", "Laços"]
-    ]
+      ['stack', 'Pilha'],
+      ['variables', 'Variáveis'],
+      ['conditions', 'Condições'],
+      ['state', 'Estado'],
+      ['loops', 'Laços'],
+    ],
   };
 
-  // 🔥 INIT WORKSPACE
+  //  INIT WORKSPACE
   useEffect(() => {
     try {
       if (!blocklyDiv.current) return;
 
       workspaceRef.current = Blockly.inject(blocklyDiv.current, {
-        toolbox:
-        toolbox?.list ||
-        toolbox?.queue ||
-        toolbox?.stack ||
-        toolbox,
+        toolbox: toolbox?.list || toolbox?.queue || toolbox?.stack || toolbox,
         trashcan: true,
         collapse: true,
         grid: {
           spacing: 20,
           length: 3,
           colour: theme.border,
-          snap: true
+          snap: true,
         },
         zoom: {
           controls: true,
-          wheel: true
-        }
+          wheel: true,
+        },
       });
 
       workspaceRef.current.addChangeListener((event) => {
@@ -104,28 +96,25 @@ export default function MainBlocklyEditorPanel({
           clearTimeout(debounceRef.current);
 
           debounceRef.current = setTimeout(() => {
-            
             try {
               if (!workspaceRef.current) return;
-                setSaveStatus("Salvando...");
+              setSaveStatus('Salvando...');
 
-                saveWorkspace(workspaceRef.current, structure, user?.id);
+              saveWorkspace(workspaceRef.current, structure, user?.id);
 
-                setTimeout(() => {
-                  setSaveStatus("Salvo");
-                }, 500);
+              setTimeout(() => {
+                setSaveStatus('Salvo');
+              }, 500);
 
-              // 🔥 JS CODE
-              let codeJS = "";
+              //  JS CODE
+              let codeJS = '';
               try {
                 codeJS =
-                  javascriptGenerator.workspaceToCode(
-                    workspaceRef.current
-                  ) || "";
+                  javascriptGenerator.workspaceToCode(workspaceRef.current) ||
+                  '';
               } catch (err) {
                 showError({
-                  message:
-                    "Erro ao gerar código Javascript: " + err.message
+                  message: 'Erro ao gerar código Javascript: ' + err.message,
                 });
                 return;
               }
@@ -133,49 +122,47 @@ export default function MainBlocklyEditorPanel({
               setCode(codeJS);
               console.log(codeJS);
 
-              // 🔥 C CODE
-              let codeC = "";
+              //  C CODE
+              let codeC = '';
               try {
-                codeC =
-                  generateC(workspaceRef.current, structure) || "";
+                codeC = generateC(workspaceRef.current, structure) || '';
               } catch (err) {
                 showError({
-                  message: "Erro ao gerar código C: " + err.message
+                  message: 'Erro ao gerar código C: ' + err.message,
                 });
                 return;
               }
 
               setCCode(codeC);
 
-              // 🔥 BLOCK COUNT
+              //  BLOCK COUNT
               if (setBlockCount) {
-                const count =
-                  workspaceRef.current.getAllBlocks(false).length;
+                const count = workspaceRef.current.getAllBlocks(false).length;
                 setBlockCount(count);
               }
             } catch (err) {
-              console.error("Erro ao gerar código:", err);
+              console.error('Erro ao gerar código:', err);
 
               showError({
-                message: err.message || "Erro ao gerar código"
+                message: err.message || 'Erro ao gerar código',
               });
             }
           }, 200);
         } catch (err) {
-          console.error("Erro no listener do Blockly:", err);
+          console.error('Erro no listener do Blockly:', err);
 
           showError({
-            message: "Erro interno no editor Blockly"
+            message: 'Erro interno no editor Blockly',
           });
         }
       });
     } catch (err) {
-      console.error("Erro ao iniciar Blockly:", err);
+      console.error('Erro ao iniciar Blockly:', err);
 
       setInitError(true);
 
       showError({
-        message: "Erro ao inicializar o editor"
+        message: 'Erro ao inicializar o editor',
       });
     }
 
@@ -185,26 +172,34 @@ export default function MainBlocklyEditorPanel({
         workspaceRef.current?.dispose();
         workspaceRef.current = null;
       } catch (err) {
-        console.warn("Erro ao destruir workspace:", err);
+        console.warn('Erro ao destruir workspace:', err);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolbox, setCode, setCCode, setBlockCount, structure, showError, user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    toolbox,
+    setCode,
+    setCCode,
+    setBlockCount,
+    structure,
+    showError,
+    user?.id,
+  ]);
 
   useEffect(() => {
     try {
       if (!workspaceRef.current) return;
 
-      // 🔥 SE ESTIVER OCULTO → REMOVE TODOS OS BLOCOS
+      //  SE ESTIVER OCULTO → REMOVE TODOS OS BLOCOS
       if (!toolboxVisible) {
         workspaceRef.current.updateToolbox({
-          kind: "flyoutToolbox",
-          contents: []
+          kind: 'flyoutToolbox',
+          contents: [],
         });
         return;
       }
 
-      // 🔥 SE ESTIVER VISÍVEL → CARREGA NORMAL
+      //  SE ESTIVER VISÍVEL → CARREGA NORMAL
       const nextToolbox =
         toolbox?.[category] ||
         toolbox?.list ||
@@ -214,55 +209,51 @@ export default function MainBlocklyEditorPanel({
       if (!nextToolbox || !nextToolbox.contents) return;
 
       workspaceRef.current.updateToolbox(nextToolbox);
-
     } catch (err) {
-      console.error("Erro ao atualizar toolbox:", err);
+      console.error('Erro ao atualizar toolbox:', err);
 
       showError({
-        message: "Erro ao atualizar toolbox"
+        message: 'Erro ao atualizar toolbox',
       });
     }
   }, [category, toolboxVisible, toolbox, showError]);
 
-  // 🔥 APPLY THEME
+  //  APPLY THEME
   useEffect(() => {
     try {
       if (!workspaceRef.current) return;
 
-      const customTheme = Blockly.Theme.defineTheme(
-        "custom-theme",
-        {
-          base: Blockly.Themes.Classic,
+      const customTheme = Blockly.Theme.defineTheme('custom-theme', {
+        base: Blockly.Themes.Classic,
 
-          blockStyles: {
-            list_blocks: {
-              colourPrimary: theme.blocks.list
-            },
-            stack_blocks: {
-              colourPrimary: theme.blocks.stack
-            },
-            queue_blocks: {
-              colourPrimary: theme.blocks.queue
-            },
-            logic_blocks: {
-              colourPrimary: theme.blocks.logic
-            }
+        blockStyles: {
+          list_blocks: {
+            colourPrimary: theme.blocks.list,
           },
+          stack_blocks: {
+            colourPrimary: theme.blocks.stack,
+          },
+          queue_blocks: {
+            colourPrimary: theme.blocks.queue,
+          },
+          logic_blocks: {
+            colourPrimary: theme.blocks.logic,
+          },
+        },
 
-          componentStyles: {
-            workspaceBackgroundColour: theme.workspace,
-            toolboxBackgroundColour: theme.toolbox,
-            toolboxForegroundColour: theme.text,
-            flyoutBackgroundColour: theme.toolbox,
-            flyoutForegroundColour: theme.text,
+        componentStyles: {
+          workspaceBackgroundColour: theme.workspace,
+          toolboxBackgroundColour: theme.toolbox,
+          toolboxForegroundColour: theme.text,
+          flyoutBackgroundColour: theme.toolbox,
+          flyoutForegroundColour: theme.text,
 
-            scrollbarColour: theme.border,
-            insertionMarkerColour: theme.primary,
-            insertionMarkerOpacity: 0.3,
-            cursorColour: theme.primary
-          }
-        }
-      );
+          scrollbarColour: theme.border,
+          insertionMarkerColour: theme.primary,
+          insertionMarkerOpacity: 0.3,
+          cursorColour: theme.primary,
+        },
+      });
 
       workspaceRef.current.setTheme(customTheme);
 
@@ -272,22 +263,22 @@ export default function MainBlocklyEditorPanel({
         Blockly.svgResize(workspaceRef.current);
       }, 0);
     } catch (err) {
-      console.error("Erro ao aplicar tema:", err);
+      console.error('Erro ao aplicar tema:', err);
 
       showError({
-        message: "Erro ao aplicar tema do editor"
+        message: 'Erro ao aplicar tema do editor',
       });
     }
   }, [showError, theme]);
 
-  // 🔥 LOAD GENERATORS
+  //  LOAD GENERATORS
   useEffect(() => {
-    if (structure === "list") {
-      import("../../blockly/generators/my_language/listGenerator");
-    } else if (structure === "queue") {
-      import("../../blockly/generators/my_language/queueGenerator");
-    } else if (structure === "stack") {
-      import("../../blockly/generators/my_language/stackGenerator");
+    if (structure === 'list') {
+      import('../../blockly/generators/my_language/listGenerator');
+    } else if (structure === 'queue') {
+      import('../../blockly/generators/my_language/queueGenerator');
+    } else if (structure === 'stack') {
+      import('../../blockly/generators/my_language/stackGenerator');
     }
   }, [structure]);
 
@@ -297,39 +288,38 @@ export default function MainBlocklyEditorPanel({
     try {
       workspaceRef.current.clear();
 
-      setSaveStatus("Restaurado");
+      setSaveStatus('Restaurado');
 
       loadWorkspace(workspaceRef.current, structure, user?.id);
 
       setTimeout(() => {
-        setSaveStatus("Salvo");
+        setSaveStatus('Salvo');
       }, 1500);
 
       if (setBlockCount) {
-        const count =
-          workspaceRef.current.getAllBlocks(false).length;
+        const count = workspaceRef.current.getAllBlocks(false).length;
         setBlockCount(count);
       }
     } catch (err) {
-      console.error("Erro ao carregar workspace salvo:", err);
+      console.error('Erro ao carregar workspace salvo:', err);
 
       showError({
-        message: "Erro ao restaurar os blocos salvos."
+        message: 'Erro ao restaurar os blocos salvos.',
       });
     }
   }, [structure, setBlockCount, showError, user?.id]);
 
   useEffect(() => {
-    if (structure === "list") {
-      setCategory("list");
+    if (structure === 'list') {
+      setCategory('list');
     }
 
-    if (structure === "queue") {
-      setCategory("queue");
+    if (structure === 'queue') {
+      setCategory('queue');
     }
 
-    if (structure === "stack") {
-      setCategory("stack");
+    if (structure === 'stack') {
+      setCategory('stack');
     }
   }, [structure]);
 
@@ -339,22 +329,20 @@ export default function MainBlocklyEditorPanel({
         className="flex h-full items-center justify-center"
         style={{
           background: theme.workspace,
-          color: theme.danger
+          color: theme.danger,
         }}
       >
         <div className="text-center">
           <h2
             style={{
               ...theme.typography.h3,
-              marginBottom: theme.spacing.sm
+              marginBottom: theme.spacing.sm,
             }}
           >
             ⚠️ Erro ao carregar o editor
           </h2>
 
-          <p style={{ color: theme.muted }}>
-            Tente recarregar a página
-          </p>
+          <p style={{ color: theme.muted }}>Tente recarregar a página</p>
         </div>
       </div>
     );
@@ -370,11 +358,11 @@ export default function MainBlocklyEditorPanel({
         <div
           className="border-r flex flex-col items-center"
           style={{
-            width: "60px",
+            width: '60px',
             padding: theme.spacing.sm,
             gap: theme.spacing.sm,
             background: theme.toolbox,
-            borderColor: theme.border
+            borderColor: theme.border,
           }}
         >
           {categoriesByStructure[structure]?.map(([key, label]) => (
@@ -398,18 +386,18 @@ export default function MainBlocklyEditorPanel({
             padding: theme.spacing.md,
             background: theme.header,
             borderColor: theme.border,
-            color: theme.text
+            color: theme.text,
           }}
         >
           <div className="flex items-center gap-3">
             <div
               style={{
                 padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-                borderRadius: "999px",
+                borderRadius: '999px',
                 fontWeight: 600,
                 background: theme.primary,
-                color: "#fff",
-                ...theme.typography.h3
+                color: '#fff',
+                ...theme.typography.h3,
               }}
             >
               Área de Programação
@@ -418,7 +406,7 @@ export default function MainBlocklyEditorPanel({
             <span
               style={{
                 color: theme.muted,
-                ...theme.typography.small
+                ...theme.typography.small,
               }}
             >
               arraste e conecte os blocos
@@ -430,16 +418,14 @@ export default function MainBlocklyEditorPanel({
               onClick={() => setToolboxVisible(!toolboxVisible)}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                borderRadius: "8px",
+                borderRadius: '8px',
                 fontWeight: 600,
                 background: theme.primary,
-                color: "#fff",
-                cursor: "pointer"
+                color: '#fff',
+                cursor: 'pointer',
               }}
             >
-              {toolboxVisible
-                ? "📂 Ocultar Blocos"
-                : "📁 Mostrar Blocos"}
+              {toolboxVisible ? '📂 Ocultar Blocos' : '📁 Mostrar Blocos'}
             </button>
           )}
         </div>
@@ -449,43 +435,43 @@ export default function MainBlocklyEditorPanel({
           {/* 💾 STATUS */}
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: theme.spacing.sm,
               right: theme.spacing.sm,
               padding: theme.spacing.sm,
-              borderRadius: "8px",
+              borderRadius: '8px',
               background: theme.card,
               border: `1px solid ${theme.border}`,
               fontWeight: 600,
               fontSize: theme.typography.small.fontSize,
               color:
-                saveStatus === "Salvando..."
+                saveStatus === 'Salvando...'
                   ? theme.primary
-                  : saveStatus === "Restaurado"
-                  ? theme.success
-                  : theme.text,
-              zIndex: 10
+                  : saveStatus === 'Restaurado'
+                    ? theme.success
+                    : theme.text,
+              zIndex: 10,
             }}
           >
-            {saveStatus === "Salvando..." && "💾 Salvando..."}
-            {saveStatus === "Salvo" && "✅ Salvo automaticamente"}
-            {saveStatus === "Restaurado" && "📂 Workspace restaurado"}
+            {saveStatus === 'Salvando...' && '💾 Salvando...'}
+            {saveStatus === 'Salvo' && '✅ Salvo automaticamente'}
+            {saveStatus === 'Restaurado' && '📂 Workspace restaurado'}
           </div>
 
           {/* 🧩 CONTADOR */}
           <div
             style={{
-              position: "absolute",
-              top: "60px",
+              position: 'absolute',
+              top: '60px',
               right: theme.spacing.sm,
               padding: theme.spacing.sm,
-              borderRadius: "8px",
+              borderRadius: '8px',
               background: theme.card,
               border: `1px solid ${theme.border}`,
               fontWeight: 600,
               fontSize: theme.typography.small.fontSize,
               color: theme.text,
-              zIndex: 10
+              zIndex: 10,
             }}
           >
             🧩 {blockCount} blocos
@@ -499,25 +485,16 @@ export default function MainBlocklyEditorPanel({
   );
 }
 
-// 🔥 BUTTON
-function CategoryButton({
-  label,
-  active,
-  onClick,
-  theme
-}) {
+//  BUTTON
+function CategoryButton({ label, active, onClick, theme }) {
   return (
     <div className="group relative">
       <button
         onClick={onClick}
         className="w-10 h-10 rounded-full transition"
         style={{
-          background: active
-            ? theme.primary
-            : theme.hover,
-          transform: active
-            ? "scale(1.1)"
-            : "scale(1)"
+          background: active ? theme.primary : theme.hover,
+          transform: active ? 'scale(1.1)' : 'scale(1)',
         }}
       />
 
@@ -528,7 +505,7 @@ function CategoryButton({
         style={{
           background: theme.panel,
           color: theme.text,
-          border: `1px solid ${theme.border}`
+          border: `1px solid ${theme.border}`,
         }}
       >
         {label}

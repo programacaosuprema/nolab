@@ -1,7 +1,7 @@
-import * as Blockly from "blockly/core";
+import * as Blockly from 'blockly/core';
 
 function getWorkspaceKey(userId, structure) {
-  const id = userId || "guest";
+  const id = userId || 'guest';
   return `blockly_workspace_${id}_${structure}`;
 }
 
@@ -28,7 +28,7 @@ export function saveWorkspace(workspace, structure, userId) {
 
     localStorage.setItem(key, xmlText);
   } catch (error) {
-    console.error("Erro ao salvar workspace:", error);
+    console.error('Erro ao salvar workspace:', error);
   }
 }
 
@@ -49,15 +49,12 @@ export function loadWorkspace(workspace, structure, userId) {
 
     const xml = Blockly.utils.xml.textToDom(xmlText);
 
-    Blockly.Xml.clearWorkspaceAndLoadFromXml(
-      xml,
-      workspace
-    );
+    Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
 
     workspace.isLoading = false;
   } catch (error) {
     workspace.isLoading = false;
-    console.error("Erro ao carregar workspace:", error);
+    console.error('Erro ao carregar workspace:', error);
   }
 }
 
@@ -65,9 +62,7 @@ export function loadWorkspace(workspace, structure, userId) {
  * Remove o workspace salvo.
  */
 export function clearSavedWorkspace(structure) {
-  localStorage.removeItem(
-    `blockly_workspace_${structure}`
-  );
+  localStorage.removeItem(`blockly_workspace_${structure}`);
 
   console.log(`🗑️ Workspace "${structure}" removido.`);
 }
@@ -76,7 +71,7 @@ export function clearGuestWorkspaces() {
   const keys = Object.keys(localStorage);
 
   keys.forEach((key) => {
-    if (key.startsWith("blockly_workspace_guest_")) {
+    if (key.startsWith('blockly_workspace_guest_')) {
       localStorage.removeItem(key);
     }
   });

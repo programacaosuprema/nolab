@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import Editor from "@monaco-editor/react";
-import { useTheme } from "../../theme/useTheme";
-import ActionButton from "../ui/ActionButton";
-import { Download, Clipboard } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import Editor from '@monaco-editor/react';
+import { useTheme } from '../../theme/useTheme';
+import ActionButton from '../ui/ActionButton';
+import { Download, Clipboard } from 'lucide-react';
 
 export default function CodePanel({ cCode }) {
-  const [language, setLanguage] = useState("c");
+  const [language, setLanguage] = useState('c');
   const [copied, setCopied] = useState(false);
   const editorRef = useRef(null);
 
@@ -13,25 +13,25 @@ export default function CodePanel({ cCode }) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(cCode || "");
+      await navigator.clipboard.writeText(cCode || '');
       setCopied(true);
       setTimeout(() => setCopied(false), 1000);
     } catch (err) {
-      console.error("Erro ao copiar:", err);
+      console.error('Erro ao copiar:', err);
       setCopied(false);
     }
   };
 
   const handleDownload = () => {
     try {
-      const blob = new Blob([cCode || ""], { type: "text/plain" });
-      const link = document.createElement("a");
+      const blob = new Blob([cCode || ''], { type: 'text/plain' });
+      const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = "codigo.c";
+      link.download = 'codigo.c';
       link.click();
       URL.revokeObjectURL(link.href);
     } catch (err) {
-      console.error("Erro ao baixar:", err);
+      console.error('Erro ao baixar:', err);
     }
   };
 
@@ -45,7 +45,7 @@ export default function CodePanel({ cCode }) {
       style={{
         background: theme.panel,
         border: `1px solid ${theme.border}`,
-        borderRadius: "12px"
+        borderRadius: '12px',
       }}
     >
       {/* HEADER */}
@@ -53,14 +53,14 @@ export default function CodePanel({ cCode }) {
         className="flex items-center justify-between"
         style={{
           padding: theme.spacing.md,
-          borderBottom: `1px solid ${theme.border}`
+          borderBottom: `1px solid ${theme.border}`,
         }}
       >
         <div className="flex items-center" style={{ gap: theme.spacing.md }}>
           <h3
             style={{
               ...theme.typography.h3,
-              color: theme.text
+              color: theme.text,
             }}
           >
             Código Gerado
@@ -71,12 +71,12 @@ export default function CodePanel({ cCode }) {
             onChange={(e) => setLanguage(e.target.value)}
             style={{
               padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-              borderRadius: "6px",
+              borderRadius: '6px',
               background: theme.toolbox,
               color: theme.text,
               border: `1px solid ${theme.border}`,
               fontSize: theme.typography.small.fontSize,
-              cursor: "pointer"
+              cursor: 'pointer',
             }}
           >
             <option value="c">C</option>
@@ -92,12 +92,8 @@ export default function CodePanel({ cCode }) {
             Baixar .c
           </ActionButton>
 
-          <ActionButton
-            onClick={handleCopy}
-            icon={Clipboard}
-            variant="primary"
-          >
-            {copied ? "Copiado!" : "Copiar código"}
+          <ActionButton onClick={handleCopy} icon={Clipboard} variant="primary">
+            {copied ? 'Copiado!' : 'Copiar código'}
           </ActionButton>
         </div>
       </div>
@@ -108,7 +104,7 @@ export default function CodePanel({ cCode }) {
           height="100%"
           language={language}
           theme={theme.editor}
-          value={cCode || ""}
+          value={cCode || ''}
           onMount={(editor) => {
             editorRef.current = editor;
 
@@ -121,14 +117,14 @@ export default function CodePanel({ cCode }) {
             readOnly: true,
             minimap: { enabled: false },
             fontSize: 14,
-            fontFamily: "Fira Code, monospace",
-            wordWrap: "on",
+            fontFamily: 'Fira Code, monospace',
+            wordWrap: 'on',
             automaticLayout: true,
             scrollBeyondLastLine: false,
             padding: {
               top: 12,
-              bottom: 12
-            }
+              bottom: 12,
+            },
           }}
         />
       </div>

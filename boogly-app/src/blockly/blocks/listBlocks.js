@@ -56,7 +56,7 @@ Blockly.Blocks['list_run_program'] = {
 
     this.setColour(490);
 
-    // 🔥 IMPORTANTE
+    //  IMPORTANTE
     this.setPreviousStatement(false); // não conecta acima
     this.setNextStatement(false);     // não conecta abaixo
 
@@ -253,7 +253,7 @@ Blockly.Blocks['list_size'] = {
     this.appendDummyInput()
       .appendField("tamanho de")
       .appendField(new Blockly.FieldDropdown(() => getLists(this.workspace)), "LIST");
-    this.setOutput(true, "Number"); // 🔥 AGORA É VALOR
+    this.setOutput(true, "Number"); //  AGORA É VALOR
     this.setColour(60);
   }
 };
@@ -379,12 +379,12 @@ Blockly.Blocks['list_invert'] = {
 Blockly.Blocks["list_for_each"] = {
   init: function () {
 
-    // 🔥 variável do loop
+    //  variável do loop
     this.appendValueInput("VARIABLE")
       .setCheck("Variable")
       .appendField("para cada");
 
-    // 🔥 lista
+    //  lista
     this.appendDummyInput()
       .appendField("em")
       .appendField(
@@ -394,7 +394,7 @@ Blockly.Blocks["list_for_each"] = {
         "LIST"
       );
 
-    // 🔥 corpo
+    //  corpo
     this.appendStatementInput("DO")
       .appendField("faça");
 
@@ -426,7 +426,8 @@ Blockly.Blocks["list_for_each"] = {
   }
 };
 
-// listBlocks.js
+// // listBlocks.js
+
 Blockly.Blocks["list_get"] = {
   init: function () {
     this.appendValueInput("INDEX")

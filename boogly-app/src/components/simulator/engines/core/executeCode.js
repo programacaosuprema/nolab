@@ -1,12 +1,12 @@
-import { executeList } from "./executeList";
-import { executeQueue } from "./executeQueue";
-import { executeStack } from "./executeStack";
+import { executeList } from '../list/executeList';
+import { executeQueue } from '../queue/executeQueue';
+import { executeStack } from '../stack/executeStack';
 
 export function executeCode(code, structure) {
   const executors = {
     list: executeList,
     queue: executeQueue,
-    stack: executeStack
+    stack: executeStack,
   };
 
   const executor = executors[structure];

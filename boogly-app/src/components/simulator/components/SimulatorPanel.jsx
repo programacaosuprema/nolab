@@ -1,11 +1,11 @@
 // src/components/simulator/SimulatorPanel.jsx
 import { useEffect, useState, useRef } from "react";
-import ListVisualizer from "../simulator/ListVisualizer";
-import StackVisualizer from "../simulator/StackVisualizer";
-import QueueVisualizer from "../simulator/QueueVisualizer";
-import { useTheme } from "../../theme/useTheme";
-import useSimulation from "../simulator/useSimulation";
-import { useAuth } from "../../autenticator/useAuth";
+import ListVisualizer from "./list/ListVisualizer";
+import StackVisualizer from "./stack/StackVisualizer";
+import QueueVisualizer from "./queue/QueueVisualizer";
+import { useTheme } from "../../../theme/useTheme";
+import useSimulation from "../hooks/useSimulation";
+import { useAuth } from "../../../autenticator/useAuth";
 
 export default function SimulatorPanel({dslCode = ""}) {
   const { structure } = useAuth();

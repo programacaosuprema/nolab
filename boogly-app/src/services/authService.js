@@ -9,30 +9,34 @@ async function safeParse(res) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error("Resposta inválida (não é JSON)");
+    throw new Error('Resposta inválida (não é JSON)');
   }
 }
 
 export async function authenticateUser({ domainUrl, identifier }) {
   const res = await fetch(`${domainUrl}/auth`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: identifier })
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: identifier }),
   });
 
   let data;
-  try { data = await res.json(); } catch (e) { throw new Error("Resposta inválida do servidor"); }
-  if (!res.ok) throw new Error(data?.error || "Erro na autenticação");
+  try {
+    data = await res.json();
+  } catch (e) {
+    throw new Error('Resposta inválida do servidor');
+  }
+  if (!res.ok) throw new Error(data?.error || 'Erro na autenticação');
   return data;
 }
 
 export async function loginGuest({ domainUrl }) {
   const res = await fetch(`${domainUrl}/auth/guest`, {
-    method: "POST",
-    credentials: "include",
+    method: 'POST',
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
@@ -48,8 +52,8 @@ export async function loginGuest({ domainUrl }) {
 export async function logoutUser({ domainUrl }) {
   try {
     const res = await fetch(`${domainUrl}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
+      method: 'POST',
+      credentials: 'include',
     });
 
     // 🔥 evita quebrar se backend não tiver rota
@@ -59,9 +63,8 @@ export async function logoutUser({ domainUrl }) {
     }
 
     return true;
-
   } catch (err) {
-    console.warn("Erro de rede no logout:", err.message);
+    console.warn('Erro de rede no logout:', err.message);
     return false;
   }
 }

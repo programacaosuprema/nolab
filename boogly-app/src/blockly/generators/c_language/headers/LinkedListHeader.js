@@ -1,5 +1,5 @@
 export function linkedListHeader() {
-    const LINKED_LIST_HEADER = `
+  const LINKED_LIST_HEADER = `
 #include <stdio.h>
 #include <malloc.h>
 

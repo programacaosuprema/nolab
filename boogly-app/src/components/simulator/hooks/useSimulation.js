@@ -1,14 +1,14 @@
-import { useState } from "react";
-import "blockly/javascript";
-import { runStack } from "../simulator/engines/stackEngine";
-import { runQueue } from "../simulator/engines/queueEngine";
-import { runList } from "../simulator/engines/listEngine";
+import { useState } from 'react';
+import 'blockly/javascript';
+import { runStack } from '../engines/stack/stackEngine';
+import { runQueue } from '../engines/queue/queueEngine';
+import { runList } from '../engines/list/listEngine';
 
-export default function useSimulation({structure}) {
+export default function useSimulation({ structure }) {
   const engines = {
     stack: runStack,
     queue: runQueue,
-    list: runList
+    list: runList,
   };
 
   const runEngine = engines[structure];
@@ -19,13 +19,13 @@ export default function useSimulation({structure}) {
 
   function handleRun(code) {
     if (!code) {
-       throw new Error("Nenhum código para executar");
+      throw new Error('Nenhum código para executar');
     }
     try {
       const result = runEngine(code);
-      
+
       if (!Array.isArray(result)) {
-        throw new Error("Resultado inválido");
+        throw new Error('Resultado inválido');
       }
 
       setSteps(result);
@@ -33,20 +33,18 @@ export default function useSimulation({structure}) {
       setIsRunning(true);
       setIsPaused(false);
     } catch (err) {
-      console.error("ERRO REAL:", err);
+      console.error('ERRO REAL:', err);
       throw err;
     }
   }
 
-   function handlePause() {
+  function handlePause() {
     setIsRunning(false);
     setIsPaused(true);
   }
 
   function handleNextStep() {
-    setCurrentStep((prev) =>
-      prev < steps.length - 1 ? prev + 1 : prev
-    );
+    setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
   }
 
   function handleClear() {
@@ -93,6 +91,6 @@ export default function useSimulation({structure}) {
     handlePause,
     handleContinue,
     handleNextStep,
-    handleClear
+    handleClear,
   };
 }

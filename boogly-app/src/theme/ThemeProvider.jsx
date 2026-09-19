@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
-import { themes } from "./theme";
-import { ThemeContext } from "./ThemeContext";
+import { useState, useEffect } from 'react';
+import { themes } from './theme';
+import { ThemeContext } from './ThemeContext';
 
 export function ThemeProvider({ children }) {
-  const [themeName, setThemeName] = useState("dark");
+  const [themeName, setThemeName] = useState('dark');
 
   const theme = themes[themeName];
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
+    const saved = localStorage.getItem('theme');
     if (saved) setThemeName(saved);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("theme", themeName);
+    localStorage.setItem('theme', themeName);
   }, [themeName]);
 
   return (

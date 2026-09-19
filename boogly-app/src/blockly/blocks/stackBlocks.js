@@ -1,21 +1,22 @@
-import * as Blockly from "blockly";
-import { normalizeIdentifier }from "../../utils/normalizeIdentifier";
-import { hasDuplicateName } from "../../utils/normalizeNames";
+import * as Blockly from 'blockly';
+import { normalizeIdentifier } from '../../utils/normalizeIdentifier';
+import { hasDuplicateName } from '../../utils/normalizeNames';
 
 function blockSameName(block) {
   if (!block.workspace) return;
 
-  const name = block.getFieldValue("NAME");
+  const name = block.getFieldValue('NAME');
   const allBlocks = block.workspace.getAllBlocks();
 
-  const sameName = allBlocks.filter(b =>
-    (b.type === "stack_container" || b.type === "stack_fixed") &&
-    b.id !== block.id &&
-    b.getFieldValue("NAME") === name
+  const sameName = allBlocks.filter(
+    (b) =>
+      (b.type === 'stack_container' || b.type === 'stack_fixed') &&
+      b.id !== block.id &&
+      b.getFieldValue('NAME') === name
   );
 
   if (sameName.length > 0) {
-    block.setWarningText("Já existe uma lista com esse nome!");
+    block.setWarningText('Já existe uma lista com esse nome!');
     block.setColour(0);
   } else {
     block.setWarningText(null);
@@ -23,65 +24,46 @@ function blockSameName(block) {
   }
 }
 
-
 export function getStacks(workspace) {
-
-  const blocks =
-    workspace.getAllBlocks(false);
+  const blocks = workspace.getAllBlocks(false);
 
   const stacks = [];
 
-  blocks.forEach(block => {
+  blocks.forEach((block) => {
+    if (block.type === 'stack_container' || block.type === 'stack_fixed') {
+      const name = block.getFieldValue('NAME');
 
-    if (
-      block.type === "stack_container" ||
-      block.type === "stack_fixed"
-    ) {
-
-      const name =
-        block.getFieldValue("NAME");
-
-      stacks.push([
-        name,
-        name
-      ]);
+      stacks.push([name, name]);
     }
   });
 
-  return stacks.length
-    ? stacks
-    : [["minha_pilha","minha_pilha"]];
+  return stacks.length ? stacks : [['minha_pilha', 'minha_pilha']];
 }
 
-Blockly.Blocks["stack_run_program"] = {
+Blockly.Blocks['stack_run_program'] = {
   init: function () {
-    this.appendDummyInput().appendField("🚩 Quando EXECUTAR for clicado");
+    this.appendDummyInput().appendField('🚩 Quando EXECUTAR for clicado');
 
-    this.appendStatementInput("DO").setCheck(null);
+    this.appendStatementInput('DO').setCheck(null);
 
     this.setColour(490);
     this.setPreviousStatement(false);
     this.setNextStatement(false);
     this.setDeletable(true);
     this.setMovable(true);
-    this.setTooltip("Bloco inicial do programa");
-  }
+    this.setTooltip('Bloco inicial do programa');
+  },
 };
 
 Blockly.Blocks['stack_container'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("criar pilha")
+      .appendField('criar pilha')
       .appendField(
-        new Blockly.FieldTextInput(
-          "minha_pilha",
-          (text) =>
-          normalizeIdentifier(
-            text,
-          "variavel"
-        )
-      ),
-        "NAME"
+        new Blockly.FieldTextInput('minha_pilha', (text) =>
+          normalizeIdentifier(text, 'variavel')
+        ),
+        'NAME'
       );
 
     this.setPreviousStatement(true);
@@ -91,8 +73,8 @@ Blockly.Blocks['stack_container'] = {
 
   onchange: function () {
     blockSameName(this);
-    const name = this.getFieldValue("NAME");
-    
+    const name = this.getFieldValue('NAME');
+
     if (hasDuplicateName(this.workspace, name, this.id)) {
       this.setWarningText(
         `Já existe uma variável/estrutura com o nome "${name}".`
@@ -101,28 +83,22 @@ Blockly.Blocks['stack_container'] = {
     }
 
     this.setWarningText(null);
-  }
+  },
 };
 
-Blockly.Blocks["stack_fixed"] = {
+Blockly.Blocks['stack_fixed'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("criar pilha")
+      .appendField('criar pilha')
       .appendField(
-        new Blockly.FieldTextInput(
-          "minha_pilha_fixa",
-          (text) =>
-          normalizeIdentifier(
-            text,
-          "variavel"
-        )
-      ),
-        "NAME"
+        new Blockly.FieldTextInput('minha_pilha_fixa', (text) =>
+          normalizeIdentifier(text, 'variavel')
+        ),
+        'NAME'
       )
-      .appendField("tamanho");
+      .appendField('tamanho');
 
-    this.appendValueInput("SIZE")
-      .setCheck("Value");
+    this.appendValueInput('SIZE').setCheck('Value');
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -133,8 +109,8 @@ Blockly.Blocks["stack_fixed"] = {
   onchange: function () {
     blockSameName(this);
 
-    const name = this.getFieldValue("NAME");
-    
+    const name = this.getFieldValue('NAME');
+
     if (hasDuplicateName(this.workspace, name, this.id)) {
       this.setWarningText(
         `Já existe uma variável/estrutura com o nome "${name}".`
@@ -143,23 +119,20 @@ Blockly.Blocks["stack_fixed"] = {
     }
 
     this.setWarningText(null);
-  }
+  },
 };
 
-Blockly.Blocks["push"] = {
+Blockly.Blocks['push'] = {
   init: function () {
-
-    this.appendValueInput("VALUE")
-      .setCheck(["Value","Variable"])
-      .appendField("empilhar");
+    this.appendValueInput('VALUE')
+      .setCheck(['Value', 'Variable'])
+      .appendField('empilhar');
 
     this.appendDummyInput()
-      .appendField("na")
+      .appendField('na')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getStacks(this.workspace)
-        ),
-        "STACK"
+        new Blockly.FieldDropdown(() => getStacks(this.workspace)),
+        'STACK'
       );
 
     this.setInputsInline(true);
@@ -168,103 +141,87 @@ Blockly.Blocks["push"] = {
     this.setNextStatement(true);
 
     this.setColour(0);
-  }
+  },
 };
 
-Blockly.Blocks["pop"] = {
+Blockly.Blocks['pop'] = {
   init: function () {
-
     this.appendDummyInput()
-      .appendField("desempilhar")
+      .appendField('desempilhar')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getStacks(this.workspace)
-        ),
-        "STACK"
+        new Blockly.FieldDropdown(() => getStacks(this.workspace)),
+        'STACK'
       );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
 
     this.setColour(0);
-  }
+  },
 };
 
-Blockly.Blocks["peek"] = {
+Blockly.Blocks['peek'] = {
   init: function () {
-
     this.appendDummyInput()
-      .appendField("topo de")
+      .appendField('topo de')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getStacks(this.workspace)
-        ),
-        "STACK"
+        new Blockly.FieldDropdown(() => getStacks(this.workspace)),
+        'STACK'
       );
 
-    this.setOutput(true,"Value");
+    this.setOutput(true, 'Value');
 
     this.setColour(160);
-  }
+  },
 };
 
-Blockly.Blocks["stack_size"] = {
+Blockly.Blocks['stack_size'] = {
   init: function () {
-
     this.appendDummyInput()
-      .appendField("tamanho da")
+      .appendField('tamanho da')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getStacks(this.workspace)
-        ),
-        "STACK"
+        new Blockly.FieldDropdown(() => getStacks(this.workspace)),
+        'STACK'
       );
 
-    this.setOutput(true,"Value");
+    this.setOutput(true, 'Value');
 
     this.setColour(60);
-  }
+  },
 };
 
-Blockly.Blocks["stack_empty"] = {
+Blockly.Blocks['stack_empty'] = {
   init: function () {
-
     this.appendDummyInput()
-      .appendField("pilha vazia")
+      .appendField('pilha vazia')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getStacks(this.workspace)
-        ),
-        "STACK"
+        new Blockly.FieldDropdown(() => getStacks(this.workspace)),
+        'STACK'
       );
 
-    this.setOutput(true,"Boolean");
+    this.setOutput(true, 'Boolean');
 
     this.setColour(60);
-  }
+  },
 };
 
-Blockly.Blocks["stack_for_each"] = {
+Blockly.Blocks['stack_for_each'] = {
   init: function () {
+    //  variável do loop
+    this.appendValueInput('VARIABLE')
+      .setCheck('Variable')
+      .appendField('para cada');
 
-    // 🔥 variável do loop
-    this.appendValueInput("VARIABLE")
-      .setCheck("Variable")
-      .appendField("para cada");
-
-    // 🔥 lista
+    //  lista
     this.appendDummyInput()
-      .appendField("em")
+      .appendField('em')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getStacks(this.workspace)
-        ),
-        "Stack"
+        new Blockly.FieldDropdown(() => getStacks(this.workspace)),
+        'Stack'
       );
 
-    // 🔥 corpo
-    this.appendStatementInput("DO")
-      .appendField("faça");
+    //  corpo
+    this.appendStatementInput('DO').appendField('faça');
 
     this.setInputsInline(true);
 
@@ -274,11 +231,11 @@ Blockly.Blocks["stack_for_each"] = {
     this.setColour(30);
 
     this.setOnChange(function () {
-      const variableBlock = this.getInputTargetBlock("VARIABLE");
-      const name = variableBlock?.getFieldValue("VAR");
+      const variableBlock = this.getInputTargetBlock('VARIABLE');
+      const name = variableBlock?.getFieldValue('VAR');
 
       if (!name) {
-        this.setWarningText("Conecte uma variável no laço.");
+        this.setWarningText('Conecte uma variável no laço.');
         return;
       }
 
@@ -291,5 +248,5 @@ Blockly.Blocks["stack_for_each"] = {
 
       this.setWarningText(null);
     });
-  }
-}
+  },
+};

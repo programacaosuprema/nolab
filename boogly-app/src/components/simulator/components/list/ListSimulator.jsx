@@ -1,5 +1,4 @@
 export class ListSimulator {
-
   constructor() {
     this.lists = {};
     this.variables = {};
@@ -9,12 +8,12 @@ export class ListSimulator {
   inserir_em_variavel(name, value) {
     this.variables[name] = value;
     this.steps.push({
-      type: "assign",
+      type: 'assign',
       message: `${name} = ${value}`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
-  
+
   getState() {
     const state = {};
 
@@ -36,26 +35,23 @@ export class ListSimulator {
   pegar(posicao, nome) {
     const lista = this.lists[nome];
 
-    // 🔥 lista não existe
+    //  lista não existe
     if (!lista) {
       this.steps.push({
-        type: "error",
+        type: 'error',
         message: `lista "${nome}" não existe`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       return null;
     }
 
-    // 🔥 posição inválida
-    if (
-      posicao < 0 ||
-      posicao >= lista.data.length
-    ) {
+    //  posição inválida
+    if (posicao < 0 || posicao >= lista.data.length) {
       this.steps.push({
-        type: "warning",
+        type: 'warning',
         message: `posição ${posicao} é nula`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       return null;
@@ -68,14 +64,14 @@ export class ListSimulator {
     if (!this.lists[nome]) {
       this.lists[nome] = {
         data: [],
-        limit: undefined
+        limit: undefined,
       };
     }
 
     this.steps.push({
-      type: "create",
+      type: 'create',
       message: `criou a lista "${nome}"`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
@@ -83,14 +79,14 @@ export class ListSimulator {
     if (!this.lists[nome]) {
       this.lists[nome] = {
         data: [],
-        limit: size
+        limit: size,
       };
     }
 
     this.steps.push({
-      type: "create",
+      type: 'create',
       message: `criou a lista "${nome}" com tamanho ${size}`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
@@ -100,30 +96,30 @@ export class ListSimulator {
 
     if (list.limit !== undefined && list.data.length >= list.limit) {
       this.steps.push({
-        type: "error",
-        message: "lista cheia",
-        state: this.getState()
+        type: 'error',
+        message: 'lista cheia',
+        state: this.getState(),
       });
       return;
     }
 
     const position = list.data.length;
 
-    // 🔥 highlight posição de inserção
+    //  highlight posição de inserção
     this.steps.push({
-      type: "highlight_insert",
+      type: 'highlight_insert',
       index: position,
       message: `inserindo ${value} na posição ${position}`,
-      state: this.getState()
+      state: this.getState(),
     });
 
     list.data.push(value);
 
     this.steps.push({
-      type: "add",
+      type: 'add',
       index: position,
       message: `inseriu ${value}`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
@@ -133,31 +129,31 @@ export class ListSimulator {
 
     const lastIndex = list.data.length - 1;
 
-    // 🔥 percurso
+    //  percurso
     for (let i = 0; i <= lastIndex; i++) {
       this.steps.push({
-        type: "traverse",
+        type: 'traverse',
         index: i,
         message: `percorrendo posição ${i}`,
-        state: this.getState()
+        state: this.getState(),
       });
     }
 
-    // 🔥 highlight alvo
+    //  highlight alvo
     this.steps.push({
-      type: "highlight_remove",
+      type: 'highlight_remove',
       index: lastIndex,
       message: `encontrou o último elemento`,
-      state: this.getState()
+      state: this.getState(),
     });
 
     const removed = list.data.pop();
 
     this.steps.push({
-      type: "remove",
+      type: 'remove',
       index: lastIndex,
       message: `removeu (${removed})`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
@@ -165,28 +161,28 @@ export class ListSimulator {
     const list = this.getList(nome);
     if (!list || list.data.length === 0) return;
 
-    // 🔥 destaque início
+    //  destaque início
     this.steps.push({
-      type: "traverse",
+      type: 'traverse',
       index: 0,
-      message: "acessando início",
-      state: this.getState()
+      message: 'acessando início',
+      state: this.getState(),
     });
 
     this.steps.push({
-      type: "highlight_remove",
+      type: 'highlight_remove',
       index: 0,
-      message: "removendo primeiro elemento",
-      state: this.getState()
+      message: 'removendo primeiro elemento',
+      state: this.getState(),
     });
 
     const removed = list.data.shift();
 
     this.steps.push({
-      type: "remove",
+      type: 'remove',
       index: 0,
       message: `removeu (${removed})`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
@@ -198,10 +194,10 @@ export class ListSimulator {
 
     for (let i = 0; i < list.data.length; i++) {
       this.steps.push({
-        type: "traverse",
+        type: 'traverse',
         index: i,
         message: `procurando ${value}`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       if (list.data[i] === value) {
@@ -212,27 +208,27 @@ export class ListSimulator {
 
     if (index === -1) {
       this.steps.push({
-        type: "error",
+        type: 'error',
         message: `item ${value} não encontrado`,
-        state: this.getState()
+        state: this.getState(),
       });
       return;
     }
 
     this.steps.push({
-      type: "highlight_remove",
+      type: 'highlight_remove',
       index,
       message: `encontrou ${value}`,
-      state: this.getState()
+      state: this.getState(),
     });
 
     list.data.splice(index, 1);
 
     this.steps.push({
-      type: "remove",
+      type: 'remove',
       index,
       message: `removeu ${value}`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
@@ -242,70 +238,68 @@ export class ListSimulator {
 
     if (index < 0 || index >= list.data.length) {
       this.steps.push({
-        type: "error",
-        message: "posição inválida",
-        state: this.getState()
+        type: 'error',
+        message: 'posição inválida',
+        state: this.getState(),
       });
       return;
     }
 
-    // 🔥 percurso
+    //  percurso
     for (let i = 0; i <= index; i++) {
       this.steps.push({
-        type: "traverse",
+        type: 'traverse',
         index: i,
         message: `indo até posição ${index}`,
-        state: this.getState()
+        state: this.getState(),
       });
     }
 
     this.steps.push({
-      type: "highlight_remove",
+      type: 'highlight_remove',
       index,
       message: `posição ${index} encontrada`,
-      state: this.getState()
+      state: this.getState(),
     });
 
     const removed = list.data.splice(index, 1)[0];
 
     this.steps.push({
-      type: "remove",
+      type: 'remove',
       index,
       message: `removeu (${removed})`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 
   snapshot() {
     return this.getState();
-}
+  }
 
   tamanho_lista(name) {
-
     const list = this.lists[name];
 
     if (!list) {
+      this.steps.push({
+        type: 'warning',
+        message: `Lista ${name} não existe.`,
+        state: this.snapshot(),
+      });
 
-        this.steps.push({
-            type: "warning",
-            message: `Lista ${name} não existe.`,
-            state: this.snapshot()
-        });
-
-        return 0;
+      return 0;
     }
 
     const size = list.data.length;
 
     this.steps.push({
-        type: "size",
-        value: size,
-        message: `Tamanho da lista ${name}: ${size}`,
-        state: this.snapshot()
+      type: 'size',
+      value: size,
+      message: `Tamanho da lista ${name}: ${size}`,
+      state: this.snapshot(),
     });
 
     return size;
-}
+  }
 
   ta_vazia(nome) {
     const list = this.getList(nome);
@@ -317,9 +311,9 @@ export class ListSimulator {
 
     if (!list) {
       this.steps.push({
-        type: "error",
+        type: 'error',
         message: `lista "${nome}" não existe`,
-        state: this.getState()
+        state: this.getState(),
       });
       return null;
     }
@@ -335,16 +329,16 @@ export class ListSimulator {
       const value = list.data[i];
 
       this.steps.push({
-        type: "traverse",
+        type: 'traverse',
         index: i,
         message: `${variable} = ${value}`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       callback(value);
     }
   }
-  
+
   inverter(nome) {
     const list = this.getList(nome);
     if (!list) return;
@@ -354,18 +348,18 @@ export class ListSimulator {
 
     while (left < right) {
       this.steps.push({
-        type: "highlight_swap",
+        type: 'highlight_swap',
         indices: [left, right],
         message: `trocando ${list.data[left]} com ${list.data[right]}`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       [list.data[left], list.data[right]] = [list.data[right], list.data[left]];
 
       this.steps.push({
-        type: "swap",
+        type: 'swap',
         indices: [left, right],
-        state: this.getState()
+        state: this.getState(),
       });
 
       left++;
@@ -381,29 +375,27 @@ export class ListSimulator {
 
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n - i - 1; j++) {
-
         this.steps.push({
-          type: "compare",
+          type: 'compare',
           indices: [j, j + 1],
           message: `comparando ${list.data[j]} e ${list.data[j + 1]}`,
-          state: this.getState()
+          state: this.getState(),
         });
 
         if (list.data[j] > list.data[j + 1]) {
-
           this.steps.push({
-            type: "highlight_swap",
+            type: 'highlight_swap',
             indices: [j, j + 1],
-            message: "trocando posições",
-            state: this.getState()
+            message: 'trocando posições',
+            state: this.getState(),
           });
 
           [list.data[j], list.data[j + 1]] = [list.data[j + 1], list.data[j]];
 
           this.steps.push({
-            type: "swap",
+            type: 'swap',
             indices: [j, j + 1],
-            state: this.getState()
+            state: this.getState(),
           });
         }
       }
@@ -418,29 +410,27 @@ export class ListSimulator {
 
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n - i - 1; j++) {
-
         this.steps.push({
-          type: "compare",
+          type: 'compare',
           indices: [j, j + 1],
           message: `comparando ${list.data[j]} e ${list.data[j + 1]}`,
-          state: this.getState()
+          state: this.getState(),
         });
 
         if (list.data[j] < list.data[j + 1]) {
-
           this.steps.push({
-            type: "highlight_swap",
+            type: 'highlight_swap',
             indices: [j, j + 1],
-            message: "trocando posições",
-            state: this.getState()
+            message: 'trocando posições',
+            state: this.getState(),
           });
 
           [list.data[j], list.data[j + 1]] = [list.data[j + 1], list.data[j]];
 
           this.steps.push({
-            type: "swap",
+            type: 'swap',
             indices: [j, j + 1],
-            state: this.getState()
+            state: this.getState(),
           });
         }
       }
@@ -452,9 +442,9 @@ export class ListSimulator {
 
     if (inicio < 0 || fim > list.data.length || inicio >= fim) {
       this.steps.push({
-        type: "error",
-        message: "intervalo inválido",
-        state: this.getState()
+        type: 'error',
+        message: 'intervalo inválido',
+        state: this.getState(),
       });
       return;
     }
@@ -462,21 +452,20 @@ export class ListSimulator {
     const sub = [];
 
     for (let i = inicio; i < fim; i++) {
-
       this.steps.push({
-        type: "highlight",
+        type: 'highlight',
         index: i,
         message: `copiando ${list.data[i]}`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       sub.push(list.data[i]);
     }
 
     this.steps.push({
-      type: "result",
+      type: 'result',
       message: `sublista criada: [${sub}]`,
-      state: this.getState()
+      state: this.getState(),
     });
 
     return sub;
@@ -484,9 +473,9 @@ export class ListSimulator {
 
   show(texto, valor) {
     this.steps.push({
-      type: "print",
+      type: 'print',
       message: `${texto} ${valor}`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
 }

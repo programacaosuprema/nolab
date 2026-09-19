@@ -6,15 +6,15 @@ export class QueueSimulator {
     this.steps = [];
   }
 
-   inserir_em_variavel(name, value) {
+  inserir_em_variavel(name, value) {
     this.variables[name] = value;
     this.steps.push({
-      type: "assign",
+      type: 'assign',
       message: `${name} = ${value}`,
-      state: this.getState()
+      state: this.getState(),
     });
   }
-  
+
   getState() {
     const state = {};
 
@@ -25,7 +25,7 @@ export class QueueSimulator {
 
     // 🔥 copia variáveis
     state.variables = {
-      ...this.variables
+      ...this.variables,
     };
 
     return state;
@@ -41,23 +41,20 @@ export class QueueSimulator {
     // 🔥 fila não existe
     if (!fila) {
       this.steps.push({
-        type: "error",
+        type: 'error',
         message: `fila "${nome}" não existe`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       return null;
     }
 
     // 🔥 posição inválida
-    if (
-      posicao < 0 ||
-      posicao >= fila.length
-    ) {
+    if (posicao < 0 || posicao >= fila.length) {
       this.steps.push({
-        type: "warning",
+        type: 'warning',
         message: `posição ${posicao} é nula`,
-        state: this.getState()
+        state: this.getState(),
       });
 
       return null;
@@ -70,9 +67,9 @@ export class QueueSimulator {
     this.queues[name] = [];
 
     this.steps.push({
-      type: "create",
+      type: 'create',
       message: `Fila ${name} criada`,
-      state: this.snapshot()
+      state: this.snapshot(),
     });
   }
 
@@ -81,9 +78,9 @@ export class QueueSimulator {
     this.fixedSizes[name] = Number(size) || 0;
 
     this.steps.push({
-      type: "create_fixed",
+      type: 'create_fixed',
       message: `Fila fixa ${name} criada com tamanho ${size}`,
-      state: this.snapshot()
+      state: this.snapshot(),
     });
   }
 
@@ -93,9 +90,9 @@ export class QueueSimulator {
     const limit = this.fixedSizes[name];
     if (limit > 0 && this.queues[name].length >= limit) {
       this.steps.push({
-        type: "warning",
+        type: 'warning',
         message: `A fila ${name} atingiu o tamanho máximo`,
-        state: this.snapshot()
+        state: this.snapshot(),
       });
       return;
     }
@@ -103,10 +100,10 @@ export class QueueSimulator {
     this.queues[name].push(value);
 
     this.steps.push({
-      type: "enqueue",
+      type: 'enqueue',
       value,
       message: `Elemento ${value} entrou na fila ${name}`,
-      state: this.snapshot()
+      state: this.snapshot(),
     });
   }
 
@@ -119,21 +116,21 @@ export class QueueSimulator {
 
     // 🔥 PASSO 1 → highlight (ANTES de remover)
     this.steps.push({
-      type: "highlight_remove",
+      type: 'highlight_remove',
       index: 0,
       queue: name, // importante se tiver múltiplas filas
-      state: this.snapshot()
+      state: this.snapshot(),
     });
 
     const removed = this.queues[name].shift();
 
     // 🔥 PASSO 2 → estado atualizado
     this.steps.push({
-      type: "dequeue",
+      type: 'dequeue',
       value: removed,
       message: `Elemento ${removed} saiu da fila ${name}`,
       queue: name,
-      state: this.snapshot()
+      state: this.snapshot(),
     });
   }
 
@@ -141,37 +138,35 @@ export class QueueSimulator {
     const value = this.queues[name]?.[0];
 
     this.steps.push({
-      type: "front",
+      type: 'front',
       value,
       message: `Primeiro elemento da fila ${name}: ${value}`,
-      state: this.snapshot()
+      state: this.snapshot(),
     });
 
     return value;
   }
 
   tamanho_fila(name) {
-
     const queue = this.queues[name];
 
     if (!queue) {
+      this.steps.push({
+        type: 'warning',
+        message: `Fila ${name} não existe.`,
+        state: this.snapshot(),
+      });
 
-        this.steps.push({
-            type: "warning",
-            message: `Fila ${name} não existe.`,
-            state: this.snapshot()
-        });
-
-        return 0;
+      return 0;
     }
 
     const size = queue.length;
 
     this.steps.push({
-        type: "size",
-        value: size,
-        message: `Tamanho da fila ${name}: ${size}`,
-        state: this.snapshot()
+      type: 'size',
+      value: size,
+      message: `Tamanho da fila ${name}: ${size}`,
+      state: this.snapshot(),
     });
 
     return size;
@@ -181,10 +176,10 @@ export class QueueSimulator {
     const empty = !this.queues[name] || this.queues[name].length === 0;
 
     this.steps.push({
-      type: "empty",
+      type: 'empty',
       value: empty,
-      message: `Fila ${name} ${empty ? "está vazia" : "não está vazia"}`,
-      state: this.snapshot()
+      message: `Fila ${name} ${empty ? 'está vazia' : 'não está vazia'}`,
+      state: this.snapshot(),
     });
 
     return empty;

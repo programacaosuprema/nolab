@@ -7,18 +7,18 @@ async function safeParse(res) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error("Resposta inválida (não é JSON)");
+    throw new Error('Resposta inválida (não é JSON)');
   }
 }
 
 // 🔥 GET /users/me
 export async function getMe({ domainUrl }) {
   const res = await fetch(`${domainUrl}/users/me`, {
-    method: "GET",
-    credentials: "include",
+    method: 'GET',
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json"
-    }
+      'Content-Type': 'application/json',
+    },
   });
 
   const data = await safeParse(res);
@@ -38,12 +38,12 @@ export async function getUserChallenges({ domainUrl }) {
 
 export async function updateOnboarding({ domainUrl, onboardingDone }) {
   const res = await fetch(`${domainUrl}/users/me/onboarding`, {
-    method: "PATCH",
-    credentials: "include",
+    method: 'PATCH',
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ onboardingDone })
+    body: JSON.stringify({ onboardingDone }),
   });
 
   const data = await safeParse(res);

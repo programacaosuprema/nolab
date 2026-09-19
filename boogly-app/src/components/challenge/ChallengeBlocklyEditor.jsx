@@ -1,23 +1,23 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as Blockly from "blockly/core";
-import "blockly/blocks";
-import "blockly/javascript";
+import React, { useEffect, useRef, useState } from 'react';
+import * as Blockly from 'blockly/core';
+import 'blockly/blocks';
+import 'blockly/javascript';
 
 // blocos (igual ao principal)
-import "../../blockly/blocks/stackBlocks";
-import "../../blockly/blocks/queueBlocks";
-import "../../blockly/blocks/listBlocks";
-import "../../blockly/blocks/baseBlocks";
+import '../../blockly/blocks/stackBlocks';
+import '../../blockly/blocks/queueBlocks';
+import '../../blockly/blocks/listBlocks';
+import '../../blockly/blocks/baseBlocks';
 
-import { javascriptGenerator } from "blockly/javascript";
-import { generateC } from "../../blockly/generators/c_language/CGenerateDispatcher";
+import { javascriptGenerator } from 'blockly/javascript';
+import { generateC } from '../../blockly/generators/c_language/CGenerateDispatcher';
 
-import { useTheme } from "../../theme/useTheme";
-import { useError } from "../../error/useError";
+import { useTheme } from '../../theme/useTheme';
+import { useError } from '../../error/useError';
 
-import CodePanel from "../panels/CodePanel";
+import CodePanel from '../panels/CodePanel';
 
-import SimulatorPanel from "../simulator/SimulatorPanel";
+import SimulatorPanel from '../simulator/SimulatorPanel';
 
 function CategoryButton({ label, active, onClick, theme }) {
   return (
@@ -27,7 +27,7 @@ function CategoryButton({ label, active, onClick, theme }) {
         className="w-10 h-10 rounded-full transition"
         style={{
           background: active ? theme.primary : theme.hover,
-          transform: active ? "scale(1.06)" : "scale(1)"
+          transform: active ? 'scale(1.06)' : 'scale(1)',
         }}
       />
       <span
@@ -37,7 +37,7 @@ function CategoryButton({ label, active, onClick, theme }) {
         style={{
           background: theme.panel,
           color: theme.text,
-          border: `1px solid ${theme.border}`
+          border: `1px solid ${theme.border}`,
         }}
       >
         {label}
@@ -47,23 +47,29 @@ function CategoryButton({ label, active, onClick, theme }) {
 }
 
 function detectStructureFromToolbox(toolbox) {
-  if (!toolbox) return "list";
-  if (toolbox.list) return "list";
-  if (toolbox.queue) return "queue";
-  if (toolbox.stack) return "stack";
-  return "list";
+  if (!toolbox) return 'list';
+  if (toolbox.list) return 'list';
+  if (toolbox.queue) return 'queue';
+  if (toolbox.stack) return 'stack';
+  return 'list';
 }
 
 function getToolboxForCategory(toolbox, category) {
   if (!toolbox) return null;
-  return toolbox[category] || toolbox.list || toolbox.queue || toolbox.stack || toolbox;
+  return (
+    toolbox[category] ||
+    toolbox.list ||
+    toolbox.queue ||
+    toolbox.stack ||
+    toolbox
+  );
 }
 
 /** Resolves a numeric value from a child block (tries common field names) */
 function resolveValueFromBlock(block) {
   if (!block) return null;
   // common numeric field names used in your blocks
-  const candidates = ["VALUE", "NUM", "NUMBER", "VALUE_NUM", "VAL"];
+  const candidates = ['VALUE', 'NUM', 'NUMBER', 'VALUE_NUM', 'VAL'];
   for (const f of candidates) {
     try {
       const v = block.getFieldValue?.(f);
@@ -75,15 +81,18 @@ function resolveValueFromBlock(block) {
   }
 
   // if the child is a literal number shadow with field "NUM" etc:
-  const fields = block.inputList?.flatMap(i =>
-    (i.fieldRow || []).map(f => f && f.name && block.getFieldValue?.(f.name))
-  ) || [];
+  const fields =
+    block.inputList?.flatMap((i) =>
+      (i.fieldRow || []).map(
+        (f) => f && f.name && block.getFieldValue?.(f.name)
+      )
+    ) || [];
   for (const val of fields) {
     if (val !== undefined) {
       const n = Number(val);
       if (!Number.isNaN(n)) return n;
     }
-    }
+  }
 
   // fallback: try to generate JS and parse number
   try {
@@ -108,9 +117,7 @@ function extractCommandsFromWorkspace(ws) {
 
     try {
       value =
-        block.getFieldValue?.("VALUE") ??
-        block.getFieldValue?.("NUM") ??
-        null;
+        block.getFieldValue?.('VALUE') ?? block.getFieldValue?.('NUM') ?? null;
 
       if (value !== null) {
         const n = Number(value);
@@ -134,7 +141,6 @@ function extractCommandsFromWorkspace(ws) {
         }
       }
     }
-    
 
     // 🚀 salva comando
     commands.push({ type, value });
@@ -162,8 +168,12 @@ function extractCommandsFromWorkspace(ws) {
   return commands;
 }
 
-export default function ChallengeBlocklyEditor({toolbox, structure: propStructure, setBlockCount, onRun: onRun}) {
-
+export default function ChallengeBlocklyEditor({
+  toolbox,
+  structure: propStructure,
+  setBlockCount,
+  onRun: onRun,
+}) {
   const blocklyDiv = useRef(null);
   const workspaceRef = useRef(null);
 
@@ -173,37 +183,38 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
   const [category, setCategory] = useState(null);
   const [toolboxVisible, setToolboxVisible] = useState(true);
   const [blockCountLocal, setBlockCountLocal] = useState(0);
-  const [view, setView] = useState("editor"); 
-  const [localCCode, setLocalCCode] = useState("");
-  const [localDSLCode, setLocalDSLCode] = useState("");
+  const [view, setView] = useState('editor');
+  const [localCCode, setLocalCCode] = useState('');
+  const [localDSLCode, setLocalDSLCode] = useState('');
 
-  const detectedStructure = propStructure || detectStructureFromToolbox(toolbox);
+  const detectedStructure =
+    propStructure || detectStructureFromToolbox(toolbox);
 
   const [isRunning, setIsRunning] = useState(false);
 
   const categoriesByStructure = {
     list: [
-      ["list", "Lista"],
-      ["variables", "Variáveis"],
-      ["conditions", "Condições"],
-      ["loops", "Laços"],
-      ["state", "Estado"],
-      ["sort", "Ordenação"]
+      ['list', 'Lista'],
+      ['variables', 'Variáveis'],
+      ['conditions', 'Condições'],
+      ['loops', 'Laços'],
+      ['state', 'Estado'],
+      ['sort', 'Ordenação'],
     ],
     queue: [
-      ["queue", "Fila"],
-      ["variables", "Variáveis"],
-      ["conditions", "Condições"],
-      ["state", "Estado"],
-      ["loops", "Laços"]
+      ['queue', 'Fila'],
+      ['variables', 'Variáveis'],
+      ['conditions', 'Condições'],
+      ['state', 'Estado'],
+      ['loops', 'Laços'],
     ],
     stack: [
-      ["stack", "Pilha"],
-      ["variables", "Variáveis"],
-      ["conditions", "Condições"],
-      ["state", "Estado"],
-      ["loops", "Laços"]
-    ]
+      ['stack', 'Pilha'],
+      ['variables', 'Variáveis'],
+      ['conditions', 'Condições'],
+      ['state', 'Estado'],
+      ['loops', 'Laços'],
+    ],
   };
 
   useEffect(() => {
@@ -219,12 +230,12 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
           spacing: 20,
           length: 3,
           colour: theme.border,
-          snap: true
+          snap: true,
         },
         zoom: {
           controls: true,
-          wheel: true
-        }
+          wheel: true,
+        },
       });
 
       // change listener (no autosave)
@@ -234,22 +245,20 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
           if (!ws) return;
 
           // JS
-          let dslCode = "";
+          let dslCode = '';
           javascriptGenerator.init(ws);
           try {
-
-           dslCode = javascriptGenerator.workspaceToCode(ws) || "";
-            setLocalDSLCode(dslCode)
+            dslCode = javascriptGenerator.workspaceToCode(ws) || '';
+            setLocalDSLCode(dslCode);
           } catch (err) {
             console.log(err);
-           
           }
 
           try {
-            const codeC = generateC(ws, propStructure) || "";
+            const codeC = generateC(ws, propStructure) || '';
             setLocalCCode(codeC);
           } catch (err) {
-             console.log(err);
+            console.log(err);
           }
 
           // block count
@@ -257,13 +266,13 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
           setBlockCount && setBlockCount(count);
           setBlockCountLocal(count);
         } catch (err) {
-          console.error("Erro no change listener:", err);
+          console.error('Erro no change listener:', err);
         }
       });
     } catch (err) {
-      console.error("Erro ao iniciar editor:", err);
+      console.error('Erro ao iniciar editor:', err);
       setBlockCount && setBlockCount(0);
-      showError({ message: "Erro ao iniciar editor" });
+      showError({ message: 'Erro ao iniciar editor' });
     }
 
     return () => {
@@ -271,7 +280,7 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
         workspaceRef.current?.dispose();
         workspaceRef.current = null;
       } catch (err) {
-        console.warn("Erro ao destruir workspace:", err);
+        console.warn('Erro ao destruir workspace:', err);
       }
     };
     // only run once
@@ -282,13 +291,13 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
   useEffect(() => {
     try {
       if (!workspaceRef.current) return;
-      const customTheme = Blockly.Theme.defineTheme("challenge-theme", {
+      const customTheme = Blockly.Theme.defineTheme('challenge-theme', {
         base: Blockly.Themes.Classic,
         blockStyles: {
-          list_blocks: { colourPrimary: theme.blocks?.list || "#1f9" },
-          stack_blocks: { colourPrimary: theme.blocks?.stack || "#9f1" },
-          queue_blocks: { colourPrimary: theme.blocks?.queue || "#19f" },
-          logic_blocks: { colourPrimary: theme.blocks?.logic || "#f19" }
+          list_blocks: { colourPrimary: theme.blocks?.list || '#1f9' },
+          stack_blocks: { colourPrimary: theme.blocks?.stack || '#9f1' },
+          queue_blocks: { colourPrimary: theme.blocks?.queue || '#19f' },
+          logic_blocks: { colourPrimary: theme.blocks?.logic || '#f19' },
         },
         componentStyles: {
           workspaceBackgroundColour: theme.workspace,
@@ -299,12 +308,12 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
           scrollbarColour: theme.border,
           insertionMarkerColour: theme.primary,
           insertionMarkerOpacity: 0.3,
-          cursorColour: theme.primary
-        }
+          cursorColour: theme.primary,
+        },
       });
       workspaceRef.current.setTheme(customTheme);
     } catch (err) {
-      console.warn("Erro ao aplicar tema:", err);
+      console.warn('Erro ao aplicar tema:', err);
     }
   }, [theme]);
 
@@ -316,8 +325,8 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
       // 🔴 OCULTAR TOOLBOX
       if (!toolboxVisible) {
         workspaceRef.current.updateToolbox({
-          kind: "flyoutToolbox",
-          contents: []
+          kind: 'flyoutToolbox',
+          contents: [],
         });
         return;
       }
@@ -328,10 +337,9 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
       if (!nextToolbox || !nextToolbox.contents) return;
 
       workspaceRef.current.updateToolbox(nextToolbox);
-
     } catch (err) {
-      console.error("Erro ao atualizar toolbox:", err);
-      showError({ message: "Erro ao atualizar toolbox" });
+      console.error('Erro ao atualizar toolbox:', err);
+      showError({ message: 'Erro ao atualizar toolbox' });
     }
   }, [category, toolboxVisible, toolbox, showError]);
 
@@ -342,12 +350,18 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
 
   // LOAD generators by structure (dynamic imports like main editor)
   useEffect(() => {
-    if (detectedStructure === "list") {
-      import("../../blockly/generators/my_language/listGenerator").catch(() => {});
-    } else if (detectedStructure === "queue") {
-      import("../../blockly/generators/my_language/queueGenerator").catch(() => {});
-    } else if (detectedStructure === "stack") {
-      import("../../blockly/generators/my_language/stackGenerator").catch(() => {});
+    if (detectedStructure === 'list') {
+      import('../../blockly/generators/my_language/listGenerator').catch(
+        () => {}
+      );
+    } else if (detectedStructure === 'queue') {
+      import('../../blockly/generators/my_language/queueGenerator').catch(
+        () => {}
+      );
+    } else if (detectedStructure === 'stack') {
+      import('../../blockly/generators/my_language/stackGenerator').catch(
+        () => {}
+      );
     }
   }, [detectedStructure]);
 
@@ -362,7 +376,7 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
 
       await onRun?.(commands);
     } catch (err) {
-      showError({ message: err.message || "Erro ao executar" });
+      showError({ message: err.message || 'Erro ao executar' });
     } finally {
       setIsRunning(false);
     }
@@ -374,37 +388,38 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
       style={{
         background: theme.workspace,
         color: theme.text,
-        fontSize: theme.typography.body.fontSize
+        fontSize: theme.typography.body.fontSize,
       }}
     >
       {/* SIDEBAR */}
       <div
         className="flex flex-col items-center"
         style={{
-          width: "56px",
+          width: '56px',
           gap: theme.spacing.sm,
           padding: theme.spacing.sm,
           background: theme.toolbox,
-          borderRight: `1px solid ${theme.border}`
+          borderRight: `1px solid ${theme.border}`,
         }}
       >
-        {(categoriesByStructure[detectedStructure] || []).map(([key, label]) => (
-          <CategoryButton
-            key={key}
-            label={label}
-            active={category === key}
-            onClick={() => {
-              if (view !== "editor") return; // 🔥 trava
-              setCategory(key);
-            }}
-            theme={theme}
-          />
-        ))}
+        {(categoriesByStructure[detectedStructure] || []).map(
+          ([key, label]) => (
+            <CategoryButton
+              key={key}
+              label={label}
+              active={category === key}
+              onClick={() => {
+                if (view !== 'editor') return; // 🔥 trava
+                setCategory(key);
+              }}
+              theme={theme}
+            />
+          )
+        )}
       </div>
 
       {/* WORKSPACE + HEADER */}
       <div className="flex-1 flex flex-col">
-        
         {/* HEADER */}
         <div
           className="flex justify-between items-center"
@@ -412,59 +427,62 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
             padding: theme.spacing.md,
             background: theme.header,
             borderBottom: `1px solid ${theme.border}`,
-            color: theme.text
+            color: theme.text,
           }}
         >
           <div className="flex items-center" style={{ gap: theme.spacing.md }}>
-            <div style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-              borderRadius: "999px",
-              background: theme.primary,
-              color: "#fff",
-              ...theme.typography.h3
-            }}>
+            <div
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+                borderRadius: '999px',
+                background: theme.primary,
+                color: '#fff',
+                ...theme.typography.h3,
+              }}
+            >
               Área de Programação
             </div>
 
             {/* 🔥 NOVO TOGGLE */}
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
               <button
-                onClick={() => setView("editor")}
+                onClick={() => setView('editor')}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                  background: view === "editor" ? theme.primary : theme.card,
-                  color: view === "editor" ? "#fff" : theme.text,
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  background: view === 'editor' ? theme.primary : theme.card,
+                  color: view === 'editor' ? '#fff' : theme.text,
                   border: `1px solid ${theme.border}`,
-                  cursor: "pointer"
+                  cursor: 'pointer',
                 }}
               >
                 🧱 Editor
               </button>
 
               <button
-                onClick={() => setView("code")}
+                onClick={() => setView('code')}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                  background: view === "code" ? theme.primary : theme.card,
-                  color: view === "code" ? "#fff" : theme.text,
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  background: view === 'code' ? theme.primary : theme.card,
+                  color: view === 'code' ? '#fff' : theme.text,
                   border: `1px solid ${theme.border}`,
-                  cursor: "pointer"
+                  cursor: 'pointer',
                 }}
               >
                 💻 Código
               </button>
 
               <button
-                onClick={() => setView("simulation")}
+                onClick={() => setView('simulation')}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                  background: view === "simulation" ? theme.primary : theme.card,
-                  color: view === "simulation" ? "#fff" : theme.text,
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  background:
+                    view === 'simulation' ? theme.primary : theme.card,
+                  color: view === 'simulation' ? '#fff' : theme.text,
                   border: `1px solid ${theme.border}`,
-                  cursor: "pointer"
+                  cursor: 'pointer',
                 }}
               >
                 ▶ Simulação
@@ -472,73 +490,77 @@ export default function ChallengeBlocklyEditor({toolbox, structure: propStructur
             </div>
           </div>
 
-          { view === "editor" && (
-            <div className="flex items-center" style={{ gap: theme.spacing.sm }}>
+          {view === 'editor' && (
+            <div
+              className="flex items-center"
+              style={{ gap: theme.spacing.sm }}
+            >
               <button
                 onClick={() => setToolboxVisible(!toolboxVisible)}
                 style={{
                   padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                  borderRadius: "8px",
+                  borderRadius: '8px',
                   background: theme.primary,
-                  color: "#fff",
+                  color: '#fff',
                   fontWeight: 600,
-                  cursor: "pointer"
+                  cursor: 'pointer',
                 }}
               >
-                {toolboxVisible ? "📂 Ocultar Blocos" : "📁 Mostrar Blocos"}
+                {toolboxVisible ? '📂 Ocultar Blocos' : '📁 Mostrar Blocos'}
               </button>
 
               <button
                 onClick={handleRun}
                 style={{
                   padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
-                  borderRadius: "8px",
+                  borderRadius: '8px',
                   background: theme.primary,
-                  color: "#fff",
+                  color: '#fff',
                   fontWeight: 600,
-                  cursor: "pointer"
+                  cursor: 'pointer',
                 }}
               >
-                {isRunning ? "Executando..." : "▶ Testar solução"}
+                {isRunning ? 'Executando...' : '▶ Testar solução'}
               </button>
-              
             </div>
-            
           )}
-          
         </div>
 
         <div className="flex-1 relative">
-          { view === "editor" && (
+          {view === 'editor' && (
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 top: theme.spacing.sm,
                 right: theme.spacing.sm,
                 padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                borderRadius: "8px",
+                borderRadius: '8px',
                 background: theme.card,
                 color: theme.text,
                 border: `1px solid ${theme.border}`,
                 zIndex: 50,
-                ...theme.typography.small
-              }}>
+                ...theme.typography.small,
+              }}
+            >
               🧩 {blockCountLocal} blocos
             </div>
-          )};
-          
-          <div className={`absolute inset-0 ${ view === "editor" ? "block" : "hidden"}`}>
+          )}
+          ;
+          <div
+            className={`absolute inset-0 ${view === 'editor' ? 'block' : 'hidden'}`}
+          >
             <div ref={blocklyDiv} className="h-full w-full" />
           </div>
-
-          <div className={`absolute inset-0 ${ view === "code" ? "block" : "hidden"}`}>
+          <div
+            className={`absolute inset-0 ${view === 'code' ? 'block' : 'hidden'}`}
+          >
             <CodePanel cCode={localCCode} />
           </div>
-          
-          <div className={`absolute inset-0 ${view === "simulation" ? "block" : "hidden"}`}>
-            <SimulatorPanel dslCode={localDSLCode}/>
+          <div
+            className={`absolute inset-0 ${view === 'simulation' ? 'block' : 'hidden'}`}
+          >
+            <SimulatorPanel dslCode={localDSLCode} />
           </div>
-          
         </div>
       </div>
     </div>

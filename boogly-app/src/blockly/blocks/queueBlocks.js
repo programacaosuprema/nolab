@@ -1,8 +1,7 @@
-import * as Blockly from "blockly/core";
-import "blockly/blocks";
-import { normalizeIdentifier }from "../../utils/normalizeIdentifier";
-import { hasDuplicateName } from "../../utils/normalizeNames";
-
+import * as Blockly from 'blockly/core';
+import 'blockly/blocks';
+import { normalizeIdentifier } from '../../utils/normalizeIdentifier';
+import { hasDuplicateName } from '../../utils/normalizeNames';
 
 /* =====================================================
    🔹 UTIL: verificar nomes duplicados de filas
@@ -10,18 +9,18 @@ import { hasDuplicateName } from "../../utils/normalizeNames";
 function blockSameName(block) {
   if (!block.workspace) return;
 
-  const name = block.getFieldValue("NAME");
+  const name = block.getFieldValue('NAME');
   const allBlocks = block.workspace.getAllBlocks();
 
   const sameName = allBlocks.filter(
     (b) =>
-      (b.type === "queue_container" || b.type === "queue_fixed") &&
+      (b.type === 'queue_container' || b.type === 'queue_fixed') &&
       b.id !== block.id &&
-      b.getFieldValue("NAME") === name
+      b.getFieldValue('NAME') === name
   );
 
   if (sameName.length > 0) {
-    block.setWarningText("Já existe uma fila com esse nome!");
+    block.setWarningText('Já existe uma fila com esse nome!');
     block.setColour(0);
   } else {
     block.setWarningText(null);
@@ -34,16 +33,16 @@ function blockSameName(block) {
    Mesma lógica da lista: nunca retorna vazio
 ===================================================== */
 function getQueues(workspace) {
-  if (!workspace) return [["-", "-"]];
+  if (!workspace) return [['-', '-']];
 
   const blocks = workspace.getAllBlocks(false);
 
   const queues = blocks
-    .filter((b) => b.type === "queue_container" || b.type === "queue_fixed")
-    .map((b) => b.getFieldValue("NAME"))
-    .filter((name) => name && name.trim() !== "");
+    .filter((b) => b.type === 'queue_container' || b.type === 'queue_fixed')
+    .map((b) => b.getFieldValue('NAME'))
+    .filter((name) => name && name.trim() !== '');
 
-  if (queues.length === 0) return [["-", "-"]];
+  if (queues.length === 0) return [['-', '-']];
 
   return queues.map((name) => [name, name]);
 }
@@ -51,38 +50,33 @@ function getQueues(workspace) {
 /* =====================================================
    🔹 BLOCO: RUN PROGRAM
 ===================================================== */
-Blockly.Blocks["queue_run_program"] = {
+Blockly.Blocks['queue_run_program'] = {
   init: function () {
-    this.appendDummyInput().appendField("🚩 Quando EXECUTAR for clicado");
+    this.appendDummyInput().appendField('🚩 Quando EXECUTAR for clicado');
 
-    this.appendStatementInput("DO").setCheck(null);
+    this.appendStatementInput('DO').setCheck(null);
 
     this.setColour(490);
     this.setPreviousStatement(false);
     this.setNextStatement(false);
     this.setDeletable(true);
     this.setMovable(true);
-    this.setTooltip("Bloco inicial do programa");
-  }
+    this.setTooltip('Bloco inicial do programa');
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: CRIAR FILA
 ===================================================== */
-Blockly.Blocks["queue_container"] = {
+Blockly.Blocks['queue_container'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("criar fila")
+      .appendField('criar fila')
       .appendField(
-        new Blockly.FieldTextInput(
-        "minha_fila", 
-        (text) =>
-          normalizeIdentifier(
-            text,
-          "variavel"
-        )
-      ),
-        "NAME"
+        new Blockly.FieldTextInput('minha_fila', (text) =>
+          normalizeIdentifier(text, 'variavel')
+        ),
+        'NAME'
       );
 
     this.setPreviousStatement(true);
@@ -93,7 +87,7 @@ Blockly.Blocks["queue_container"] = {
   onchange: function () {
     blockSameName(this);
 
-    const name = this.getFieldValue("NAME");
+    const name = this.getFieldValue('NAME');
 
     if (hasDuplicateName(this.workspace, name, this.id)) {
       this.setWarningText(
@@ -103,31 +97,25 @@ Blockly.Blocks["queue_container"] = {
     }
 
     this.setWarningText(null);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: CRIAR FILA FIXA
 ===================================================== */
-Blockly.Blocks["queue_fixed"] = {
+Blockly.Blocks['queue_fixed'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("criar fila")
+      .appendField('criar fila')
       .appendField(
-        new Blockly.FieldTextInput(
-          "minha_fila_fixa", 
-          (text) =>
-          normalizeIdentifier(
-            text,
-            "variavel"
-          )
+        new Blockly.FieldTextInput('minha_fila_fixa', (text) =>
+          normalizeIdentifier(text, 'variavel')
         ),
-        "NAME"
+        'NAME'
       )
-      .appendField("tamanho");
-    
-    this.appendValueInput("SIZE")
-      .setCheck("Value");
+      .appendField('tamanho');
+
+    this.appendValueInput('SIZE').setCheck('Value');
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -138,7 +126,7 @@ Blockly.Blocks["queue_fixed"] = {
   onchange: function () {
     blockSameName(this);
 
-    const name = this.getFieldValue("NAME");
+    const name = this.getFieldValue('NAME');
 
     if (hasDuplicateName(this.workspace, name, this.id)) {
       this.setWarningText(
@@ -148,112 +136,123 @@ Blockly.Blocks["queue_fixed"] = {
     }
 
     this.setWarningText(null);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: ENFILEIRAR
 ===================================================== */
-Blockly.Blocks["enqueue"] = {
+Blockly.Blocks['enqueue'] = {
   init: function () {
-    this.appendValueInput("VALUE")
-      .setCheck(["Variable", "Value"])
-      .appendField("enfileirar");
+    this.appendValueInput('VALUE')
+      .setCheck(['Variable', 'Value'])
+      .appendField('enfileirar');
 
     this.appendDummyInput()
-      .appendField("na")
-      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE");
+      .appendField('na')
+      .appendField(
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        'QUEUE'
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setInputsInline(true);
     this.setColour(160);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: DESENFILEIRAR
 ===================================================== */
-Blockly.Blocks["dequeue"] = {
+Blockly.Blocks['dequeue'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("desenfileirar da")
-      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE");
+      .appendField('desenfileirar da')
+      .appendField(
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        'QUEUE'
+      );
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setColour(160);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: VER INÍCIO DA FILA
 ===================================================== */
-Blockly.Blocks["queue_front"] = {
+Blockly.Blocks['queue_front'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("ver início da")
-      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE");
+      .appendField('ver início da')
+      .appendField(
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        'QUEUE'
+      );
 
     this.setOutput(true, null);
     this.setColour(60);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: TAMANHO DA FILA
 ===================================================== */
-Blockly.Blocks["queue_size"] = {
+Blockly.Blocks['queue_size'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("tamanho da")
-      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE");
+      .appendField('tamanho da')
+      .appendField(
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        'QUEUE'
+      );
 
-    this.setOutput(true, "Number");
+    this.setOutput(true, 'Number');
     this.setColour(60);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: FILA ESTÁ VAZIA
 ===================================================== */
-Blockly.Blocks["queue_is_empty"] = {
+Blockly.Blocks['queue_is_empty'] = {
   init: function () {
     this.appendDummyInput()
-      .appendField("fila")
-      .appendField(new Blockly.FieldDropdown(() => getQueues(this.workspace)), "QUEUE")
-      .appendField("está vazia");
+      .appendField('fila')
+      .appendField(
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        'QUEUE'
+      )
+      .appendField('está vazia');
 
-    this.setOutput(true, "Boolean");
+    this.setOutput(true, 'Boolean');
     this.setColour(60);
-  }
+  },
 };
 
 /* =====================================================
    🔹 BLOCO: EXIBIR
 ===================================================== */
 
-Blockly.Blocks["queue_for_each"] = {
+Blockly.Blocks['queue_for_each'] = {
   init: function () {
+    //  variável do loop
+    this.appendValueInput('VARIABLE')
+      .setCheck('Variable')
+      .appendField('para cada');
 
-    // 🔥 variável do loop
-    this.appendValueInput("VARIABLE")
-      .setCheck("Variable")
-      .appendField("para cada");
-
-    // 🔥 lista
+    //  lista
     this.appendDummyInput()
-      .appendField("em")
+      .appendField('em')
       .appendField(
-        new Blockly.FieldDropdown(
-          () => getQueues(this.workspace)
-        ),
-        "Queue"
+        new Blockly.FieldDropdown(() => getQueues(this.workspace)),
+        'Queue'
       );
 
-    // 🔥 corpo
-    this.appendStatementInput("DO")
-      .appendField("faça");
+    //  corpo
+    this.appendStatementInput('DO').appendField('faça');
 
     this.setInputsInline(true);
 
@@ -263,11 +262,11 @@ Blockly.Blocks["queue_for_each"] = {
     this.setColour(30);
 
     this.setOnChange(function () {
-      const variableBlock = this.getInputTargetBlock("VARIABLE");
-      const name = variableBlock?.getFieldValue("VAR");
+      const variableBlock = this.getInputTargetBlock('VARIABLE');
+      const name = variableBlock?.getFieldValue('VAR');
 
       if (!name) {
-        this.setWarningText("Conecte uma variável no laço.");
+        this.setWarningText('Conecte uma variável no laço.');
         return;
       }
 
@@ -280,13 +279,5 @@ Blockly.Blocks["queue_for_each"] = {
 
       this.setWarningText(null);
     });
-  }
+  },
 };
-
-
-
-
-
-
-
-

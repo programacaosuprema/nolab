@@ -13,7 +13,7 @@ export function mergeChallengesWithUser(data, userChallenges) {
   return data.map((c) => {
     const keys = [
       c._id && String(c._id),
-      c.publicId && String(c.publicId)
+      c.publicId && String(c.publicId),
     ].filter(Boolean);
 
     let uc = null;
@@ -27,8 +27,8 @@ export function mergeChallengesWithUser(data, userChallenges) {
 
     return {
       ...c,
-      userStatus: uc?.status || c.userStatus || "pending",
-      userAttempts: uc?.attempts ?? c.userAttempts ?? 0
+      userStatus: uc?.status || c.userStatus || 'pending',
+      userAttempts: uc?.attempts ?? c.userAttempts ?? 0,
     };
   });
 }

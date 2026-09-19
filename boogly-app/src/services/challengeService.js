@@ -1,13 +1,10 @@
-export async function createAttempt({ 
-    domainUrl, 
-    id 
-}) {
+export async function createAttempt({ domainUrl, id }) {
   const res = await fetch(`${domainUrl}/challenges/${id}/attempt`, {
-    method: "POST",
-    credentials: "include", 
+    method: 'POST',
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json"
-    }
+      'Content-Type': 'application/json',
+    },
   });
 
   if (!res.ok) return null;
@@ -16,23 +13,19 @@ export async function createAttempt({
   return data?.userAttempt ?? null;
 }
 
-export async function submitChallenge({
-  domainUrl,
-  id,
-  commands
-}) {
+export async function submitChallenge({ domainUrl, id, commands }) {
   const res = await fetch(`${domainUrl}/challenges/${id}/submit`, {
-    method: "POST",
-    credentials: "include",
+    method: 'POST',
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ commands })
+    body: JSON.stringify({ commands }),
   });
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => null);
-    throw new Error(errBody?.message || "Erro ao submeter");
+    throw new Error(errBody?.message || 'Erro ao submeter');
   }
 
   const data = await res.json();
@@ -41,15 +34,15 @@ export async function submitChallenge({
 
 export async function getChallenge({ domainUrl, id }) {
   const res = await fetch(`${domainUrl}/challenges/${id}`, {
-    method: "GET",
-    credentials: "include",
+    method: 'GET',
+    credentials: 'include',
     headers: {
-      "Content-Type": "application/json"
-    }
+      'Content-Type': 'application/json',
+    },
   });
 
   if (!res.ok) {
-    throw new Error("Erro ao carregar desafio");
+    throw new Error('Erro ao carregar desafio');
   }
 
   const data = await res.json();
@@ -57,32 +50,29 @@ export async function getChallenge({ domainUrl, id }) {
   // 🔥 normalização já dentro do service (melhor ainda)
   return {
     ...data,
-    structure: data.structure || "list",
-    userStatus: data.userStatus || "pending",
-    userAttempts: data.userAttempts ?? 0
+    structure: data.structure || 'list',
+    userStatus: data.userStatus || 'pending',
+    userAttempts: data.userAttempts ?? 0,
   };
 }
 
 export async function getChallenges({ domainUrl, structure }) {
-  const headers = { "Content-Type": "application/json" };
+  const headers = { 'Content-Type': 'application/json' };
 
-  const res = await fetch(
-    `${domainUrl}/challenges?structure=${structure}`,
-    {
-      method: "GET",
-      credentials: "include",
-      headers
-    }
-  );
+  const res = await fetch(`${domainUrl}/challenges?structure=${structure}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers,
+  });
 
   if (!res.ok) {
-    throw new Error("Erro ao carregar desafios");
+    throw new Error('Erro ao carregar desafios');
   }
 
   const data = await res.json();
 
   if (!Array.isArray(data)) {
-    throw new Error("Formato inválido da resposta");
+    throw new Error('Formato inválido da resposta');
   }
 
   return data;

@@ -1,16 +1,28 @@
 // src/components/onboarding/OnboardingFlow.jsx
-import React, { useState, useEffect, useCallback, useContext, useRef } from "react";
-import { AppContext } from "../../app_configuration/AppContext";
-import { useAuth } from "../../autenticator/useAuth";
-import { useTheme } from "../../theme/useTheme";
-import { motion, AnimatePresence } from "framer-motion";
-import { updateOnboarding } from "../../services/userService";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useRef,
+} from 'react';
+import { AppContext } from '../../app_configuration/AppContext';
+import { useAuth } from '../../autenticator/useAuth';
+import { useTheme } from '../../theme/useTheme';
+import { motion, AnimatePresence } from 'framer-motion';
+import { updateOnboarding } from '../../services/userService';
 
 const steps = [
-  { title: "Bem-vindo 👋", description: "Você vai aprender estruturas de dados de forma visual." },
-  { title: "Arraste blocos 🧩", description: "Monte algoritmos conectando blocos." },
-  { title: "Execute ▶️", description: "Teste sua solução em tempo real." },
-  { title: "Evolua 🚀", description: "Resolva desafios e evolua." }
+  {
+    title: 'Bem-vindo 👋',
+    description: 'Você vai aprender estruturas de dados de forma visual.',
+  },
+  {
+    title: 'Arraste blocos 🧩',
+    description: 'Monte algoritmos conectando blocos.',
+  },
+  { title: 'Execute ▶️', description: 'Teste sua solução em tempo real.' },
+  { title: 'Evolua 🚀', description: 'Resolva desafios e evolua.' },
 ];
 
 export default function OnboardingFlowModal({ onFinish }) {
@@ -18,10 +30,10 @@ export default function OnboardingFlowModal({ onFinish }) {
   const [dontShow, setDontShow] = useState(() => {
     // inicializa do localStorage / sessionStorage (prioriza localStorage)
     try {
-      const ls = localStorage.getItem("onboarding_done");
-      if (ls === "true") return true;
-      const ss = sessionStorage.getItem("onboarding_done");
-      return ss === "true";
+      const ls = localStorage.getItem('onboarding_done');
+      if (ls === 'true') return true;
+      const ss = sessionStorage.getItem('onboarding_done');
+      return ss === 'true';
     } catch (e) {
       return false;
     }
@@ -37,9 +49,9 @@ export default function OnboardingFlowModal({ onFinish }) {
   useEffect(() => {
     // trava scroll da página enquanto o modal estiver aberto
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = prev || "auto";
+      document.body.style.overflow = prev || 'auto';
     };
   }, []);
 
@@ -53,21 +65,21 @@ export default function OnboardingFlowModal({ onFinish }) {
       // 👻 GUEST (local/session)
       try {
         if (dontShow) {
-          sessionStorage.setItem("onboarding_done", "true");
-          localStorage.setItem("onboarding_done", "true");
+          sessionStorage.setItem('onboarding_done', 'true');
+          localStorage.setItem('onboarding_done', 'true');
         } else {
-          sessionStorage.removeItem("onboarding_done");
-          localStorage.removeItem("onboarding_done");
+          sessionStorage.removeItem('onboarding_done');
+          localStorage.removeItem('onboarding_done');
         }
       } catch (e) {
-        console.warn("Storage write failed:", e);
+        console.warn('Storage write failed:', e);
       }
 
       // 👤 USUÁRIO LOGADO
       if (user && !user?.guest) {
         await updateOnboarding({
           domainUrl,
-          onboardingDone: !!dontShow
+          onboardingDone: !!dontShow,
         });
 
         // 🔥 atualiza contexto
@@ -75,9 +87,8 @@ export default function OnboardingFlowModal({ onFinish }) {
       }
 
       onFinish?.();
-
     } catch (err) {
-      console.error("Erro onboarding:", err);
+      console.error('Erro onboarding:', err);
 
       try {
         await refreshUser();
@@ -104,7 +115,7 @@ export default function OnboardingFlowModal({ onFinish }) {
   const variants = {
     enter: { opacity: 0, y: 10 },
     center: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
+    exit: { opacity: 0, y: -10 },
   };
 
   return (
@@ -114,8 +125,8 @@ export default function OnboardingFlowModal({ onFinish }) {
       role="dialog"
       aria-labelledby="onboarding-title"
       style={{
-        background: "rgba(0,0,0,0.7)",
-        padding: theme?.spacing?.lg || "24px"
+        background: 'rgba(0,0,0,0.7)',
+        padding: theme?.spacing?.lg || '24px',
       }}
     >
       <div
@@ -123,10 +134,10 @@ export default function OnboardingFlowModal({ onFinish }) {
         style={{
           background: theme?.panel,
           color: theme?.text,
-          padding: theme?.spacing?.lg || "24px",
-          boxSizing: "border-box",
+          padding: theme?.spacing?.lg || '24px',
+          boxSizing: 'border-box',
           border: `1px solid ${theme?.border}`,
-          borderRadius: 24
+          borderRadius: 24,
         }}
       >
         {/* PROGRESS DOTS */}
@@ -136,7 +147,7 @@ export default function OnboardingFlowModal({ onFinish }) {
               key={i}
               role="button"
               tabIndex={-1}
-              aria-current={i === step ? "step" : undefined}
+              aria-current={i === step ? 'step' : undefined}
               className="w-3 h-3 rounded-full transition"
               style={{
                 width: 10,
@@ -144,7 +155,7 @@ export default function OnboardingFlowModal({ onFinish }) {
                 background: i === step ? theme?.primary : theme?.card,
                 opacity: i === step ? 1 : 0.45,
                 border: `1px solid ${theme?.border}`,
-                boxSizing: "border-box"
+                boxSizing: 'border-box',
               }}
             />
           ))}
@@ -167,7 +178,7 @@ export default function OnboardingFlowModal({ onFinish }) {
                 style={{
                   margin: 0,
                   ...theme?.typography?.h2,
-                  color: theme?.text
+                  color: theme?.text,
                 }}
               >
                 {current.title}
@@ -178,7 +189,7 @@ export default function OnboardingFlowModal({ onFinish }) {
                 style={{
                   margin: 0,
                   color: theme?.muted,
-                  ...theme?.typography?.body
+                  ...theme?.typography?.body,
                 }}
               >
                 {current.description}
@@ -202,18 +213,21 @@ export default function OnboardingFlowModal({ onFinish }) {
         </label>
 
         {/* ACTIONS */}
-        <div className="flex justify-between items-center" style={{ gap: theme?.spacing?.md }}>
+        <div
+          className="flex justify-between items-center"
+          style={{ gap: theme?.spacing?.md }}
+        >
           <button
             onClick={skip}
             onMouseEnter={() => setHoverPrev(true)}
             onMouseLeave={() => setHoverPrev(false)}
             className="underline text-sm"
             style={{
-              background: "transparent",
-              border: "none",
+              background: 'transparent',
+              border: 'none',
               padding: theme?.spacing?.sm,
               color: hoverPrev ? theme?.text : theme?.muted,
-              cursor: "pointer"
+              cursor: 'pointer',
             }}
             aria-label="Pular onboarding"
           >
@@ -228,15 +242,15 @@ export default function OnboardingFlowModal({ onFinish }) {
             className="px-6 py-2 rounded-lg font-semibold"
             style={{
               background: hoverNext ? theme?.hover : theme?.primary,
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
               paddingLeft: theme?.spacing?.lg,
-              paddingRight: theme?.spacing?.lg
+              paddingRight: theme?.spacing?.lg,
             }}
-            aria-label={step === steps.length - 1 ? "Começar" : "Próximo"}
+            aria-label={step === steps.length - 1 ? 'Começar' : 'Próximo'}
           >
-            {step === steps.length - 1 ? "Começar" : "Próximo"}
+            {step === steps.length - 1 ? 'Começar' : 'Próximo'}
           </button>
         </div>
       </div>

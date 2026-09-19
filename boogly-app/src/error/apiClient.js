@@ -1,4 +1,4 @@
-import { normalizeError } from "./errorHandler";
+import { normalizeError } from './errorHandler';
 
 export async function apiRequest(url, options = {}) {
   try {
@@ -10,13 +10,12 @@ export async function apiRequest(url, options = {}) {
       throw {
         response: {
           status: res.status,
-          data
-        }
+          data,
+        },
       };
     }
 
     return await res.json();
-
   } catch (error) {
     throw normalizeError(error);
   }

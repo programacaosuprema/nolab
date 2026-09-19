@@ -1,12 +1,8 @@
-import { useError } from "./useError";
-import ErrorBoundary from "./ErrorBoundary";
+import { useError } from './useError';
+import ErrorBoundary from './ErrorBoundary';
 
 export default function ErrorBoundaryWrapper({ children }) {
   const { showError } = useError();
 
-  return (
-    <ErrorBoundary showError={showError}>
-      {children}
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary showError={showError}>{children}</ErrorBoundary>;
 }

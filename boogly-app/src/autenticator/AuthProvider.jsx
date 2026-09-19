@@ -1,10 +1,14 @@
 // src/autenticator/AuthProvider.jsx
-import { useState, useEffect, useContext, useCallback } from "react";
-import { AuthContext } from "./AuthContext";
-import { AppContext } from "../app_configuration/AppContext";
-import { clearGuestWorkspaces } from "../utils/workspaceStorage";
-import { fetchMe } from "../services/userService";
-import { authenticateUser, loginGuest, logoutUser } from "../services/authService";
+import { useState, useEffect, useContext, useCallback } from 'react';
+import { AuthContext } from './AuthContext';
+import { AppContext } from '../app_configuration/AppContext';
+import { clearGuestWorkspaces } from '../utils/workspaceStorage';
+import { fetchMe } from '../services/userService';
+import {
+  authenticateUser,
+  loginGuest,
+  logoutUser,
+} from '../services/authService';
 
 export function AuthProvider({ children }) {
   const { domainUrl } = useContext(AppContext);
@@ -16,7 +20,7 @@ export function AuthProvider({ children }) {
   // estrutura escolhida persistida
   const [structure, setStructure] = useState(() => {
     try {
-      return localStorage.getItem("structure") || null;
+      return localStorage.getItem('structure') || null;
     } catch (e) {
       return null;
     }
@@ -25,11 +29,11 @@ export function AuthProvider({ children }) {
   const setStructureSafe = (value) => {
     setStructure(value);
     try {
-      if (value) localStorage.setItem("structure", value);
-      else localStorage.removeItem("structure");
+      if (value) localStorage.setItem('structure', value);
+      else localStorage.removeItem('structure');
     } catch (e) {
       // ignore storage errors
-      console.warn("[Auth] localStorage erro:", e);
+      console.warn('[Auth] localStorage erro:', e);
     }
   };
 
@@ -58,7 +62,7 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(true);
         return data;
       } catch (err) {
-        console.warn("[Auth] fetchAndSetUser falhou:", err?.message || err);
+        console.warn('[Auth] fetchAndSetUser falhou:', err?.message || err);
         setUser(null);
         setIsAuthenticated(false);
         return null;
@@ -75,7 +79,7 @@ export function AuthProvider({ children }) {
       try {
         await fetchAndSetUser();
       } catch (err) {
-        console.error("[Auth] erro ao restaurar sessão:", err);
+        console.error('[Auth] erro ao restaurar sessão:', err);
       } finally {
         if (mounted) setLoadingAuth(false);
       }
@@ -88,7 +92,7 @@ export function AuthProvider({ children }) {
 
   // authenticate (email / nickname)
   async function authenticate(identifier) {
-    if (!domainUrl) throw new Error("domainUrl não configurado");
+    if (!domainUrl) throw new Error('domainUrl não configurado');
     try {
       // authenticateUser faz a chamada /auth (cookie-based)
       await authenticateUser({ domainUrl, identifier });
@@ -97,14 +101,14 @@ export function AuthProvider({ children }) {
       await fetchAndSetUser();
       return true;
     } catch (err) {
-      console.error("[Auth] authenticate erro:", err?.message || err);
+      console.error('[Auth] authenticate erro:', err?.message || err);
       throw err;
     }
   }
 
   // login como convidado
   async function loginAsGuest() {
-    if (!domainUrl) throw new Error("domainUrl não configurado");
+    if (!domainUrl) throw new Error('domainUrl não configurado');
     try {
       await loginGuest({ domainUrl });
 
@@ -114,7 +118,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(!!u);
       return { user: u };
     } catch (err) {
-      console.error("[Auth] loginAsGuest erro:", err?.message || err);
+      console.error('[Auth] loginAsGuest erro:', err?.message || err);
       throw err;
     }
   }
@@ -126,9 +130,9 @@ export function AuthProvider({ children }) {
       setUser(null);
       setIsAuthenticated(false);
       setStructure(null);
-      sessionStorage.removeItem("onboarding_done");
-      localStorage.removeItem("onboarding_done");
-      localStorage.removeItem("structure");
+      sessionStorage.removeItem('onboarding_done');
+      localStorage.removeItem('onboarding_done');
+      localStorage.removeItem('structure');
       return;
     }
 
@@ -138,22 +142,22 @@ export function AuthProvider({ children }) {
         await logoutUser({ domainUrl });
       } catch (e) {
         // loga mas não quebra a limpeza local
-        console.warn("[Auth] logoutUser falhou:", e?.message || e);
+        console.warn('[Auth] logoutUser falhou:', e?.message || e);
       }
 
       if (user?.guest) {
         try {
           clearGuestWorkspaces();
         } catch (e) {
-          console.warn("clearGuestWorkspaces falhou:", e);
+          console.warn('clearGuestWorkspaces falhou:', e);
         }
       }
 
       // limpar local/session storage
       try {
-        sessionStorage.removeItem("onboarding_done");
-        localStorage.removeItem("onboarding_done");
-        localStorage.removeItem("structure");
+        sessionStorage.removeItem('onboarding_done');
+        localStorage.removeItem('onboarding_done');
+        localStorage.removeItem('structure');
       } catch (e) {
         // ignore
       }
@@ -163,7 +167,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
       setStructure(null);
     } catch (err) {
-      console.error("[Auth] logout erro:", err?.message || err);
+      console.error('[Auth] logout erro:', err?.message || err);
     }
   }
 
@@ -185,8 +189,10 @@ export function AuthProvider({ children }) {
     setStructure: setStructureSafe,
 
     setUser: updateUser,
-    refreshUser: fetchAndSetUser
+    refreshUser: fetchAndSetUser,
   };
 
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 }

@@ -1,14 +1,14 @@
 // src/pages/ErrorPage.jsx
-import React, { useState } from "react";
-import { useTheme } from "../../theme/useTheme";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useTheme } from '../../theme/useTheme';
+import { useNavigate } from 'react-router-dom';
 
 export function ErrorPage({ message, code }) {
   const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const errorMessage = message || "Algo deu errado";
-  const errorCode = code || "ERR_UNKNOWN";
+  const errorMessage = message || 'Algo deu errado';
+  const errorCode = code || 'ERR_UNKNOWN';
 
   // estados de hover para botões (permite usar cores do theme sem manipular DOM)
   const [hoverRetry, setHoverRetry] = useState(false);
@@ -19,13 +19,13 @@ export function ErrorPage({ message, code }) {
     padding: `${theme.spacing.sm} ${theme.spacing.md}`,
     borderRadius: 8,
     fontWeight: 600,
-    cursor: "pointer",
-    transition: "all 160ms ease",
-    boxSizing: "border-box",
-    border: "none",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 8
+    cursor: 'pointer',
+    transition: 'all 160ms ease',
+    boxSizing: 'border-box',
+    border: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
   };
 
   return (
@@ -34,7 +34,7 @@ export function ErrorPage({ message, code }) {
       style={{
         background: theme.background,
         color: theme.text,
-        fontFamily: theme.typography?.body?.fontFamily || undefined
+        fontFamily: theme.typography?.body?.fontFamily || undefined,
       }}
       role="alert"
       aria-live="assertive"
@@ -47,8 +47,8 @@ export function ErrorPage({ message, code }) {
           borderRadius: 12,
           padding: `calc(${theme.spacing.lg} + 8px)`,
           maxWidth: 820,
-          width: "100%",
-          boxShadow: "0 8px 30px rgba(2,6,23,0.12)"
+          width: '100%',
+          boxShadow: '0 8px 30px rgba(2,6,23,0.12)',
         }}
       >
         {/* Ícone */}
@@ -56,8 +56,8 @@ export function ErrorPage({ message, code }) {
           className="mb-4"
           aria-hidden="true"
           style={{
-            fontSize: theme.typography?.h1?.fontSize || "40px",
-            color: theme.danger
+            fontSize: theme.typography?.h1?.fontSize || '40px',
+            color: theme.danger,
           }}
         >
           ⚠️
@@ -69,7 +69,7 @@ export function ErrorPage({ message, code }) {
             margin: 0,
             marginBottom: theme.spacing.sm,
             color: theme.text,
-            ...theme.typography?.h1
+            ...theme.typography?.h1,
           }}
         >
           Ocorreu um erro
@@ -82,7 +82,7 @@ export function ErrorPage({ message, code }) {
             marginBottom: theme.spacing.sm,
             maxWidth: 720,
             color: theme.danger,
-            ...theme.typography?.body
+            ...theme.typography?.body,
           }}
         >
           {errorMessage}
@@ -94,10 +94,10 @@ export function ErrorPage({ message, code }) {
             marginTop: theme.spacing.md,
             marginBottom: theme.spacing.lg,
             color: theme.muted,
-            ...theme.typography?.small
+            ...theme.typography?.small,
           }}
         >
-          Código: <span style={{ fontFamily: "monospace" }}>{errorCode}</span>
+          Código: <span style={{ fontFamily: 'monospace' }}>{errorCode}</span>
         </div>
 
         {/* Botões */}
@@ -114,8 +114,8 @@ export function ErrorPage({ message, code }) {
             style={{
               ...commonButtonStyle,
               background: hoverRetry ? theme.hover : theme.primary,
-              color: "#fff",
-              boxShadow: hoverRetry ? `0 6px 18px ${theme.primary}33` : "none"
+              color: '#fff',
+              boxShadow: hoverRetry ? `0 6px 18px ${theme.primary}33` : 'none',
             }}
           >
             🔄 Tentar novamente
@@ -132,7 +132,7 @@ export function ErrorPage({ message, code }) {
               background: hoverBack ? theme.active : theme.card,
               color: theme.text,
               border: `1px solid ${theme.border}`,
-              boxShadow: hoverBack ? `0 6px 18px ${theme.border}55` : "none"
+              boxShadow: hoverBack ? `0 6px 18px ${theme.border}55` : 'none',
             }}
           >
             ← Voltar
@@ -140,15 +140,15 @@ export function ErrorPage({ message, code }) {
 
           {/* HOME */}
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
             aria-label="Ir para a página inicial"
             onMouseEnter={() => setHoverHome(true)}
             onMouseLeave={() => setHoverHome(false)}
             style={{
               ...commonButtonStyle,
               background: hoverHome ? theme.hover : theme.success,
-              color: "#fff",
-              boxShadow: hoverHome ? `0 6px 18px ${theme.success}33` : "none"
+              color: '#fff',
+              boxShadow: hoverHome ? `0 6px 18px ${theme.success}33` : 'none',
             }}
           >
             🏠 Início

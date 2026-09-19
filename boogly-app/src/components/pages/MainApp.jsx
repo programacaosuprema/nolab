@@ -1,7 +1,7 @@
-import { Outlet } from "react-router-dom";
-import Header from "../panels/HeaderPanel";
-import { useAuth } from "../../autenticator/useAuth";
-import { useTheme } from "../../theme/useTheme";
+import { Outlet } from 'react-router-dom';
+import Header from '../panels/HeaderPanel';
+import { useAuth } from '../../autenticator/useAuth';
+import { useTheme } from '../../theme/useTheme';
 
 export default function MainApp() {
   const { structure, setStructure } = useAuth();
@@ -12,16 +12,15 @@ export default function MainApp() {
       className="h-dvh flex flex-col"
       style={{
         background: theme.background,
-        color: theme.text
+        color: theme.text,
       }}
     >
-
       {/* HEADER */}
       <header
         className="h-16 shrink-0 border-b"
         style={{
           borderColor: theme.border,
-          background: theme.header
+          background: theme.header,
         }}
       >
         <Header structure={structure} setStructure={setStructure} />
@@ -32,13 +31,12 @@ export default function MainApp() {
         <div
           className="h-full p-3"
           style={{
-            background: theme.background
+            background: theme.background,
           }}
         >
           <Outlet />
         </div>
       </main>
-
     </div>
   );
 }

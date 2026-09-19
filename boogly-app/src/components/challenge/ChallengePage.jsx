@@ -73,15 +73,15 @@ export default function ChallengePage() {
       loadChallenges();
     }
   }, [domainUrl, structure, showError]);
-  // 🔥 LOADING
+  //  LOADING
   if (loading) return <LoadingPage />;
 
-  // 🔥 ERRO DE TELA (CORRETO)
+  //  ERRO DE TELA (CORRETO)
   if (hasError) {
     return <ErrorPage message="Não foi possível carregar os desafios." />;
   }
 
-  // 🔥 LISTA VAZIA
+  //  LISTA VAZIA
   if (challenges.length === 0) {
     return (
       <div
@@ -93,7 +93,7 @@ export default function ChallengePage() {
     );
   }
 
-  // 🔥 UI helpers (mantive seu visual)
+  //  UI helpers (mantive seu visual)
   function getStatusUI(status) {
     const baseStyle = {
       ...theme.typography.badge,
@@ -201,9 +201,9 @@ export default function ChallengePage() {
         padding: theme.spacing.lg,
       }}
     >
-      {/* 🔥 HEADER */}
+      {/*  HEADER */}
       <div style={{ marginBottom: theme.spacing.lg }}>
-        {/* 🔥 LINHA: VOLTAR + TÍTULO */}
+        {/*  LINHA: VOLTAR + TÍTULO */}
         <div
           style={{
             display: 'flex',
@@ -243,7 +243,7 @@ export default function ChallengePage() {
           Desafios
         </h2>
 
-        {/* 🔥 SUBTÍTULO */}
+        {/*  SUBTÍTULO */}
         <p
           style={{
             ...theme.typography.body,
@@ -254,7 +254,7 @@ export default function ChallengePage() {
         </p>
       </div>
 
-      {/* 🔥 TABELA */}
+      {/*  TABELA */}
       <div
         style={{
           background: theme.panel,
@@ -309,7 +309,7 @@ export default function ChallengePage() {
 
             <span>{getStatusUI(c.userStatus) || 'pending'}</span>
 
-            {/* 🔥 NOME DESTACADO */}
+            {/*  NOME DESTACADO */}
             <span
               style={{
                 ...theme.typography.h3,

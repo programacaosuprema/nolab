@@ -70,7 +70,7 @@ export default function Header({ structure }) {
         </div>
       </div>
 
-      {/* 🔥 DIREITA */}
+      {/*  DIREITA */}
       <div className="flex items-center gap-3">
         {/* 🎮 MODO */}
         <div

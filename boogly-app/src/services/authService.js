@@ -1,6 +1,6 @@
 // src/services/authService.js
 
-// 🔥 helper reutilizável (igual ao userService)
+//  helper reutilizável (igual ao userService)
 async function safeParse(res) {
   const text = await res.text();
 
@@ -56,7 +56,7 @@ export async function logoutUser({ domainUrl }) {
       credentials: 'include',
     });
 
-    // 🔥 evita quebrar se backend não tiver rota
+    //  evita quebrar se backend não tiver rota
     if (!res.ok) {
       console.warn(`Logout falhou (${res.status})`);
       return false;

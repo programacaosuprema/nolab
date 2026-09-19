@@ -52,7 +52,7 @@ export default function EditorPage() {
         },
       });
 
-      // 🔥 LISTENER
+      //  LISTENER
       workspaceRef.current.addChangeListener(() => {
         try {
           const ws = workspaceRef.current;

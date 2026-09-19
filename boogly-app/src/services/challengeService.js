@@ -47,7 +47,7 @@ export async function getChallenge({ domainUrl, id }) {
 
   const data = await res.json();
 
-  // 🔥 normalização já dentro do service (melhor ainda)
+  //  normalização já dentro do service (melhor ainda)
   return {
     ...data,
     structure: data.structure || 'list',

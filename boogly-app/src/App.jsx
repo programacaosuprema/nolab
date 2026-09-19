@@ -5,7 +5,7 @@ import { LoadingPage } from './components/pages/LoadingPage';
 import GuidedTourModal from './components/modals/GuideTourModal';
 import { AppContext } from './app_configuration/AppContext';
 
-// 🔥 lazy load (performance)
+//  lazy load (performance)
 const Home = lazy(() => import('./components/pages/HomePage'));
 const MainApp = lazy(() => import('./components/pages/MainApp'));
 const EditorPage = lazy(() => import('./components/pages/EditorPage'));

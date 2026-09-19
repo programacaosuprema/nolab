@@ -145,7 +145,7 @@ function extractCommandsFromWorkspace(ws) {
     // 🚀 salva comando
     commands.push({ type, value });
 
-    // 🔥 1. percorre inputs (filhos internos)
+    //  1. percorre inputs (filhos internos)
     const inputs = block.inputList || [];
 
     for (const input of inputs) {
@@ -156,7 +156,7 @@ function extractCommandsFromWorkspace(ws) {
       }
     }
 
-    // 🔥 2. percorre próximo bloco da cadeia
+    //  2. percorre próximo bloco da cadeia
     const next = block.getNextBlock?.();
     if (next) walk(next);
   }
@@ -409,7 +409,7 @@ export default function ChallengeBlocklyEditor({
               label={label}
               active={category === key}
               onClick={() => {
-                if (view !== 'editor') return; // 🔥 trava
+                if (view !== 'editor') return; //  trava
                 setCategory(key);
               }}
               theme={theme}
@@ -443,7 +443,7 @@ export default function ChallengeBlocklyEditor({
               Área de Programação
             </div>
 
-            {/* 🔥 NOVO TOGGLE */}
+            {/*  NOVO TOGGLE */}
             <div style={{ display: 'flex', gap: 6 }}>
               <button
                 onClick={() => setView('editor')}

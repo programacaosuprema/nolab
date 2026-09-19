@@ -189,6 +189,6 @@ javascriptGenerator.forBlock['base_arithmetic'] = function (block) {
 
   const op = block.getFieldValue('OP');
 
-  // 🔥 DSL padronizada (igual ao list_get)
+  //  DSL padronizada (igual ao list_get)
   return [`aritmetica(${a}, "${op}", ${b})`, javascriptGenerator.ORDER_ATOMIC];
 };

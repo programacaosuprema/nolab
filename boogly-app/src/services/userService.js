@@ -1,4 +1,4 @@
-// 🔥 helper padrão (reutilizável)
+//  helper padrão (reutilizável)
 async function safeParse(res) {
   const text = await res.text();
 
@@ -11,7 +11,7 @@ async function safeParse(res) {
   }
 }
 
-// 🔥 GET /users/me
+//  GET /users/me
 export async function getMe({ domainUrl }) {
   const res = await fetch(`${domainUrl}/users/me`, {
     method: 'GET',
@@ -27,7 +27,7 @@ export async function getMe({ domainUrl }) {
     throw new Error(`Erro /users/me (${res.status})`);
   }
 
-  return data; // 🔥 sempre user completo
+  return data; //  sempre user completo
 }
 
 export async function getUserChallenges({ domainUrl }) {

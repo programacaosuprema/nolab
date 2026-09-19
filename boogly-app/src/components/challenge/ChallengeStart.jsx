@@ -50,7 +50,7 @@ export function ChallengeStart({ challenge, onStart }) {
         padding: theme.spacing.lg,
       }}
     >
-      {/* 🔥 HEADER PADRÃO */}
+      {/*  HEADER PADRÃO */}
       <div style={{ marginBottom: theme.spacing.lg }}>
         <div
           style={{
@@ -101,7 +101,7 @@ export function ChallengeStart({ challenge, onStart }) {
         </p>
       </div>
 
-      {/* 🔥 CONTAINER FULL WIDTH */}
+      {/*  CONTAINER FULL WIDTH */}
       <div
         className="w-full flex-1 flex flex-col overflow-hidden"
         style={{
@@ -110,7 +110,7 @@ export function ChallengeStart({ challenge, onStart }) {
           borderRadius: '12px',
         }}
       >
-        {/* 🔥 TITLE */}
+        {/*  TITLE */}
         <div
           style={{
             background: theme.primary,
@@ -122,7 +122,7 @@ export function ChallengeStart({ challenge, onStart }) {
           {challenge.title || 'Desafio'}
         </div>
 
-        {/* 🔥 TABS */}
+        {/*  TABS */}
         <div
           style={{
             display: 'flex',
@@ -154,7 +154,7 @@ export function ChallengeStart({ challenge, onStart }) {
           })}
         </div>
 
-        {/* 🔥 CONTENT */}
+        {/*  CONTENT */}
         <div
           style={{
             padding: theme.spacing.lg,
@@ -257,7 +257,7 @@ export function ChallengeStart({ challenge, onStart }) {
           )}
         </div>
 
-        {/* 🔥 FOOTER */}
+        {/*  FOOTER */}
         <div
           style={{
             borderTop: `1px solid ${theme.border}`,

@@ -14,7 +14,7 @@ export function saveWorkspace(workspace, structure, userId) {
 
   if (workspace.isLoading) return;
 
-  // 🔥 NOVO: não salva vazio
+  //  NOVO: não salva vazio
   if (workspace.getAllBlocks(false).length === 0) return;
 
   try {

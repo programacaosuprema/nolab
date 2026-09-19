@@ -15,7 +15,7 @@ function executeBlock(lines, simulator) {
     if (!line) continue;
 
     // ==========================================================
-    // 🔥 IF
+    //  IF
     // ==========================================================
     if (line.startsWith('if')) {
       const condition = line.match(/if\s*\((.*)\)/)?.[1];
@@ -59,12 +59,12 @@ function executeBlock(lines, simulator) {
     }
 
     // ==========================================================
-    // 🔥 ELSE
+    //  ELSE
     // ==========================================================
     if (line.startsWith('} else {')) {
       const current = conditionStack[conditionStack.length - 1];
 
-      // 🔥 IF já executou
+      //  IF já executou
       if (current.executed) {
         shouldExecute = false;
 
@@ -73,7 +73,7 @@ function executeBlock(lines, simulator) {
         continue;
       }
 
-      // 🔥 IF foi falso
+      //  IF foi falso
       shouldExecute = true;
 
       current.result = true;
@@ -83,7 +83,7 @@ function executeBlock(lines, simulator) {
     }
 
     // ==========================================================
-    // 🔥 FECHAMENTO
+    //  FECHAMENTO
     // ==========================================================
     if (line === '}') {
       conditionStack.pop();
@@ -99,7 +99,7 @@ function executeBlock(lines, simulator) {
     if (!shouldExecute) continue;
 
     // ==========================================================
-    // 🔥 PARA CADA
+    //  PARA CADA
     // ==========================================================
     if (line.startsWith('para_cada(')) {
       const match = line.match(/para_cada\("(.+?)",\s*"(.+?)"/);
@@ -114,7 +114,7 @@ function executeBlock(lines, simulator) {
 
       if (!queue) continue;
 
-      // 🔥 captura bloco interno
+      //  captura bloco interno
       const internalLines = [];
 
       let depth = 1;
@@ -141,7 +141,7 @@ function executeBlock(lines, simulator) {
 
       i--;
 
-      // 🔥 percorre fila
+      //  percorre fila
       for (const item of [...queue.data]) {
         simulator.inserir_em_variavel(variable, item);
 
@@ -178,10 +178,10 @@ function executeBlock(lines, simulator) {
       : [];
 
     // ==========================================================
-    // 🔥 EXECUTA
+    //  EXECUTA
     // ==========================================================
     if (typeof simulator[operation] === 'function') {
-      // 🔥 ENQUEUE
+      //  ENQUEUE
       if (operation === 'enqueue') {
         const [queueName, value] = args;
 
@@ -238,7 +238,7 @@ export function executeQueue(code) {
   const simulator = new QueueSimulator();
 
   // ==========================================================
-  // 🔥 EXECUTAR
+  //  EXECUTAR
   // ==========================================================
   if (!code.includes('// INICIAR_EXECUCAO')) {
     return [

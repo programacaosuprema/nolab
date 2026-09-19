@@ -11,7 +11,7 @@ export default function useCountdown({ totalSeconds = 120, keyId, onExpire }) {
 
       let end = sessionStorage.getItem(key);
 
-      // 🔥 se já existe tempo salvo → continua
+      //  se já existe tempo salvo → continua
       if (end) {
         end = Number(end);
       } else {

@@ -108,7 +108,7 @@ export default function CodePanel({ cCode }) {
           onMount={(editor) => {
             editorRef.current = editor;
 
-            // 🔥 força recalcular layout
+            //  força recalcular layout
             setTimeout(() => {
               editor.layout();
             }, 50);

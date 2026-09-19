@@ -82,7 +82,7 @@ export default function OnboardingFlowModal({ onFinish }) {
           onboardingDone: !!dontShow,
         });
 
-        // 🔥 atualiza contexto
+        //  atualiza contexto
         await refreshUser();
       }
 

@@ -139,7 +139,7 @@ function executeBlock(lines, simulator) {
 
       i--;
 
-      // 🔥 percorre da BASE para o TOPO
+      //  percorre da BASE para o TOPO
       for (const item of [...stack]) {
         simulator.inserir_em_variavel(variable, item);
 
@@ -150,7 +150,7 @@ function executeBlock(lines, simulator) {
     }
 
     /* ==========================================================
-       🔥 ATRIBUIÇÃO
+        ATRIBUIÇÃO
        x = 10;
     ========================================================== */
     const assignment = line.match(/^(\w+)\s*=\s*(.+);?$/);
@@ -168,7 +168,7 @@ function executeBlock(lines, simulator) {
     }
 
     /* ==========================================================
-       🔥 CHAMADA DE FUNÇÃO
+        CHAMADA DE FUNÇÃO
     ========================================================== */
 
     const match = line.match(/^(\w+)\((.*)\);?$/);

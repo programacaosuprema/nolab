@@ -1,24 +1,24 @@
 // src/components/auth/AuthModal.jsx
-import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../autenticator/useAuth";
-import { Mail } from "lucide-react";
-import { useTheme } from "../../theme/useTheme";
+import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../autenticator/useAuth';
+import { Mail } from 'lucide-react';
+import { useTheme } from '../../theme/useTheme';
 
 export default function AuthModal({ isOpen, onClose }) {
   const { authenticate } = useAuth();
   const { theme } = useTheme();
 
-  const [identifier, setIdentifier] = useState("");
+  const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       // limpa estados quando abre
-      setIdentifier("");
-      setError("");
+      setIdentifier('');
+      setError('');
       // foco no input ao abrir
       setTimeout(() => inputRef.current?.focus(), 50);
     }
@@ -28,19 +28,19 @@ export default function AuthModal({ isOpen, onClose }) {
 
   async function handleSubmit() {
     if (!identifier.trim()) {
-      setError("Digite seu e-mail ou nickname");
+      setError('Digite seu e-mail ou nickname');
       return;
     }
 
     try {
       setLoading(true);
-      setError("");
+      setError('');
 
       await authenticate(identifier.trim());
       onClose();
     } catch (err) {
       // err pode ser uma string ou Error
-      setError((err && err.message) || String(err) || "Erro ao autenticar");
+      setError((err && err.message) || String(err) || 'Erro ao autenticar');
     } finally {
       setLoading(false);
     }
@@ -48,26 +48,26 @@ export default function AuthModal({ isOpen, onClose }) {
 
   // permite enviar com Enter
   function handleKeyDown(e) {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSubmit();
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       onClose && onClose();
     }
   }
 
   // fallback para propriedades de input que não existam no theme.js
-  const inputBg = theme?.card ?? theme?.panel ?? (theme?.workspace || "#fff");
-  const inputText = theme?.text ?? "#000";
-  const inputPlaceholder = theme?.muted ?? "#9ca3af";
-  const primaryColor = theme?.primary ?? "#3b82f6";
+  const inputBg = theme?.card ?? theme?.panel ?? (theme?.workspace || '#fff');
+  const inputText = theme?.text ?? '#000';
+  const inputPlaceholder = theme?.muted ?? '#9ca3af';
+  const primaryColor = theme?.primary ?? '#3b82f6';
   const primaryHover = theme?.hover ?? primaryColor;
 
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{
-        background: "rgba(0,0,0,0.55)",
-        padding: theme?.spacing?.md ?? "16px"
+        background: 'rgba(0,0,0,0.55)',
+        padding: theme?.spacing?.md ?? '16px',
       }}
       role="dialog"
       aria-modal="true"
@@ -80,7 +80,7 @@ export default function AuthModal({ isOpen, onClose }) {
           background: theme?.panel,
           color: theme?.text,
           border: `1px solid ${theme?.border}`,
-          boxSizing: "border-box"
+          boxSizing: 'border-box',
         }}
       >
         {/* CLOSE */}
@@ -90,9 +90,9 @@ export default function AuthModal({ isOpen, onClose }) {
           aria-label="Fechar"
           style={{
             color: theme?.muted,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer"
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
           }}
         >
           ✕
@@ -105,7 +105,7 @@ export default function AuthModal({ isOpen, onClose }) {
           style={{
             margin: 0,
             color: theme?.text,
-            ...theme?.typography?.h2
+            ...theme?.typography?.h2,
           }}
         >
           Entrar 🚀
@@ -116,7 +116,7 @@ export default function AuthModal({ isOpen, onClose }) {
           className="rounded-xl p-4 flex gap-3 items-center mb-3"
           style={{
             background: inputBg,
-            border: `1px solid ${theme?.border}`
+            border: `1px solid ${theme?.border}`,
           }}
         >
           <Mail style={{ color: inputPlaceholder }} />
@@ -128,7 +128,7 @@ export default function AuthModal({ isOpen, onClose }) {
             className="w-full outline-none bg-transparent"
             style={{
               color: inputText,
-              fontSize: theme?.typography?.body?.fontSize || "16px"
+              fontSize: theme?.typography?.body?.fontSize || '16px',
             }}
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
@@ -142,7 +142,7 @@ export default function AuthModal({ isOpen, onClose }) {
           <div
             className="mb-3 text-sm"
             role="alert"
-            style={{ color: theme?.danger ?? "#ef4444" }}
+            style={{ color: theme?.danger ?? '#ef4444' }}
           >
             {error}
           </div>
@@ -155,14 +155,17 @@ export default function AuthModal({ isOpen, onClose }) {
           className="w-full py-3 rounded-xl font-bold transition"
           style={{
             background: loading ? primaryHover : primaryColor,
-            color: theme?.text === "#fff" || theme?.text === "white" ? "#000" : "#000",
+            color:
+              theme?.text === '#fff' || theme?.text === 'white'
+                ? '#000'
+                : '#000',
             opacity: loading ? 0.8 : 1,
             border: `1px solid ${theme?.border}`,
-            cursor: loading ? "not-allowed" : "pointer"
+            cursor: loading ? 'not-allowed' : 'pointer',
           }}
           aria-busy={loading}
         >
-          {loading ? "Entrando..." : "Entrar"}
+          {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </div>
     </div>

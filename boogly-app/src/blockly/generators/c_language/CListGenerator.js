@@ -25,7 +25,7 @@ CGenerator.forBlock['list_get'] = function (block) {
 
   const list = block.getFieldValue('LIST') || 'lista';
 
-  // 🔥 Expressão em C
+  //  Expressão em C
   return [`pegar_posicao(${index}, &${list})`, CGenerator.ORDER_ATOMIC];
 };
 

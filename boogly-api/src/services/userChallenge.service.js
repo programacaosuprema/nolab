@@ -5,7 +5,7 @@ export const registerAttempt = async (userId, challengeId) => {
   const existing = await UserChallenge.findOne({ userId, challengeId });
 
   //  se já concluiu → não faz nada
-  if (existing?.status === "concluido") {
+  if (existing?.status === "concluído") {
     return existing;
   }
 
@@ -27,14 +27,14 @@ export const markAsCompleted = async (userId, challengeId) => {
     return await UserChallenge.create({
       userId,
       challengeId,
-      status: "concluido",
+      status: "concluído",
       attempts: 1,
       completedAt: new Date(),
     });
   }
 
   //  NÃO incrementa attempts aqui
-  existing.status = "concluido";
+  existing.status = "concluído";
   existing.completedAt = new Date();
 
   return await existing.save();

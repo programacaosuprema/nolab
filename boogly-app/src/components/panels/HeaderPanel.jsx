@@ -31,7 +31,7 @@ export default function Header({ structure }) {
       await logout();
       navigate('/', { replace: true });
     } catch (err) {
-      console.error('Erro ao sair:', err);
+      throw new Error(`Erro ao copiar: ${err.message}`);
     }
   }
 

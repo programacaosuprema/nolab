@@ -6,7 +6,7 @@ export function normalizeError(error) {
     };
   }
 
-  // API error
+  // API (backend respondeu erro)
   if (error.response) {
     return {
       message: error.response.data?.message || 'Erro do servidor',
@@ -15,11 +15,19 @@ export function normalizeError(error) {
     };
   }
 
-  // Fetch error
+  // Fetch / network
   if (error.message?.includes('Failed to fetch')) {
     return {
       message: 'Erro de conexão com o servidor',
       type: 'network',
+    };
+  }
+
+  // Timeout (se usar futuramente)
+  if (error.message?.includes('timeout')) {
+    return {
+      message: 'Tempo de resposta excedido',
+      type: 'timeout',
     };
   }
 

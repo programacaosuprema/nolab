@@ -1,5 +1,3 @@
-// src/components/modals/ExpireModal.jsx
-import React from 'react';
 import { useTheme } from '../../theme/useTheme';
 
 export default function ExpireModal({ isOpen, onRetry, onGoBack }) {

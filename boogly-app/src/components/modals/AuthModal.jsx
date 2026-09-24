@@ -1,5 +1,4 @@
-// src/components/auth/AuthModal.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../autenticator/useAuth';
 import { Mail } from 'lucide-react';
 import { useTheme } from '../../theme/useTheme';
@@ -40,7 +39,7 @@ export default function AuthModal({ isOpen, onClose }) {
       onClose();
     } catch (err) {
       // err pode ser uma string ou Error
-      setError((err && err.message) || String(err) || 'Erro ao autenticar');
+      setError('Erro ao autenticar: ', err);
     } finally {
       setLoading(false);
     }

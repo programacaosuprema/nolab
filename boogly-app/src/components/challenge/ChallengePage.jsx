@@ -3,12 +3,13 @@ import { useEffect, useState, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../../app_configuration/AppContext';
 import { LoadingPage } from '../pages/LoadingPage';
-import { ErrorPage } from '../pages/ErrorPage';
+import { ErrorPage } from '../../error/components/ErrorPage';
 import { useTheme } from '../../theme/useTheme';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
 import { getChallenges } from '../../services/challengeService';
 import { getUserChallenges } from '../../services/userService';
 import { mergeChallengesWithUser } from '../../services/mergeService';
+import { normalizeError } from '../../error/utils/normalizeError';
 
 function getPercentageByResolutionsPTBR(solved = 0, attempts = 0) {
   solved = Number(solved) || 0;
@@ -61,8 +62,7 @@ export default function ChallengePage() {
 
         setChallenges(merged);
       } catch (err) {
-        console.error(err);
-        showError(err);
+        showError(normalizeError(err));
         setHasError(true);
       } finally {
         setLoading(false);

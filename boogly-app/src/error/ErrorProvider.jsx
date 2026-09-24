@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ErrorContext } from './ErrorContext.jsx';
+import { ErrorContext } from './context/ErrorContext.js';
 
 export function ErrorProvider({ children }) {
   const [error, setError] = useState(null);

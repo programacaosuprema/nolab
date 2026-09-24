@@ -6,7 +6,7 @@ import OnboardingModal from '../modals/OnBoardFlowModal';
 import { useAuth } from '../../autenticator/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../app_configuration/useApp';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
 import { homeTheme } from '../../theme/HomeTheme';
 import { AppContext } from '../../app_configuration/AppContext';
 import { useTheme } from '../../theme/useTheme';

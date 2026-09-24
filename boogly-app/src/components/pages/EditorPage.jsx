@@ -12,9 +12,10 @@ import {
   queueToolbox,
   toolboxCategories,
 } from '../../blockly/toolboxes';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
 import { javascriptGenerator } from 'blockly/javascript';
 import { generateC } from '../../blockly/generators/c_language/CGenerateDispatcher';
+import { normalizeError } from '../../error/utils/normalizeError';
 
 export default function EditorPage() {
   const { theme } = useTheme();
@@ -67,7 +68,7 @@ export default function EditorPage() {
             setLocalDslCode(dslCode);
           } catch (err) {
             setLocalDslCode('');
-            showError({ message: `Erro: ${err}` });
+            showError(normalizeError(err));
           }
 
           // C
@@ -75,7 +76,7 @@ export default function EditorPage() {
             const codeC = generateC(ws, structure) || '';
             setLocalCCode(codeC);
           } catch (err) {
-            showError({ message: `Erro: ${err}` });
+            showError(normalizeError(err));
             setLocalCCode('');
           }
 
@@ -87,8 +88,7 @@ export default function EditorPage() {
         }
       });
     } catch (err) {
-      console.error('Erro ao iniciar editor:', err);
-      showError({ message: 'Erro ao iniciar editor' });
+      showError(normalizeError(err));
     }
 
     return () => {

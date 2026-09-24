@@ -1,5 +1,5 @@
-import { useError } from './useError';
-import { useTheme } from '../theme/useTheme';
+import { useError } from '../useError';
+import { useTheme } from '../../theme/useTheme';
 
 export function ErrorToast() {
   const { error, clearError } = useError();

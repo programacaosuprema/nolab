@@ -1,13 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTheme } from '../../theme/useTheme';
 import { useAuth } from '../../autenticator/useAuth';
-
-/**
- * GuidedTour — evita sobrepor o alvo
- * - tenta alternativas de posicionamento automaticamente
- * - reduz largura em telas pequenas
- * - mantém destaque (overlay) visível por baixo do popover
- */
 
 const BASE_KEY = 'guided_tour_done_v1';
 

@@ -35,7 +35,7 @@ export default function OnboardingFlowModal({ onFinish }) {
       const ss = sessionStorage.getItem('onboarding_done');
       return ss === 'true';
     } catch (e) {
-      return false;
+      throw new Error(`Erro ao ler onboardind_done: ${e?.message || e}`);
     }
   });
 
@@ -87,12 +87,12 @@ export default function OnboardingFlowModal({ onFinish }) {
       }
 
       onFinish?.();
-    } catch (err) {
-      console.error('Erro onboarding:', err);
-
+    } catch{
       try {
         await refreshUser();
-      } catch (e) {}
+      } catch (e) {
+        throw new Error(`Erro ao ler comandos: ${e?.message || e}`);
+      }
 
       onFinish?.();
     }

@@ -1,21 +1,63 @@
 import * as Blockly from 'blockly/core';
 
+/* ==========================================================
+   🔹 HELPERS
+========================================================== */
+
 function getWorkspaceKey(userId, structure) {
   const id = userId || 'guest';
   return `blockly_workspace_${id}_${structure}`;
 }
 
-/**
- * Salva o workspace no localStorage.
- */
-// workspaceStorage.js (IMPORTANTE para evitar loop infinito)
-export function saveWorkspace(workspace, structure, userId) {
-  if (!workspace) return;
+function isStorageAvailable() {
+  try {
+    const test = '__test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  if (workspace.isLoading) return;
+function handleError(error, onError, message) {
+  const err = {
+    message: message || 'Erro no workspace',
+    type: 'storage',
+    original: error,
+  };
 
-  //  NOVO: não salva vazio
-  if (workspace.getAllBlocks(false).length === 0) return;
+  // envia pra UI (ErrorToast / ErrorPage)
+  if (typeof onError === 'function') {
+    onError(err);
+  }
+
+  // debug (somente dev)
+  if (import.meta.env.DEV) {
+    console.error('[workspaceStorage]', error);
+  }
+}
+
+/* ==========================================================
+   🔹 SAVE
+========================================================== */
+export function saveWorkspace(workspace, structure, userId, onError) {
+  if (!workspace) return false;
+
+  if (workspace.isLoading) return false;
+
+  try {
+    const blocks = workspace.getAllBlocks(false);
+    if (!blocks || blocks.length === 0) return false;
+  } catch (err) {
+    handleError(err, onError, 'Erro ao ler blocos do workspace');
+    return false;
+  }
+
+  if (!isStorageAvailable()) {
+    handleError(null, onError, 'localStorage indisponível');
+    return false;
+  }
 
   try {
     const xml = Blockly.Xml.workspaceToDom(workspace);
@@ -24,55 +66,80 @@ export function saveWorkspace(workspace, structure, userId) {
     const key = getWorkspaceKey(userId, structure);
 
     const current = localStorage.getItem(key);
-    if (current === xmlText) return;
+    if (current === xmlText) return false;
 
     localStorage.setItem(key, xmlText);
-  } catch (error) {
-    console.error('Erro ao salvar workspace:', error);
+
+    return true;
+  } catch (err) {
+    handleError(err, onError, 'Erro ao salvar workspace');
+    return false;
   }
 }
 
-/**
- * Carrega o workspace salvo do localStorage.
- */
-// loadWorkspace()
-export function loadWorkspace(workspace, structure, userId) {
-  if (!workspace) return;
+/* ==========================================================
+   🔹 LOAD
+========================================================== */
+export function loadWorkspace(workspace, structure, userId, onError) {
+  if (!workspace) return false;
+
+  if (!isStorageAvailable()) return false;
 
   const key = getWorkspaceKey(userId, structure);
   const xmlText = localStorage.getItem(key);
 
-  if (!xmlText) return;
+  if (!xmlText) return false;
 
   try {
     workspace.isLoading = true;
 
     const xml = Blockly.utils.xml.textToDom(xmlText);
-
     Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
 
     workspace.isLoading = false;
-  } catch (error) {
+
+    return true;
+  } catch (err) {
     workspace.isLoading = false;
-    console.error('Erro ao carregar workspace:', error);
+    handleError(err, onError, 'Erro ao carregar workspace');
+    return false;
   }
 }
 
-/**
- * Remove o workspace salvo.
- */
-export function clearSavedWorkspace(structure) {
-  localStorage.removeItem(`blockly_workspace_${structure}`);
+/* ==========================================================
+   🔹 CLEAR (estrutura específica)
+========================================================== */
+export function clearSavedWorkspace(structure, userId, onError) {
+  if (!isStorageAvailable()) return false;
 
-  console.log(`🗑️ Workspace "${structure}" removido.`);
+  try {
+    const key = getWorkspaceKey(userId, structure);
+    localStorage.removeItem(key);
+    return true;
+  } catch (err) {
+    handleError(err, onError, 'Erro ao limpar workspace');
+    return false;
+  }
 }
 
-export function clearGuestWorkspaces() {
-  const keys = Object.keys(localStorage);
+/* ==========================================================
+   🔹 CLEAR GUEST
+========================================================== */
+export function clearGuestWorkspaces(onError) {
+  if (!isStorageAvailable()) return false;
 
-  keys.forEach((key) => {
-    if (key.startsWith('blockly_workspace_guest_')) {
-      localStorage.removeItem(key);
-    }
-  });
+  try {
+    const keys = Object.keys(localStorage);
+
+    keys.forEach((key) => {
+      if (key.startsWith('blockly_workspace_guest_')) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    return true;
+  } catch (err) {
+    handleError(err, onError, 'Erro ao limpar workspaces guest');
+    return false;
+  }
 }

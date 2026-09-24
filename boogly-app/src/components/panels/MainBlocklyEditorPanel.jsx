@@ -12,7 +12,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { generateC } from '../../blockly/generators/c_language/CGenerateDispatcher';
 
 import { useTheme } from '../../theme/useTheme';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
 import { useAuth } from '../../autenticator/useAuth';
 
 import { saveWorkspace, loadWorkspace } from '../../utils/workspaceStorage';
@@ -100,7 +100,7 @@ export default function MainBlocklyEditorPanel({
               if (!workspaceRef.current) return;
               setSaveStatus('Salvando...');
 
-              saveWorkspace(workspaceRef.current, structure, user?.id);
+              saveWorkspace(workspaceRef.current, structure, user?.id, showError);
 
               setTimeout(() => {
                 setSaveStatus('Salvo');

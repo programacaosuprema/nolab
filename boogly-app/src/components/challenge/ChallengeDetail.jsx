@@ -2,12 +2,13 @@
 import { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../theme/useTheme';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
 import { useAuth } from '../../autenticator/useAuth';
 import { ChallengeStart } from './ChallengeStart';
 import { AppContext } from '../../app_configuration/AppContext';
 import { LoadingPage } from '../pages/LoadingPage';
 import { getChallenge } from '../../services/challengeService';
+import { normalizeError } from '../../error/utils/normalizeError';
 
 export default function ChallengeDetail() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function ChallengeDetail() {
         const data = await getChallenge({ domainUrl, id });
         setChallenge(data);
       } catch (err) {
-        showError(err);
+        showError(normalizeError(err));
       } finally {
         setLoading(false);
       }

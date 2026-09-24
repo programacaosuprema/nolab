@@ -13,11 +13,13 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { generateC } from '../../blockly/generators/c_language/CGenerateDispatcher';
 
 import { useTheme } from '../../theme/useTheme';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
 
 import CodePanel from '../panels/CodePanel';
 
-import SimulatorPanel from '../simulator/SimulatorPanel';
+import SimulatorPanel from '../simulator/components/SimulatorPanel';
+
+import { normalizeError } from "../../error/utils/normalizeError"
 
 function CategoryButton({ label, active, onClick, theme }) {
   return (
@@ -77,21 +79,23 @@ function resolveValueFromBlock(block) {
         const n = Number(v);
         return Number.isNaN(n) ? v : n;
       }
-    } catch (e) {}
+    } catch (e) {
+        throw new Error(`Erro lendo field ${f}: ${e?.message || e}`);
+    }
   }
 
-  // if the child is a literal number shadow with field "NUM" etc:
-  const fields =
-    block.inputList?.flatMap((i) =>
-      (i.fieldRow || []).map(
-        (f) => f && f.name && block.getFieldValue?.(f.name)
-      )
-    ) || [];
-  for (const val of fields) {
-    if (val !== undefined) {
-      const n = Number(val);
-      if (!Number.isNaN(n)) return n;
+  try {
+    const fields =
+      block.inputList?.flatMap(i => (i.fieldRow || []).map(f => f && f.name && block.getFieldValue?.(f.name))) || [];
+
+    for (const val of fields) {
+      if (val !== undefined) {
+        const n = Number(val);
+        if (!Number.isNaN(n)) return n;
+      }
     }
+  } catch (e) {
+    throw new Error(`Erro ao ler fields do block: ${e?.message || e}`);
   }
 
   // fallback: try to generate JS and parse number
@@ -99,7 +103,9 @@ function resolveValueFromBlock(block) {
     const js = javascriptGenerator.blockToCode(block);
     const matched = js && js.match(/-?\d+/);
     if (matched) return Number(matched[0]);
-  } catch (e) {}
+  } catch (e) {
+    throw new Error(`Erro ao gerar código JS do bloco: ${e?.message || e}`);
+  }
 
   return null;
 }
@@ -116,14 +122,15 @@ function extractCommandsFromWorkspace(ws) {
     let value = null;
 
     try {
-      value =
-        block.getFieldValue?.('VALUE') ?? block.getFieldValue?.('NUM') ?? null;
+      value = block.getFieldValue?.('VALUE') ?? block.getFieldValue?.('NUM') ?? null;
 
       if (value !== null) {
         const n = Number(value);
         if (!Number.isNaN(n)) value = n;
       }
-    } catch (e) {}
+    } catch (e) {
+      throw new Error(`Erro ao ler comandos: ${e?.message || e}`);
+    }
 
     // tenta pegar valor de input conectado
     if (value === null) {
@@ -187,8 +194,7 @@ export default function ChallengeBlocklyEditor({
   const [localCCode, setLocalCCode] = useState('');
   const [localDSLCode, setLocalDSLCode] = useState('');
 
-  const detectedStructure =
-    propStructure || detectStructureFromToolbox(toolbox);
+  const detectedStructure = propStructure || detectStructureFromToolbox(toolbox);
 
   const [isRunning, setIsRunning] = useState(false);
 
@@ -251,14 +257,14 @@ export default function ChallengeBlocklyEditor({
             dslCode = javascriptGenerator.workspaceToCode(ws) || '';
             setLocalDSLCode(dslCode);
           } catch (err) {
-            console.log(err);
+            showError(normalizeError(err));
           }
 
           try {
             const codeC = generateC(ws, propStructure) || '';
             setLocalCCode(codeC);
           } catch (err) {
-            console.log(err);
+            showError(normalizeError(err));
           }
 
           // block count
@@ -266,13 +272,12 @@ export default function ChallengeBlocklyEditor({
           setBlockCount && setBlockCount(count);
           setBlockCountLocal(count);
         } catch (err) {
-          console.error('Erro no change listener:', err);
+          showError(normalizeError('Erro no change listener: '+ err));
         }
       });
     } catch (err) {
-      console.error('Erro ao iniciar editor:', err);
+      showError(normalizeError(err));
       setBlockCount && setBlockCount(0);
-      showError({ message: 'Erro ao iniciar editor' });
     }
 
     return () => {
@@ -280,7 +285,7 @@ export default function ChallengeBlocklyEditor({
         workspaceRef.current?.dispose();
         workspaceRef.current = null;
       } catch (err) {
-        console.warn('Erro ao destruir workspace:', err);
+        showError(normalizeError(err));
       }
     };
     // only run once
@@ -313,9 +318,9 @@ export default function ChallengeBlocklyEditor({
       });
       workspaceRef.current.setTheme(customTheme);
     } catch (err) {
-      console.warn('Erro ao aplicar tema:', err);
+      showError(normalizeError(err));
     }
-  }, [theme]);
+  }, [showError, theme]);
 
   // update toolbox when category changes
   useEffect(() => {
@@ -338,8 +343,7 @@ export default function ChallengeBlocklyEditor({
 
       workspaceRef.current.updateToolbox(nextToolbox);
     } catch (err) {
-      console.error('Erro ao atualizar toolbox:', err);
-      showError({ message: 'Erro ao atualizar toolbox' });
+      showError(normalizeError(err));
     }
   }, [category, toolboxVisible, toolbox, showError]);
 
@@ -352,18 +356,18 @@ export default function ChallengeBlocklyEditor({
   useEffect(() => {
     if (detectedStructure === 'list') {
       import('../../blockly/generators/my_language/listGenerator').catch(
-        () => {}
+        (err) => showError(normalizeError(err))
       );
     } else if (detectedStructure === 'queue') {
       import('../../blockly/generators/my_language/queueGenerator').catch(
-        () => {}
+        (err) => showError(normalizeError(err))
       );
     } else if (detectedStructure === 'stack') {
       import('../../blockly/generators/my_language/stackGenerator').catch(
-        () => {}
+        (err) => showError(normalizeError(err))
       );
     }
-  }, [detectedStructure]);
+  }, [detectedStructure, showError]);
 
   async function handleRun() {
     try {
@@ -376,7 +380,7 @@ export default function ChallengeBlocklyEditor({
 
       await onRun?.(commands);
     } catch (err) {
-      showError({ message: err.message || 'Erro ao executar' });
+      showError(normalizeError(err));
     } finally {
       setIsRunning(false);
     }
@@ -545,7 +549,7 @@ export default function ChallengeBlocklyEditor({
               🧩 {blockCountLocal} blocos
             </div>
           )}
-          ;
+          
           <div
             className={`absolute inset-0 ${view === 'editor' ? 'block' : 'hidden'}`}
           >

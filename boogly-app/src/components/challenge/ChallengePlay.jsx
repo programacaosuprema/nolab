@@ -2,7 +2,8 @@ import { useEffect, useState, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppContext } from '../../app_configuration/AppContext';
 import { useTheme } from '../../theme/useTheme';
-import { useError } from '../../error/useError';
+import { useError } from '../../error/hooks/useError';
+import { normalizeError } from '../../error/utils/normalizeError';
 import ChallengeBlocklyEditor from '../challenge/ChallengeBlocklyEditor';
 import ChallengeResult from '../challenge/ChallengeResult';
 import { challengeToolbox } from '../../blockly/index';
@@ -90,7 +91,7 @@ export default function ChallengePlay() {
 
         setChallenge(data);
       } catch (err) {
-        showError(err);
+        showError(normalizeError(err));
       } finally {
         setLoading(false);
       }
@@ -140,7 +141,7 @@ export default function ChallengePlay() {
 
       applyAttemptUpdate(data.userAttempt);
     } catch (err) {
-      showError({ message: err.message });
+      showError(normalizeError(showError));
     } finally {
       setRunning(false);
     }
@@ -153,7 +154,7 @@ export default function ChallengePlay() {
 
       applyAttemptUpdate(newAttempt);
     } catch (err) {
-      console.error('Erro ao criar nova tentativa:', err);
+      showError(normalizeError(err));
     }
 
     //  FECHA MODAL

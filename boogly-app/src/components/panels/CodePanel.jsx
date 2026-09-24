@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { useTheme } from '../../theme/useTheme';
 import ActionButton from '../ui/ActionButton';
@@ -17,8 +17,9 @@ export default function CodePanel({ cCode }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1000);
     } catch (err) {
-      console.error('Erro ao copiar:', err);
       setCopied(false);
+      throw new Error(`Erro ao copiar: ${err.message}`);
+      
     }
   };
 
@@ -31,13 +32,11 @@ export default function CodePanel({ cCode }) {
       link.click();
       URL.revokeObjectURL(link.href);
     } catch (err) {
-      console.error('Erro ao baixar:', err);
+      throw new Error(`Erro ao copiar: ${err.message}`);
     }
   };
 
-  useEffect(() => {
-    setCopied(false);
-  }, [cCode]);
+ 
 
   return (
     <div

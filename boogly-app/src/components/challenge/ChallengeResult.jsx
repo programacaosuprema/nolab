@@ -1,6 +1,8 @@
 import { useTheme } from '../../theme/useTheme';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useError } from '../../error/hooks/useError';
+import { normalizeError } from '../../error/utils/normalizeError';
 
 function formatTime(seconds) {
   const min = Math.floor(seconds / 60);
@@ -15,7 +17,7 @@ function formatValue(value) {
 
   if (typeof value === 'string') return value;
 
-  // ✅ SE FOR ARRAY → UMA LINHA
+  //  SE FOR ARRAY → UMA LINHA
   if (Array.isArray(value)) {
     return `[${value.join(', ')}]`;
   }
@@ -25,6 +27,7 @@ function formatValue(value) {
 }
 
 export default function ChallengeResult({ result, onClose }) {
+  const { showError } = useError();
   const { theme } = useTheme();
   const navigate = useNavigate();
 
@@ -32,16 +35,21 @@ export default function ChallengeResult({ result, onClose }) {
 
   //  SEMPRE executa (mesmo se result for null)
   useEffect(() => {
-    if (isSuccess) {
-      const timer = setTimeout(() => {
-        navigate(-2);
-      }, 3000);
+    try{ 
+      if (isSuccess) {
+        const timer = setTimeout(() => {
+          navigate(-2);
+        }, 3000);
 
-      return () => clearTimeout(timer);
+        return () => clearTimeout(timer);
+      }
+    }catch(err){
+      showError(normalizeError(err));
     }
+    
   }, [isSuccess, navigate]);
 
-  // ✅ AGORA pode fazer return
+  //  AGORA pode fazer return
   if (!result) return null;
 
   return (

@@ -1,6 +1,7 @@
 // src/hooks/useBlocklyWorkspace.jsx
 import { useEffect, useRef, useState, useCallback } from 'react';
 import 'blockly/javascript'; // importa o gerador (side-effect)
+import { useError } from '../../error/hooks/useError';
 
 export function useBlocklyWorkspace({
   blocklyDivRef,
@@ -14,7 +15,7 @@ export function useBlocklyWorkspace({
 }) {
   const workspaceRef = useRef(null);
   const debounceRef = useRef(null);
-
+  const { showError } = useError();
   const [DSLCode, setDSLCode] = useState('');
   const [cCode, setCCode] = useState('');
   const [blockCount, setBlockCount] = useState(0);
@@ -126,7 +127,7 @@ export function useBlocklyWorkspace({
               setBlockCount(count);
 
               // autosave opcional
-              if (saveWorkspace) saveWorkspace(ws, propStructure, userId);
+              if (saveWorkspace) saveWorkspace(ws, propStructure, userId, showError);
             } catch (err) {
               console.error('Erro no debounce listener:', err);
             }
@@ -153,17 +154,7 @@ export function useBlocklyWorkspace({
       }
       clearTimeout(debounceRef.current);
     };
-  }, [
-    blocklyDivRef,
-    toolbox,
-    propStructure,
-    javascriptGenerator,
-    generateC,
-    saveWorkspace,
-    userId,
-    onInit,
-    tryGenerateC,
-  ]);
+  }, [blocklyDivRef, toolbox, propStructure, javascriptGenerator, generateC, saveWorkspace, userId, onInit, tryGenerateC, showError]);
 
   const overwriteCCode = useCallback((val) => setCCode(val), []);
   return {

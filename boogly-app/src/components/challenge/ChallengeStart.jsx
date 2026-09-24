@@ -2,8 +2,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../theme/useTheme';
-import { useError } from '../../error/useError';
-import { useAuth } from '../../autenticator/useAuth';
+import { useError } from '../../error/hooks/useError'
 import { AppContext } from '../../app_configuration/AppContext';
 import { createAttempt } from '../../services/challengeService';
 

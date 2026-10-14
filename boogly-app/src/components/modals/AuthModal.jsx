@@ -39,7 +39,7 @@ export default function AuthModal({ isOpen, onClose }) {
       onClose();
     } catch (err) {
       // err pode ser uma string ou Error
-      setError('Erro ao autenticar: ', err);
+      setError(`Erro ao autenticar: ${err.message || err}`);
     } finally {
       setLoading(false);  
     }

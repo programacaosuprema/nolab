@@ -27,7 +27,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
   async function handleSubmit() {
     if (!identifier.trim()) {
-      setError('Digite seu e-mail ou nickname');
+      setError('Digite seu e-mail institucional ou nickname');
       return;
     }
 
@@ -123,7 +123,7 @@ export default function AuthModal({ isOpen, onClose }) {
           <input
             ref={inputRef}
             type="text"
-            placeholder="E-mail ou nickname"
+            placeholder="E-mail institucional ou nickname"
             className="w-full outline-none bg-transparent"
             style={{
               color: inputText,
@@ -131,7 +131,7 @@ export default function AuthModal({ isOpen, onClose }) {
             }}
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            aria-label="E-mail ou nickname"
+            aria-label="E-mail institucional ou nickname"
             aria-invalid={!!error}
           />
         </div>

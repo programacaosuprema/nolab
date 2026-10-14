@@ -129,7 +129,7 @@ export function AuthProvider({ children }) {
 
       return true;
     } catch (err) {
-      console.error("[Auth] authenticate erro:", err?.message || err);
+      //console.error("[Auth] authenticate erro:", err?.message || err);
       // exibir erro amigável
       try {
         showError(normalizeError(err));

@@ -158,10 +158,6 @@ export default function StudentProfileModal({
               {renderRow('Apelido', user?.nickname)}
               {renderRow('Email', user?.email)}
               {renderRow('Visitante', formatBool(user?.guest))}
-              {renderRow(
-                'Onboarding concluído',
-                formatBool(user?.onboardingDone)
-              )}
               {renderRow('Data de Criação', formatDateIso(user?.createdAt))}
             </>
           )}

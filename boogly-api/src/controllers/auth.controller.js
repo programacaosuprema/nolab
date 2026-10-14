@@ -11,24 +11,81 @@ function setCookie(res, token) {
   });
 }
 
+const isValidInstitutionalEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) return false;
+
+  const domain = email.toLowerCase().split("@")[1];
+
+  return [
+    "acad.ifma.edu.br",
+    "ifma.edu.br",
+  ].includes(domain);
+};
+
 export const authenticate = async (req, res) => {
   try {
-    const { email, nick } = req.body;
+    const { email: identifier } = req.body;
 
-    let user = await User.findOne({
-      $or: [{ email }, { nickname: email }],
-    });
-
-    if (!user) {
-      user = await User.create({
-        email,
-        nickname: nick || generateNick(),
+    if (!identifier || typeof identifier !== "string") {
+      return res.status(400).json({
+        error: "Informe seu e-mail institucional ou nickname.",
       });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
+    const login = identifier.trim().toLowerCase();
+    const isEmail = login.includes("@");
+
+    if (isEmail && !isValidInstitutionalEmail(login)) {
+      return res.status(400).json({
+        error:
+          "Utilize seu e-mail institucional @acad.ifma.edu.br ou @ifma.edu.br.",
+      });
+    }
+
+    const user = isEmail
+      ? await User.findOne({ email: login })
+      : await User.findOne({
+          nickname: { $regex: `^${login}$`, $options: "i" },
+        });
+
+    if (!user) {
+      if (!isEmail) {
+        return res.status(404).json({
+          error: "Nickname não encontrado.",
+        });
+      }
+
+      // Mantém o cadastro automático por e-mail
+      const newUser = await User.create({
+        email: login,
+        nickname: generateNick(),
+      });
+
+      const token = jwt.sign(
+        { id: newUser._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "2h" }
+      );
+
+      setCookie(res, token);
+
+      return res.json({
+        user: {
+          id: newUser._id,
+          nickname: newUser.nickname,
+          email: newUser.email,
+          guest: false,
+        },
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
 
     setCookie(res, token);
 
@@ -41,10 +98,11 @@ export const authenticate = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      error: err.message,
+    });
   }
 };
-
 // 🔥 LISTAR USUÁRIOS (debug)
 export const getUsers = async (req, res) => {
   const users = await User.find();

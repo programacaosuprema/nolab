@@ -10,7 +10,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://nolab-k76qt6v51-nolab1.vercel.app", //precisa mudar isso
+  "https://nolab-hh0tkndsf-nolab1.vercel.app", //precisa mudar isso
 ];
 
 app.use(

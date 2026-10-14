@@ -8,7 +8,7 @@ import ChallengeBlocklyEditor from '../challenge/ChallengeBlocklyEditor';
 import ChallengeResult from '../challenge/ChallengeResult';
 import { challengeToolbox } from '../../blockly/index';
 import ExpireModal from '../modals/ExpireModal'; // novo
-import useCountdown from '../../hooks/useCountdown'; // seu hook (ajustado)
+import useCountdown from '../../hooks/useCountDown'; // seu hook (ajustado)
 import ChallengeTimer from '../challenge/ChallengeTimer';
 import {
   createAttempt,

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useApp } from '../../app_configuration/useApp';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -21,9 +22,11 @@ export default function Header({ structure }) {
   const location = useLocation();
 
   const mode = STRUCTURE_LABELS[structure] || 'Lista';
+
   const isChallengePage = location.pathname.startsWith(
     `${mainRoute}/challenges`
   );
+
   const [open, setOpen] = useState(false);
 
   async function handleLogout() {
@@ -31,9 +34,22 @@ export default function Header({ structure }) {
       await logout();
       navigate('/', { replace: true });
     } catch (err) {
-      throw new Error(`Erro ao copiar: ${err.message}`);
+      throw new Error(`Erro ao sair: ${err.message}`);
     }
   }
+
+  // Cores do seletor de acordo com o tema atual.
+  const selectStyle = {
+    backgroundColor: theme.toolbox,
+    color: theme.text,
+    border: `1px solid ${theme.border}`,
+    colorScheme: themeName === 'light' ? 'light' : 'dark',
+  };
+
+  const optionStyle = {
+    backgroundColor: theme.card,
+    color: theme.text,
+  };
 
   return (
     <div
@@ -43,36 +59,28 @@ export default function Header({ structure }) {
         color: theme.text,
       }}
     >
-      <div className="flex items-center" style={{ gap: theme.spacing.md }}>
-        {/* LOGO NORMAL (SEM FUNDO / SEM BORDA) */}
-        <img
-          src={theme.logo}
-          alt="NóLab"
-          style={{
-            width: '42px',
-            height: '42px',
-            objectFit: 'contain',
-          }}
-        />
+      {/*NOME */}
 
-        {/* NOME GRANDE */}
-        <div
-          key={theme.name}
-          style={{
-            fontSize: '30px',
-            fontWeight: 800,
-            letterSpacing: '1px',
-            fontFamily: 'Poppins, Inter, sans-serif',
-            color: theme.primary,
-          }}
-        >
-          {(appName || 'Nó Lab').toUpperCase()}
-        </div>
+      <div
+        key={theme.name}
+        style={{
+          fontSize: '30px',
+          fontWeight: 800,
+          letterSpacing: '1.5px',
+          fontFamily: "'Orbitron', sans-serif",
+          color: theme.primary,
+          textShadow: `0 0 12px ${theme.primary}40`,
+          cursor: 'default',
+          userSelect: 'none',
+        }}
+      >
+        {(appName || 'Nó Lab').replace(/\s+/g, '').toUpperCase()}
       </div>
 
-      {/*  DIREITA */}
+
+      {/* AÇÕES À DIREITA */}
       <div className="flex items-center gap-3">
-        {/* 🎮 MODO */}
+        {/* MODO ATUAL */}
         <div
           className="px-4 py-2 rounded-full text-sm"
           style={{
@@ -83,7 +91,11 @@ export default function Header({ structure }) {
           modo: <span className="font-semibold">{mode}</span>
         </div>
 
-        <ActionButton onClick={() => setOpen(true)} icon={User}>
+        {/* PERFIL */}
+        <ActionButton
+          onClick={() => setOpen(true)}
+          icon={User}
+        >
           {user?.nickname ?? 'Perfil'}
         </ActionButton>
 
@@ -93,16 +105,17 @@ export default function Header({ structure }) {
           userProp={user}
         />
 
-        {/* 🎯 DESAFIOS */}
+        {/* DESAFIOS */}
         {!isChallengePage && (
           <ActionButton
-            // atributos que o GuidedTour procura — data-tour e id/class como fallback
             data-tour="challenges"
             id="nav-challenges"
             className="nav-challenges"
             aria-label={`Ir para desafios ${mode}`}
             onClick={() =>
-              navigate(`${mainRoute}/challenges?structure=${structure}`)
+              navigate(
+                `${mainRoute}/challenges?structure=${structure}`
+              )
             }
             icon={Target}
           >
@@ -110,24 +123,33 @@ export default function Header({ structure }) {
           </ActionButton>
         )}
 
-        {/* 🎨 THEME */}
+        {/* SELETOR DE TEMA */}
         <select
+          aria-label="Selecionar tema"
           value={themeName}
           onChange={(e) => setThemeName(e.target.value)}
-          className="text-sm px-3 py-1 rounded-lg outline-none"
-          style={{
-            background: theme.toolbox,
-            color: theme.text,
-            border: `1px solid ${theme.border}`,
-          }}
+          className="text-sm px-3 py-2 rounded-lg outline-none cursor-pointer"
+          style={selectStyle}
         >
-          <option value="light">🌞 Claro</option>
-          <option value="dark">🌙 Escuro</option>
-          <option value="colorful">🎨 Colorido</option>
+          <option value="light" style={optionStyle}>
+            🌞 Claro
+          </option>
+
+          <option value="dark" style={optionStyle}>
+            🌙 Escuro
+          </option>
+
+          <option value="colorful" style={optionStyle}>
+            🎨 Colorido
+          </option>
         </select>
 
-        {/* 🚪 LOGOUT */}
-        <ActionButton onClick={handleLogout} icon={LogOut} variant="danger">
+        {/* SAIR */}
+        <ActionButton
+          onClick={handleLogout}
+          icon={LogOut}
+          variant="danger"
+        >
           Sair
         </ActionButton>
       </div>

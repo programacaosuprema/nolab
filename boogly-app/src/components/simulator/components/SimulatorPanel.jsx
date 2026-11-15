@@ -131,31 +131,62 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
     <div className="flex-[3] min-h-0 rounded-xl p-4 flex flex-col gap-3 overflow-hidden" style={{ background: theme.panel }}> 
         <div className="flex items-center gap-3 flex-wrap">
             <button
-            onClick={() => {
-                if (!sim.isRunning && !sim.isPaused) return sim.handleRun(dslCode);
-                if (sim.isRunning) return sim.handlePause();
-                if (sim.isPaused) return sim.handleContinue();
-            }}
-            className="px-4 py-2 rounded-lg font-semibold"
-            style={{ background: theme.success, color: "#fff" }}
+              onClick={() => {
+                  if (!sim.isRunning && !sim.isPaused) return sim.handleRun(dslCode);
+                  if (sim.isRunning) return sim.handlePause();
+                  if (sim.isPaused) return sim.handleContinue();
+              }}
+              className="
+                px-4 py-2 rounded-lg font-semibold
+                cursor-pointer
+                transition-all duration-200 ease-in-out
+                hover:scale-105 hover:brightness-110
+                hover:shadow-lg
+                active:scale-95 active:shadow-sm
+              "
+              style={{
+                background: theme.success,
+                color: "#fff"
+              }}
             >
+            
             {!sim.isRunning && !sim.isPaused && "▶ Executar"}
             {sim.isRunning && "⏸ Pausar"}
             {sim.isPaused && "▶ Continuar"}
             </button>
 
             <button
-            onClick={sim.handleNextStep}
-            className="px-4 py-2 rounded-lg font-semibold"
-            style={{ background: theme.primary, color: "#fff" }}
+              onClick={sim.handleNextStep}
+              className="
+              px-4 py-2 rounded-lg font-semibold
+              cursor-pointer
+              transition-all duration-200 ease-in-out
+              hover:scale-105 hover:brightness-110
+              hover:shadow-lg
+              active:scale-95 active:shadow-sm
+              "
+              style={{
+                background: theme.primary,
+                color: "#fff"
+              }}
             >
-            ⏭ Passo
+            ⏭ Passo a Passo
             </button>
 
             <button
             onClick={sim.handleClear}
-            className="px-4 py-2 rounded-lg font-semibold"
-            style={{ background: theme.danger, color: "#fff" }}
+            className="
+            px-4 py-2 rounded-lg font-semibold
+            cursor-pointer
+            transition-all duration-200 ease-in-out
+            hover:scale-105 hover:brightness-110
+            hover:shadow-lg
+            active:scale-95 active:shadow-sm
+            "
+            style={{
+              background: theme.danger,
+              color: "#fff"
+            }}
             >
             🧹 Limpar
             </button>

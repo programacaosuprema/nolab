@@ -51,6 +51,9 @@ export default function EditorPage() {
           controls: true,
           wheel: true,
         },
+        plugins: {
+          connectionChecker: "customConnectionChecker"
+        }
       });
 
       //  LISTENER

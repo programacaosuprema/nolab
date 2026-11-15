@@ -2,11 +2,14 @@ import * as Blockly from "blockly/core";
 import "blockly/blocks";
 import { normalizeIdentifier }from "../../utils/normalizeIdentifier";
 import { hasDuplicateName } from "../../utils/normalizeNames";
+import { CustomConnectionChecker } from "../../utils/customConnectionChecker";
 
 
 /* =====================================================
    🔹 UTIL: verificar nomes duplicados de listas
 ===================================================== */
+
+
 function blockSameName(block) {
   if (!block.workspace) return;
 
@@ -396,11 +399,12 @@ Blockly.Blocks["list_for_each"] = {
 
     //  corpo
     this.appendStatementInput("DO")
+      .setCheck("ListStatement")
       .appendField("faça");
 
     this.setInputsInline(true);
 
-    this.setPreviousStatement(true);
+    this.setPreviousStatement(true, "ListStatement");
     this.setNextStatement(true);
 
     this.setColour(30);
@@ -446,3 +450,10 @@ Blockly.Blocks["list_get"] = {
     this.setColour(200);
   }
 };
+
+Blockly.registry.register(
+  Blockly.registry.Type.CONNECTION_CHECKER,
+  "customConnectionChecker",
+  CustomConnectionChecker,
+  true
+);

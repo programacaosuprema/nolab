@@ -93,7 +93,7 @@ javascriptGenerator.forBlock['base_if'] = function (block) {
     javascriptGenerator.valueToCode(block, 'CONDITION', 0) || 'false';
   const statements = javascriptGenerator.statementToCode(block, 'DO');
 
-  return `if (${condition}) {\n${statements}}\n`;
+  return `se (${condition}) {\n${statements}}\n`;
 };
 
 javascriptGenerator.forBlock['base_if_else'] = function (block) {
@@ -102,7 +102,7 @@ javascriptGenerator.forBlock['base_if_else'] = function (block) {
   const doStatements = javascriptGenerator.statementToCode(block, 'DO');
   const elseStatements = javascriptGenerator.statementToCode(block, 'ELSE');
 
-  return `if (${condition}) {\n${doStatements}} else {\n${elseStatements}}\n`;
+  return `se (${condition}) {\n${doStatements}} senao {\n${elseStatements}}\n`;
 };
 
 javascriptGenerator.forBlock['queue_for_each'] = function (block) {

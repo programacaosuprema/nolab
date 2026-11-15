@@ -86,6 +86,9 @@ export default function MainBlocklyEditorPanel({
           controls: true,
           wheel: true,
         },
+        plugins: {
+          connectionChecker: "customConnectionChecker"
+        }
       });
 
       workspaceRef.current.addChangeListener((event) => {
@@ -112,6 +115,7 @@ export default function MainBlocklyEditorPanel({
                 codeJS =
                   javascriptGenerator.workspaceToCode(workspaceRef.current) ||
                   '';
+                  console.log(codeJS);
               } catch (err) {
                 showError({
                   message: 'Erro ao gerar código Javascript: ' + err.message,

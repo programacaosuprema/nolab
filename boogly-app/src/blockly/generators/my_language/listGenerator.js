@@ -177,7 +177,7 @@ javascriptGenerator.forBlock['base_if'] = function (block) {
   const statements = javascriptGenerator.statementToCode(block, 'DO');
 
   return `
-      if (${condition}) {
+      se (${condition}) {
         ${statements}
       }
   `;
@@ -190,9 +190,9 @@ javascriptGenerator.forBlock['base_if_else'] = function (block) {
   const elseStatements = javascriptGenerator.statementToCode(block, 'ELSE');
 
   return `
-  if (${condition}) {
+  se (${condition}) {
     ${doStatements}
-  } else {
+  } senao {
     ${elseStatements}
   }
   `;

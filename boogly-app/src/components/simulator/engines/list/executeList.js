@@ -18,8 +18,8 @@ function executeBlock(lines, simulator, operationMap) {
     // ======================
     //  IF
     // ======================
-    if (line.startsWith('if')) {
-      const condition = line.match(/if\s*\((.*)\)/)?.[1];
+    if (line.startsWith('se')) {
+      const condition = line.match(/se\s*\((.*)\)/)?.[1];
 
       let result = false;
 
@@ -64,7 +64,7 @@ function executeBlock(lines, simulator, operationMap) {
     // ======================
     //  ELSE
     // ======================
-    if (line.startsWith('} else {')) {
+    if (line.startsWith('} senao {')) {
       const current = conditionStack[conditionStack.length - 1];
 
       //  IF já executou
@@ -261,7 +261,7 @@ function executeBlock(lines, simulator, operationMap) {
 
         continue;
       }
-
+      
       if (operation === 'inserir_em_variavel') {
         let [name, value] = args;
 

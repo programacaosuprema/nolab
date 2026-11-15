@@ -11,73 +11,92 @@ export class ExpressionEvaluator {
     return value;
   }
 
-  resolveArg(arg, simulator) {
-    if (arg == null) return null;
+  
+resolveArg(arg, simulator) {
+  if (arg == null) return null;
 
-    let value = arg.toString().trim();
+  let value = arg.toString().trim();
 
-    value = this.stripParentheses(value);
+  value = this.stripParentheses(value);
 
-    if (value.startsWith('aritmetica(')) {
-      const [a, op, b] = this.parseParams(value);
+  if (value.startsWith("aritmetica(")) {
+    const [a, op, b] = this.parseParams(value);
 
-      const valA = this.resolveArg(a);
-      const valB = this.resolveArg(b);
+    const valA = this.resolveArg(a, simulator);
+    const valB = this.resolveArg(b, simulator);
 
-      const cleanOp = op.replace(/^"|"$/g, '');
+    const cleanOp = op.replace(/^"|"$/g, "");
 
-      return this.resolveArithmetic(valA, cleanOp, valB);
-    }
-
-    if (value.startsWith('pegar_da_variavel(')) {
-      const name = value.match(/pegar_da_variavel\("(.+?)"\)/)?.[1];
-      return this.simulator.pegar_da_variavel(name);
-    }
-
-    if (value.startsWith('tamanho_lista(')) {
-      const name = value.match(/tamanho_lista\("(.+?)"\)/)?.[1];
-      return this.simulator.tamanho_lista(name);
-    }
-
-    if (value.startsWith('tamanho_pilha(')) {
-      const name = value.match(/tamanho_pilha\("(.+?)"\)/)?.[1];
-      return this.simulator.tamanho_pilha(name);
-    }
-
-    if (value.startsWith('tamanho_fila(')) {
-      const name = value.match(/tamanho_fila\("(.+?)"\)/)?.[1];
-      return this.simulator.tamanho_fila(name);
-    }
-
-    if (value.startsWith('pegar(')) {
-      const match = value.match(/pegar\((.+?),\s*"(.+?)"\)/);
-
-      if (match) {
-        const pos = this.resolveArg(match[1]);
-        const list = match[2];
-
-        return this.simulator.pegar(pos, list);
-      }
-    }
-
-    if (value === 'null') return null;
-
-    if (value.startsWith('"') && value.endsWith('"')) {
-      return value.slice(1, -1);
-    }
-
-    const num = Number(value);
-    if (!Number.isNaN(num)) return num;
-
-    if (
-      simulator.variables &&
-      Object.prototype.hasOwnProperty.call(simulator.variables, value)
-    ) {
-      return simulator.pegar_da_variavel(value);
-    }
-
-    return value;
+    return this.resolveArithmetic(valA, cleanOp, valB);
   }
+
+  if (value.startsWith("pegar_da_variavel(")) {
+    const name = value.match(
+      /pegar_da_variavel\("(.+?)"\)/
+    )?.[1];
+
+    return simulator.pegar_da_variavel(name);
+  }
+
+  if (value.startsWith("tamanho_lista(")) {
+    const name = value.match(
+      /tamanho_lista\("(.+?)"\)/
+    )?.[1];
+
+    return simulator.tamanho_lista(name);
+  }
+
+  if (value.startsWith("tamanho_pilha(")) {
+    const name = value.match(
+      /tamanho_pilha\("(.+?)"\)/
+    )?.[1];
+
+    return simulator.tamanho_pilha(name);
+  }
+
+  if (value.startsWith("tamanho_fila(")) {
+    const name = value.match(
+      /tamanho_fila\("(.+?)"\)/
+    )?.[1];
+
+    return simulator.tamanho_fila(name);
+  }
+
+  if (value.startsWith("pegar(")) {
+    const match = value.match(
+      /pegar\((.+?),\s*"(.+?)"\)/
+    );
+
+    if (match) {
+      const pos = this.resolveArg(match[1], simulator);
+      const list = match[2];
+
+      return simulator.pegar(pos, list);
+    }
+  }
+
+  if (value === "null") return null;
+
+  if (value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1);
+  }
+
+  const num = Number(value);
+  if (!Number.isNaN(num)) return num;
+
+  if (
+    simulator.variables &&
+    Object.prototype.hasOwnProperty.call(
+      simulator.variables,
+      value
+    )
+  ) {
+    return simulator.pegar_da_variavel(value);
+  }
+
+  return value;
+}
+
 
   resolveArithmetic(a, op, b) {
     a = Number(a);

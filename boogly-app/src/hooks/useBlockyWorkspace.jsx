@@ -55,6 +55,9 @@ export function useBlocklyWorkspace({
         collapse: true,
         grid: { spacing: 20, length: 3, colour: '#ddd', snap: true },
         zoom: { controls: true, wheel: true },
+        plugins: {
+          connectionChecker: "customConnectionChecker"
+        }
       });
 
       onInit?.(workspaceRef.current);

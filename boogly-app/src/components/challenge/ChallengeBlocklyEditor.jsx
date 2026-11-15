@@ -242,6 +242,9 @@ export default function ChallengeBlocklyEditor({
           controls: true,
           wheel: true,
         },
+        plugins: {
+          connectionChecker: "customConnectionChecker"
+        }
       });
 
       // change listener (no autosave)

@@ -18,8 +18,8 @@ function executeBlock(lines, simulator) {
        IF
     ====================================================== */
 
-    if (line.startsWith('if')) {
-      const condition = line.match(/if\s*\((.*)\)/)?.[1];
+    if (line.startsWith('se')) {
+      const condition = line.match(/se\s*\((.*)\)/)?.[1];
 
       let result = false;
 
@@ -64,7 +64,7 @@ function executeBlock(lines, simulator) {
        ELSE
     ====================================================== */
 
-    if (line.startsWith('} else {')) {
+    if (line.startsWith('} senao {')) {
       const current = conditionStack[conditionStack.length - 1];
 
       if (current.executed) {

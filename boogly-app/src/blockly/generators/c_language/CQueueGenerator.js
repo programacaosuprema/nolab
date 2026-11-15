@@ -4,6 +4,7 @@ import { linkedListHeader } from './headers/LinkedListHeader';
 //precisa mudar o cabeçalho de LINKED_LIST_HEADER
 
 let listSize = 0;
+let loopCounter = 0;
 
 // 🔹 EXPRESSÕES (retornam valores)
 CGenerator.forBlock['queue_front'] = function (block) {
@@ -60,6 +61,7 @@ export function generateQueueC(workspace) {
     front: false,
     size: false,
     empty: false,
+    copy: false,
   };
 
   // 🔹 Marca blocos usados (inclusive blocos conectados em inputs)
@@ -175,38 +177,69 @@ export function generateQueueC(workspace) {
 
         code = addLine(code, `printf("%s %d\\n", ${text}, ${value});`);
       }
-
+      
+      
       if (current.type === 'queue_for_each') {
         const variableBlock = current.getInputTargetBlock('VARIABLE');
 
-        let varName = 'item';
+        const varName = variableBlock?.getFieldValue('VAR') || 'item';
 
-        if (variableBlock) {
-          varName = variableBlock.getFieldValue('VAR') || 'item';
-        }
+        // Campo que identifica a fila
+        const queue = current.getFieldValue('QUEUE') || 'fila';
 
-        const list = current.getFieldValue('LIST');
+        used.copy = true;
 
-        code = addLine(code, `Nodo *aux_${varName} = ${list}.inicio;`);
+        // Identificadores únicos para laços aninhados
+        const loopId = ++loopCounter;
+        const copyName = `fila_copia_${loopId}`;
+        const indexName = `indice_${loopId}`;
 
-        code = addLine(code, `while (aux_${varName} != NULL) {`);
+        // Escopo próprio
+        code = addLine(code, '{');
+        indentLevel++;
+
+        // Cria uma cópia independente da fila
+        code = addLine(
+          code,
+          `Fila ${copyName} = copiar_fila(&${queue});`
+        );
+
+        // Percorre os elementos da cópia
+        code = addLine(
+          code,
+          `for (int ${indexName} = 1; ${indexName} <= ${copyName}.tamanho; ${indexName}++) {`
+        );
 
         indentLevel++;
 
-        code = addLine(code, `int ${varName} = aux_${varName}->dado;`);
+        // Obtém o elemento atual da cópia
+        code = addLine(code, `Elemento ${varName};`);
 
+        code = addLine(
+          code,
+          `obter_elemento(${copyName}, ${indexName}, &${varName});`
+        );
+
+        // Executa os blocos sobre a fila original
         const branch = current.getInputTargetBlock('DO');
 
         if (branch) {
           code += generateBlock(branch);
         }
 
-        code = addLine(code, `aux_${varName} = aux_${varName}->proximo;`);
+        indentLevel--;
+        code = addLine(code, '}');
+
+        // Libera a memória da cópia
+        code = addLine(
+          code,
+          `liberar_fila(&${copyName});`
+        );
 
         indentLevel--;
-
-        code = addLine(code, `}`);
+        code = addLine(code, '}');
       }
+
 
       if (current.type === 'base_input') {
         const generated = CGenerator.blockToCode(current);
@@ -366,6 +399,32 @@ int fila_vazia(Fila *f) {
 }
 `;
   }
+
+if (used.copy) {
+  functions += `
+Fila copiar_fila(const Fila *original) {
+    Fila copia;
+    inicializar_lista(&copia, original->tamanho);
+
+    for (int i = 1; i <= original->tamanho; i++) {
+        Elemento valor;
+
+        if (obter_elemento(*original, i, &valor)) {
+            inserir_elemento(&copia, copia.tamanho + 1, valor);
+        }
+    }
+
+    return copia;
+}
+
+void liberar_fila(Fila *fila) {
+    while (fila->tamanho > 0) {
+        remover_elemento(fila, 1);
+    }
+}
+`;
+}
+
 
   // 🔹 CÓDIGO FINAL
   return (

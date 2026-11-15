@@ -70,6 +70,7 @@ export function generateListC(workspace) {
     ordenar_decrescente: false,
     sublista: false,
     pegar_posicao: false,
+    copiar_lista: false,
     size: 0,
   };
 
@@ -275,36 +276,71 @@ export function generateListC(workspace) {
       }
 
       // FOR EACH
+      let loopCounter = 0;
+      
       if (current.type === 'list_for_each') {
         const variableBlock = current.getInputTargetBlock('VARIABLE');
 
-        let varName = 'item';
-
-        if (variableBlock) {
-          varName = variableBlock.getFieldValue('VAR') || 'item';
-        }
-
+        const varName = variableBlock?.getFieldValue('VAR') || 'item';
         const list = current.getFieldValue('LIST');
 
-        code = addLine(code, `Nodo *aux_${varName} = ${list}.inicio;`);
+        usedFunctions.copiar_lista = true;
 
-        code = addLine(code, `while (aux_${varName} != NULL) {`);
+        // Identificador único e legível para cada laço
+        const loopId = ++loopCounter;
+        const copyName = `lista_copia_${loopId}`;
+        const auxName = `no_atual_${loopId}`;
 
+        // Cria um escopo próprio para o laço
+        code = addLine(code, '{');
         indentLevel++;
 
-        code = addLine(code, `int ${varName} = aux_${varName}->dado;`);
+        // Cria uma cópia independente da lista original
+        code = addLine(
+          code,
+          `Lista ${copyName} = copiar_lista(&${list});`
+        );
 
+        // Inicializa o ponteiro para percorrer a cópia
+        code = addLine(
+          code,
+          `Nodo *${auxName} = ${copyName}.inicio;`
+        );
+
+        // Percorre os elementos da cópia
+        code = addLine(code, `while (${auxName} != NULL) {`);
+        indentLevel++;
+
+        // Obtém o valor do elemento atual
+        code = addLine(
+          code,
+          `int ${varName} = ${auxName}->dado;`
+        );
+
+        // Executa os blocos sobre a lista original
         const branch = current.getInputTargetBlock('DO');
 
         if (branch) {
           code += generateBlock(branch);
         }
 
-        code = addLine(code, `aux_${varName} = aux_${varName}->proximo;`);
+        // Avança para o próximo elemento da cópia
+        code = addLine(
+          code,
+          `${auxName} = ${auxName}->proximo;`
+        );
 
         indentLevel--;
+        code = addLine(code, '}');
 
-        code = addLine(code, `}`);
+        // Libera a memória da cópia
+        code = addLine(
+          code,
+          `liberar_lista(&${copyName});`
+        );
+
+        indentLevel--;
+        code = addLine(code, '}');
       }
 
       // SORT
@@ -707,6 +743,53 @@ int pegar_posicao(int posicao, Lista *lista) {
 
 `;
   }
+
+if (usedFunctions.copiar_lista) {
+  functions += `
+Lista copiar_lista(const Lista *original) {
+    Lista copia;
+    copia.inicio = NULL;
+    copia.tamanho = 0;
+
+    Nodo *atual = original->inicio;
+    Nodo **ultimo = &copia.inicio;
+
+    while (atual != NULL) {
+        Nodo *novo = (Nodo*) malloc(sizeof(Nodo));
+
+        if (novo == NULL) {
+            perror("Erro ao copiar lista");
+            exit(EXIT_FAILURE);
+        }
+
+        novo->dado = atual->dado;
+        novo->proximo = NULL;
+
+        *ultimo = novo;
+        ultimo = &novo->proximo;
+
+        copia.tamanho++;
+        atual = atual->proximo;
+    }
+
+    return copia;
+}
+
+void liberar_lista(Lista *lista) {
+    Nodo *atual = lista->inicio;
+
+    while (atual != NULL) {
+        Nodo *proximo = atual->proximo;
+        free(atual);
+        atual = proximo;
+    }
+
+    lista->inicio = NULL;
+    lista->tamanho = 0;
+}
+`;
+}
+
 
   return header + functions + '\nint main() {\n' + main + '    return 0;\n}';
 }

@@ -2,6 +2,7 @@ import CGenerator from './CGeneratorBase';
 import { linkedListHeader } from './headers/LinkedListHeader';
 
 let listSize = 0;
+let loopCounter = 0;
 
 CGenerator.forBlock['peek'] = function (block) {
   const stack = block.getFieldValue('STACK') || 'pilha';
@@ -59,7 +60,7 @@ export function generateStackC(workspace) {
     peek: false,
     size: false,
     empty: false,
-    for: false,
+    copy: false,
   };
 
   let functions = '';
@@ -98,7 +99,7 @@ export function generateStackC(workspace) {
         break;
 
       case 'stack_for_each':
-        used.for = true;
+        used.copy = true;
         break;
     }
 
@@ -163,37 +164,69 @@ export function generateStackC(workspace) {
         code = addLine(code, `desempilhar(&${stack});`);
       }
 
+      
       if (current.type === 'stack_for_each') {
         const variableBlock = current.getInputTargetBlock('VARIABLE');
 
-        let varName = 'item';
+        const varName = variableBlock?.getFieldValue('VAR') || 'item';
+        const stack =
+          current.getFieldValue('STACK') ||
+          current.getFieldValue('LIST') ||
+          'pilha';
 
-        if (variableBlock) {
-          varName = variableBlock.getFieldValue('VAR') || 'item';
-        }
+        used.copy = true;
 
-        const list = current.getFieldValue('LIST');
+        // Identificadores únicos para laços aninhados
+        const loopId = ++loopCounter;
+        const copyName = `pilha_copia_${loopId}`;
+        const indexName = `indice_${loopId}`;
 
-        code = addLine(code, `Nodo *aux_${varName} = ${list}.inicio;`);
+        // Cria um escopo próprio
+        code = addLine(code, '{');
+        indentLevel++;
 
-        code = addLine(code, `while (aux_${varName} != NULL) {`);
+        // Cria uma cópia independente da pilha original
+        code = addLine(
+          code,
+          `Pilha ${copyName} = copiar_pilha(&${stack});`
+        );
+
+        // Percorre a cópia do topo até a base
+        code = addLine(
+          code,
+          `for (int ${indexName} = 1; ${indexName} <= ${copyName}.tamanho; ${indexName}++) {`
+        );
 
         indentLevel++;
 
-        code = addLine(code, `int ${varName} = aux_${varName}->dado;`);
+        // Obtém o elemento atual da cópia
+        code = addLine(code, `Elemento ${varName};`);
 
+        code = addLine(
+          code,
+          `obter_elemento(${copyName}, ${indexName}, &${varName});`
+        );
+
+        // Executa os blocos modificando a pilha original
         const branch = current.getInputTargetBlock('DO');
 
         if (branch) {
           code += generateBlock(branch);
         }
 
-        code = addLine(code, `aux_${varName} = aux_${varName}->proximo;`);
+        indentLevel--;
+        code = addLine(code, '}');
+
+        // Libera a memória da cópia
+        code = addLine(
+          code,
+          `liberar_pilha(&${copyName});`
+        );
 
         indentLevel--;
-
-        code = addLine(code, `}`);
+        code = addLine(code, '}');
       }
+
 
       // 🔹 SHOW
       if (current.type === 'stack_show' || current.type === 'base_show') {
@@ -392,6 +425,35 @@ int pilha_vazia(Pilha *p) {
 }
 `;
   }
+
+  
+if (used.copy) {
+  functions += `
+Pilha copiar_pilha(const Pilha *original) {
+    Pilha copia;
+
+    inicializar_lista(&copia, original->tamanho);
+
+    // Copia os elementos preservando a ordem da pilha
+    for (int i = 1; i <= original->tamanho; i++) {
+        Elemento valor;
+
+        if (obter_elemento(*original, i, &valor)) {
+            inserir_elemento(&copia, copia.tamanho + 1, valor);
+        }
+    }
+
+    return copia;
+}
+
+void liberar_pilha(Pilha *pilha) {
+    while (pilha->tamanho > 0) {
+        remover_elemento(pilha, 1);
+    }
+}
+`;
+}
+
 
   return (
     header + functions + '\nint main() {\n' + main + '    return 0;\n' + '}\n'

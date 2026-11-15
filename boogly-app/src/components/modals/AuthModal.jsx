@@ -12,6 +12,7 @@ export default function AuthModal({ isOpen, onClose }) {
   const [error, setError] = useState('');
 
   const inputRef = useRef(null);
+  const MAX_LENGTH = 50;
 
   useEffect(() => {
     if (isOpen) {
@@ -26,22 +27,30 @@ export default function AuthModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   async function handleSubmit() {
-    if (!identifier.trim()) {
+    const login = identifier.trim();
+
+    if (!login) {
       setError('Digite seu e-mail institucional ou nickname');
       return;
     }
+
+    if (login.length > MAX_LENGTH) {
+      setError(`O identificador deve ter no máximo ${MAX_LENGTH} caracteres.`);
+      return;
+    }
+
+    if (loading) return;
 
     try {
       setLoading(true);
       setError('');
 
-      await authenticate(identifier.trim());
+      await authenticate(login);
       onClose();
     } catch (err) {
-      // err pode ser uma string ou Error
       setError(`Erro ao autenticar: ${err.message || err}`);
     } finally {
-      setLoading(false);  
+      setLoading(false);
     }
   }
 
@@ -124,16 +133,21 @@ export default function AuthModal({ isOpen, onClose }) {
             ref={inputRef}
             type="text"
             placeholder="E-mail institucional ou nickname"
+            maxLength={MAX_LENGTH}
             className="w-full outline-none bg-transparent"
             style={{
               color: inputText,
               fontSize: theme?.typography?.body?.fontSize || '16px',
             }}
             value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
+            onChange={(e) => {
+              setIdentifier(e.target.value.slice(0, MAX_LENGTH));
+              setError('');
+            }}
             aria-label="E-mail institucional ou nickname"
             aria-invalid={!!error}
           />
+
         </div>
 
         {/* ERROR */}

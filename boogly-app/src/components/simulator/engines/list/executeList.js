@@ -18,45 +18,43 @@ function executeBlock(lines, simulator, operationMap) {
     // ======================
     //  IF
     // ======================
-    if (line.startsWith('se')) {
-      const condition = line.match(/se\s*\((.*)\)/)?.[1];
 
+    if (/^se\s*\(/.test(line)) {
+      const condition = line
+        .replace(/^se\s*/, '')
+        .replace(/\{\s*$/, '')
+        .trim();
+
+      const parentActive = shouldExecute;
       let result = false;
 
-      try {
-        const parsedCondition = evaluator.resolveCondition(
-          condition,
-          simulator,
-          structurename
-        );
+      if (parentActive) {
+        try {
+          const parsed = evaluator.resolveCondition(condition, structurename);
 
-        result = eval(parsedCondition);
+          result = evaluator.evaluateCondition(parsed, structurename, true);
 
-        simulator.steps.push({
-          type: 'condition',
-          message: `teste: ${parsedCondition} => ${
-            result ? 'verdadeiro' : 'falso'
-          }`,
-          state: simulator.getState(),
-        });
-      } catch (e) {
-        console.error(e);
-
-        simulator.steps.push({
-          type: 'error',
-          message: e.message,
-          state: simulator.getState(),
-        });
-
-        result = false;
+          simulator.steps.push({
+            type: 'condition',
+            message: `teste: ${parsed} => ${result ? 'verdadeiro' : 'falso'}`,
+            state: simulator.getState(),
+          });
+        } catch (error) {
+          simulator.steps.push({
+            type: 'error',
+            message: error.message,
+            state: simulator.getState(),
+          });
+        }
       }
 
       conditionStack.push({
         result,
         executed: result,
+        parentActive,
       });
 
-      shouldExecute = result;
+      shouldExecute = parentActive && result;
 
       continue;
     }
@@ -64,22 +62,16 @@ function executeBlock(lines, simulator, operationMap) {
     // ======================
     //  ELSE
     // ======================
-    if (line.startsWith('} senao {')) {
+    if (/^\}\s*senao\s*\{$/.test(line)) {
       const current = conditionStack[conditionStack.length - 1];
 
-      //  IF já executou
-      if (current.executed) {
-        shouldExecute = false;
-
-        current.result = false;
-
-        continue;
+      if (!current) {
+        throw new Error('senão sem se correspondente');
       }
 
-      //  IF foi falso
-      shouldExecute = true;
+      shouldExecute = current.parentActive && !current.executed;
 
-      current.result = true;
+      current.result = shouldExecute;
       current.executed = true;
 
       continue;
@@ -94,7 +86,8 @@ function executeBlock(lines, simulator, operationMap) {
       shouldExecute =
         conditionStack.length === 0
           ? true
-          : conditionStack[conditionStack.length - 1].result;
+          : conditionStack[conditionStack.length - 1].parentActive &&
+            conditionStack[conditionStack.length - 1].result;
 
       continue;
     }
@@ -185,21 +178,19 @@ function executeBlock(lines, simulator, operationMap) {
           .splitArguments(match[2])
           .map((arg) => evaluator.resolveArg(arg, simulator))
       : [];
-    
 
     if (typeof simulator[operation] === 'function') {
       // ======================
       //  INSERIR
       // ======================
       if (operation === 'inserir') {
-
         let [listName, value] = args;
 
         //  nome da lista SEMPRE string
         listName = listName.replace(/^"|"$/g, '');
 
         //  valor resolve (x → 2)
-        
+
         const resolvedValue = evaluator.evaluate(value);
 
         if (resolvedValue === null || resolvedValue === undefined) {
@@ -210,7 +201,7 @@ function executeBlock(lines, simulator, operationMap) {
           });
           continue;
         }
-        
+
         simulator.inserir(listName, resolvedValue);
 
         simulator.steps.push({
@@ -261,7 +252,7 @@ function executeBlock(lines, simulator, operationMap) {
 
         continue;
       }
-      
+
       if (operation === 'inserir_em_variavel') {
         let [name, value] = args;
 

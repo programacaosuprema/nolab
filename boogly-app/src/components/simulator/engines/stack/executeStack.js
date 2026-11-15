@@ -4,7 +4,7 @@ import { ExpressionEvaluator } from '../core/expressionEvaluator';
 const structurename = 'stack';
 
 function executeBlock(lines, simulator) {
-  const evaluator = new ExpressionEvaluator(simulator.variables);
+  const evaluator = new ExpressionEvaluator(simulator);
   let shouldExecute = true;
 
   let conditionStack = [];
@@ -18,82 +18,75 @@ function executeBlock(lines, simulator) {
        IF
     ====================================================== */
 
-    if (line.startsWith('se')) {
-      const condition = line.match(/se\s*\((.*)\)/)?.[1];
+    if (/^se\s*\(/.test(line)) {
+      const condition = line
+        .replace(/^se\s*/, '')
+        .replace(/\{\s*$/, '')
+        .trim();
 
+      const parentActive = shouldExecute;
       let result = false;
 
-      try {
-        const parsed = evaluator.resolveCondition(
-          condition,
-          simulator,
-          structurename
-        );
+      if (parentActive) {
+        try {
+          const parsed = evaluator.resolveCondition(condition, structurename);
 
-        result = eval(parsed);
+          result = evaluator.evaluateCondition(parsed, structurename, true);
 
-        simulator.steps.push({
-          type: 'condition',
-
-          message: `teste: ${parsed} => ${result ? 'verdadeiro' : 'falso'}`,
-
-          state: simulator.getState(),
-        });
-      } catch {
-        simulator.steps.push({
-          type: 'error',
-
-          message: 'erro ao testar condição',
-
-          state: simulator.getState(),
-        });
+          simulator.steps.push({
+            type: 'condition',
+            message: `teste: ${parsed} => ${result ? 'verdadeiro' : 'falso'}`,
+            state: simulator.getState(),
+          });
+        } catch (error) {
+          simulator.steps.push({
+            type: 'error',
+            message: error.message,
+            state: simulator.getState(),
+          });
+        }
       }
 
       conditionStack.push({
         result,
-
         executed: result,
+        parentActive,
       });
 
-      shouldExecute = result;
+      shouldExecute = parentActive && result;
 
       continue;
     }
 
-    /* ======================================================
-       ELSE
-    ====================================================== */
-
-    if (line.startsWith('} senao {')) {
+    // ======================
+    //  ELSE
+    // ======================
+    if (/^\}\s*senao\s*\{$/.test(line)) {
       const current = conditionStack[conditionStack.length - 1];
 
-      if (current.executed) {
-        shouldExecute = false;
-
-        current.result = false;
-
-        continue;
+      if (!current) {
+        throw new Error('senão sem se correspondente');
       }
 
-      shouldExecute = true;
+      shouldExecute = current.parentActive && !current.executed;
 
+      current.result = shouldExecute;
       current.executed = true;
-      current.result = true;
 
       continue;
     }
 
-    /* ======================================================
-       FECHAMENTO
-    ====================================================== */
-
+    // ======================
+    //  FECHAMENTO
+    // ======================
     if (line === '}') {
       conditionStack.pop();
 
       shouldExecute =
         conditionStack.length === 0
           ? true
-          : conditionStack[conditionStack.length - 1].result;
+          : conditionStack[conditionStack.length - 1].parentActive &&
+            conditionStack[conditionStack.length - 1].result;
 
       continue;
     }

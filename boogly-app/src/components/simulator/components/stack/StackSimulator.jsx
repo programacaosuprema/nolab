@@ -152,22 +152,6 @@ export class StackSimulator {
     return value;
   }
 
-  tamanho_pilha(name) {
-    const size = this.stacks[name]?.length || 0;
-
-    this.steps.push({
-      type: 'size',
-
-      value: size,
-
-      message: `Tamanho da pilha ${name}: ${size}`,
-
-      state: this.snapshot(),
-    });
-
-    return size;
-  }
-
   pilha_vazia(name) {
     const empty = !this.stacks[name] || this.stacks[name].length === 0;
 

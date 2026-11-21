@@ -78,7 +78,7 @@ export class ExecutionEngine {
     this.addStep(cmd);
   }
 
-  // 🔥 REGISTRA STEP
+  //  REGISTRA STEP
   addStep(cmd) {
     this.steps.push({
       command: cmd,
@@ -86,7 +86,7 @@ export class ExecutionEngine {
     });
   }
 
-  // 🔥 EXECUTA TUDO
+  //  EXECUTA TUDO
   run(commands = []) {
     const normalized = this.normalize(commands);
 
@@ -97,7 +97,7 @@ export class ExecutionEngine {
     return this.steps;
   }
 
-  // 🔥 RESET (útil pra replay)
+  //  RESET (útil pra replay)
   reset(startState = []) {
     this.state = Array.isArray(startState) ? [...startState] : [];
     this.steps = [];

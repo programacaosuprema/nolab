@@ -9,12 +9,12 @@ export function optionalAuth(req, res, next) {
   try {
     let token = null;
 
-    // 🍪 1. cookie (PRIORIDADE)
+    //  1. cookie (PRIORIDADE)
     if (req.cookies?.access_token) {
       token = req.cookies.access_token;
     }
 
-    // 🔑 2. fallback header (opcional)
+    //  2. fallback header (opcional)
     else if (req.headers.authorization) {
       token = req.headers.authorization.split(" ")[1];
     }
@@ -33,25 +33,35 @@ export function optionalAuth(req, res, next) {
   next();
 }
 
-/**
- * 🔒 Auth obrigatório
- * - aceita cookie OU header
- */
 export function requireAuth(req, res, next) {
-  const tokenFromHeader = req.headers.authorization?.split(" ")[1];
+  // Prioriza o cookie HTTPOnly
   const tokenFromCookie = req.cookies?.access_token;
 
-  const token = tokenFromHeader || tokenFromCookie;
+  const authorization = req.headers.authorization;
+  const tokenFromHeader = authorization?.startsWith("Bearer ")
+    ? authorization.slice(7)
+    : null;
+
+  const token = tokenFromCookie || tokenFromHeader;
 
   if (!token) {
-    return res.status(401).json({ message: "Não autenticado" });
+    return res.status(401).json({
+      message: "Não autenticado",
+    });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
     req.userId = decoded.id;
-    next();
+
+    return next();
   } catch {
-    return res.status(401).json({ message: "Token inválido" });
+    return res.status(401).json({
+      message: "Token inválido ou expirado",
+    });
   }
 }

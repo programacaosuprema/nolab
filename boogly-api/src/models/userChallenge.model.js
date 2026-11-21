@@ -22,6 +22,11 @@ const userChallengeSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    startedAt:{
+      type: Date,
+    },
+
     completedAt: {
       type: Date,
     },

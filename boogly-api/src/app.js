@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import challengeRoutes from "./routes/challenge.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import challengePlayRoutes from "./routes/challengePlay.routes.js"
 
 const app = express();
 
@@ -36,5 +37,6 @@ app.get("/health", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/challenges", challengeRoutes);
+app.use("/challenge-play", challengePlayRoutes);
 
 export default app;

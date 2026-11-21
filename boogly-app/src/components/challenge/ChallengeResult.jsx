@@ -47,7 +47,7 @@ export default function ChallengeResult({ result, onClose }) {
       showError(normalizeError(err));
     }
     
-  }, [isSuccess, navigate]);
+  }, [isSuccess, navigate, showError]);
 
   //  AGORA pode fazer return
   if (!result) return null;

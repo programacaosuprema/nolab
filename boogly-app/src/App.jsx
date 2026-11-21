@@ -1,29 +1,49 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Suspense, lazy, useContext } from 'react';
+
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+  useLocation,
+} from 'react-router-dom';
+
+import {
+  Suspense,
+  lazy,
+  useContext,
+  useMemo,
+} from 'react';
+
 import { useAuth } from './autenticator/useAuth';
+import { AppContext } from './app_configuration/AppContext';
 import { LoadingPage } from './components/pages/LoadingPage';
 import GuidedTourModal from './components/modals/GuideTourModal';
-import { AppContext } from './app_configuration/AppContext';
 
-//  lazy load (performance)
-const Home = lazy(() => import('./components/pages/HomePage'));
-const MainApp = lazy(() => import('./components/pages/MainApp'));
-const EditorPage = lazy(() => import('./components/pages/EditorPage'));
-
-const ChallengePage = lazy(
-  () => import('./components/challenge/ChallengePage')
+// Lazy loading
+const Home = lazy(() =>
+  import('./components/pages/HomePage')
 );
+
+const MainApp = lazy(() =>
+  import('./components/pages/MainApp')
+);
+
+const EditorPage = lazy(() =>
+  import('./components/pages/EditorPage')
+);
+
+const ChallengePage = lazy(() =>
+  import('./components/challenge/ChallengePage')
+);
+
 const ChallengeDetail = lazy(() =>
-  import('./components/challenge/ChallengeDetail').then((module) => ({
-    default: module.default,
-  }))
+  import('./components/challenge/ChallengeDetail')
 );
 
-const ChallengePlay = lazy(
-  () => import('./components/challenge/ChallengePlay')
+const ChallengePlay = lazy(() =>
+  import('./components/challenge/ChallengePlay')
 );
 
-// 🔒 PROTECTED ROUTE
+// Proteção das rotas
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loadingAuth, structure } = useAuth();
   const location = useLocation();
@@ -32,8 +52,14 @@ function ProtectedRoute({ children }) {
     return <LoadingPage />;
   }
 
-  if (!isAuthenticated && !loadingAuth) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (!isAuthenticated) {
+    return (
+      <Navigate
+        to="/"
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   if (!structure) {
@@ -43,47 +69,85 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-export default function App() {
-  const { mainRoute } = useContext(AppContext);
+// Layout de carregamento
+function LazyPage({ children }) {
   return (
     <Suspense fallback={<LoadingPage />}>
-      <Routes>
-        {/* HOME */}
-        <Route path="/" element={<Home />} />
-
-        {/* APP PROTEGIDO */}
-        <Route
-          path={mainRoute}
-          element={
-            <ProtectedRoute>
-              <MainApp />
-            </ProtectedRoute>
-          }
-        >
-          {/* EDITOR */}
-          <Route
-            index
-            element={
-              <>
-                <EditorPage />
-                <GuidedTourModal />
-              </>
-            }
-          />
-
-          {/* DESAFIOS */}
-          <Route path="challenges" element={<ChallengePage />} />
-
-          {/* DETALHE */}
-          <Route path="challenges/:id" element={<ChallengeDetail />} />
-
-          {/* EXECUÇÃO DO DESAFIO (NOVO) */}
-          <Route path="challenges/:id/play" element={<ChallengePlay />} />
-        </Route>
-
-        {/* FALLBACK GLOBAL */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      {children}
     </Suspense>
   );
+}
+
+export default function AppRouter() {
+  const { mainRoute } = useContext(AppContext);
+
+  const router = useMemo(() => {
+    if (!mainRoute) return null;
+
+    return createBrowserRouter([
+      {
+        path: '/',
+        element: (
+          <LazyPage>
+            <Home />
+          </LazyPage>
+        ),
+      },
+      {
+        path: mainRoute,
+        element: (
+          <ProtectedRoute>
+            <LazyPage>
+              <MainApp />
+            </LazyPage>
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <LazyPage>
+                <EditorPage />
+                <GuidedTourModal />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'challenges',
+            element: (
+              <LazyPage>
+                <ChallengePage />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'challenges/:id',
+            element: (
+              <LazyPage>
+                <ChallengeDetail />
+              </LazyPage>
+            ),
+          },
+          {
+            path: 'challenges/:id/play',
+            element: (
+              <LazyPage>
+                <ChallengePlay />
+              </LazyPage>
+            ),
+          },
+        ],
+      },
+      {
+        path: '*',
+        element: <Navigate to="/" replace />,
+      },
+    ]);
+  }, [mainRoute]);
+
+  if (!router) {
+    return <LoadingPage />;
+  }
+
+  return <RouterProvider router={router} />;
 }

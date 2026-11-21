@@ -1,43 +1,28 @@
 // src/components/challenge/ChallengeIntro.jsx
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../theme/useTheme';
 import { useError } from '../../error/hooks/useError'
-import { AppContext } from '../../app_configuration/AppContext';
-import { createAttempt } from '../../services/challengeService';
 
 export function ChallengeStart({ challenge, onStart }) {
   const [tab, setTab] = useState('descricao');
   const { theme } = useTheme();
   const { showError } = useError();
-  const { domainUrl } = useContext(AppContext);
   const navigate = useNavigate();
 
   const test = challenge.testCases?.[0] || null;
-
-  async function handleStart() {
+  
+  function handleStart() {
     if (!onStart) {
-      showError({ message: 'Não foi possível iniciar o desafio' });
+      showError({
+        message: 'Não foi possível iniciar o desafio',
+      });
       return;
     }
 
-    try {
-      const id = challenge._id || challenge.publicId;
-
-      const attempt = await createAttempt({
-        domainUrl,
-        id,
-      });
-
-      if (!attempt) {
-        console.warn('attempt request falhou');
-      }
-
-      onStart(attempt);
-    } catch (err) {
-      console.warn('Erro ao registrar attempt:', err);
-      onStart(null);
-    }
+    // Apenas inicia o desafio.
+    // A tentativa será registrada ao submeter a solução.
+    onStart(null);
   }
 
   return (
@@ -173,9 +158,10 @@ export function ChallengeStart({ challenge, onStart }) {
                   ...theme.typography.small,
                 }}
               >
-                OBS: Ao começar o desafio é contabilizado 1 tentativa.
+                OBS: Cada solução enviada para avaliação será contabilizada
+                como uma tentativa.
               </p>
-            </div>
+                          </div>
           )}
 
           {tab === 'entrada' && (

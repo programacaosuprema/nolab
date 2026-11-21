@@ -11,6 +11,14 @@ import { getUserChallenges } from '../../services/userService';
 import { mergeChallengesWithUser } from '../../services/mergeService';
 import { normalizeError } from '../../error/utils/normalizeError';
 
+function formatDate(date) {
+  if (!date) return '-';
+
+  return new Date(date).toLocaleDateString('pt-BR', {
+    timeZone: 'America/Belem',
+  });
+}
+
 function getPercentageByResolutionsPTBR(solved = 0, attempts = 0) {
   solved = Number(solved) || 0;
   attempts = Number(attempts) || 0;
@@ -265,7 +273,7 @@ export default function ChallengePage() {
       >
         {/* HEADER */}
         <div
-          className="grid grid-cols-6"
+          className="grid grid-cols-8"
           style={{
             padding: theme.spacing.md,
             ...theme.typography.small,
@@ -277,8 +285,10 @@ export default function ChallengePage() {
           <span>Status</span>
           <span style={{ fontWeight: 'bold' }}>Nome</span>
           <span>Dificuldade</span>
-          <span>% Acertos</span>
+          <span>% Taxa de Acertos Gerais</span>
           <span>Minhas Tentativas</span>
+          <span>Data de início</span>
+          <span>Data de Conclusão</span>
         </div>
 
         {/* LINHAS */}
@@ -290,7 +300,7 @@ export default function ChallengePage() {
                 `${mainRoute}/challenges/${c.publicId || c._id}?structure=${structure}`
               )
             }
-            className="grid grid-cols-6 cursor-pointer"
+            className="grid grid-cols-8 cursor-pointer"
             style={{
               padding: theme.spacing.md,
               borderBottom: `1px solid ${theme.border}`,
@@ -325,6 +335,10 @@ export default function ChallengePage() {
             </span>
 
             <span style={{ color: theme.muted }}>{c.userAttempts ?? '-'}</span>
+
+            <span style={{ color: theme.muted }}>{formatDate(c.userStartedAt) ?? '-'}</span>
+
+            <span style={{ color: theme.muted }}>{formatDate(c.userCompletedAt) ?? '-'}</span>
           </div>
         ))}
       </div>

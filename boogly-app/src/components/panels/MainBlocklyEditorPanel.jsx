@@ -116,6 +116,7 @@ export default function MainBlocklyEditorPanel({
                   javascriptGenerator.workspaceToCode(workspaceRef.current) ||
                   '';
                   console.log(codeJS);
+                
               } catch (err) {
                 showError({
                   message: 'Erro ao gerar código Javascript: ' + err.message,

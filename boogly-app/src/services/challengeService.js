@@ -1,20 +1,5 @@
-export async function createAttempt({ domainUrl, id }) {
-  const res = await fetch(`${domainUrl}/challenges/${id}/attempt`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) return null;
-
-  const data = await res.json();
-  return data?.userAttempt ?? null;
-}
-
 export async function submitChallenge({ domainUrl, id, commands }) {
-  const res = await fetch(`${domainUrl}/challenges/${id}/submit`, {
+  const res = await fetch(`${domainUrl}/challenge-play/${id}/submit`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -31,6 +16,55 @@ export async function submitChallenge({ domainUrl, id, commands }) {
   const data = await res.json();
   return data;
 }
+
+
+export async function abandonChallenge({ domainUrl, id }) {
+  const response = await fetch(
+    `${domainUrl}/challenge-play/${id}/abandon`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error('Erro na API de desistência:', {
+      status: response.status,
+      data,
+    });
+
+    throw new Error(
+      data.error ||
+      data.message ||
+      'Erro ao registrar desistência.'
+    );
+  }
+
+  return data;
+}
+
+export async function expireChallenge({ domainUrl, id }) {
+  const response = await fetch(
+    `${domainUrl}/challenges-play/${id}/expire`,
+    {
+      method: "POST",
+      credentials: "include",
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || data.error || "Erro ao registrar tempo esgotado."
+    );
+  }
+
+  return data;
+}
+
 
 export async function getChallenge({ domainUrl, id }) {
   const res = await fetch(`${domainUrl}/challenges/${id}`, {

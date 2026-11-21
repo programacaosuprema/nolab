@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { AppContext } from '../../app_configuration/AppContext';
 import { useTheme } from '../../theme/useTheme';
 import { useError } from '../../error/hooks/useError';
@@ -10,11 +10,9 @@ import { challengeToolbox } from '../../blockly/index';
 import ExpireModal from '../modals/ExpireModal'; // novo
 import useCountdown from '../../hooks/useCountDown'; // seu hook (ajustado)
 import ChallengeTimer from '../challenge/ChallengeTimer';
-import {
-  createAttempt,
-  submitChallenge,
-  getChallenge,
-} from '../../services/challengeService';
+import {submitChallenge, getChallenge, abandonChallenge, expireChallenge} from '../../services/challengeService';
+import { LogOut } from 'lucide-react';
+import ChallengeExitModal from '../modals/ChallengeExitModal';
 import { LoadingPage } from '../pages/LoadingPage';
 
 export default function ChallengePlay() {
@@ -35,16 +33,59 @@ export default function ChallengePlay() {
   const totalTime = Number(challenge?.timeLimit) || defaultTimeSec;
   const startedRef = useRef(false);
   const [attempts, setAttempts] = useState(0);
+  const [exitModalOpen, setExitModalOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const allowExitRef = useRef(false);
+
+  // Intercepta navegações internas do React Router
+  //Bloquear botão voltar do navegador
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      !allowExitRef.current &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
+
+  const expireSentRef = useRef(false);
+
+  async function handleExpire() {
+    // Impede chamadas duplicadas nesta montagem
+    if (expireSentRef.current) return;
+
+    expireSentRef.current = true;
+
+    try {
+      const data = await expireChallenge({
+        domainUrl,
+        id,
+      });
+
+      // Atualiza o progresso do aluno
+      applyAttemptUpdate(data.userAttempt);
+
+      // Abre o modal de tempo esgotado
+      setExpireModalOpen(true);
+    } catch (error) {
+      expireSentRef.current = false;
+      showError(normalizeError(error));
+    }
+  }
+
+  // Abre o modal quando uma navegação é bloqueada
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      setExitModalOpen(true);
+    }
+  }, [blocker.state]);
 
   const countdown = useCountdown({
     totalSeconds: totalTime,
     enabled: false,
     keyId: countdownKey,
-    onExpire: () => {
-      // Quando expirar, abrimos modal (não redirecionamos)
-      setExpireModalOpen(true);
+    onExpire: handleExpire,
+    warningThresholds: {
+      first: 60,
+      last: 10,
     },
-    warningThresholds: { first: 60, last: 10 },
   });
 
   const { secondsLeft, percent, warningFirst, warningLast, start, reset } =
@@ -62,9 +103,24 @@ export default function ChallengePlay() {
         ...prev,
         userStatus: attempt.status ?? prev.userStatus,
         userAttempts: attempt.attempts ?? prev.userAttempts,
+        userStartedAt: attempt.startedAt ?? prev.userStartedAt,
+        userCompletedAt: attempt.completedAt ?? prev.userCompletedAt,
       };
     });
   }
+
+  useEffect(() => {
+    function handleBeforeUnload(event) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   useEffect(() => {
     if (!challenge) return;
@@ -90,6 +146,13 @@ export default function ChallengePlay() {
         const data = await getChallenge({ domainUrl, id });
 
         setChallenge(data);
+
+        setUserAttempt({
+          status: data.userStatus ?? 'pending',
+          attempts: data.userAttempts ?? 0,
+          startedAt: data.userStartedAt ?? null,
+          completedAt: data.userCompletedAt ?? null,
+        });
       } catch (err) {
         showError(normalizeError(err));
       } finally {
@@ -110,67 +173,64 @@ export default function ChallengePlay() {
   }, [countdownKey, id]);
 
   async function handleRun(commands) {
+    if (running) return;
+
     try {
       setRunning(true);
 
-      let newAttempts;
-      setAttempts((prev) => {
-        newAttempts = prev + 1;
-        return newAttempts;
+      const data = await submitChallenge({
+        domainUrl,
+        id,
+        commands,
       });
 
-      const data = await submitChallenge({ domainUrl, id, commands });
+      console.log('Resposta do backend:', data);
+      console.log('Tentativas no MongoDB:', data.userAttempt?.attempts);
 
-      //  tempo gasto baseado no countdown
-      const timeSpent = challenge.timeLimit - secondsLeft;
+      // Contador local de execuções nesta sessão
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+
+      // Tempo utilizado no desafio
+      const timeSpent = Math.max(0, totalTime - secondsLeft);
 
       setResult({
         success: !!data.success,
         message: data.message || (data.success ? 'Correto 🎉' : 'Incorreto'),
         output: data.output ?? [],
         expected: data.expected ?? null,
-        steps: data.steps || [],
+        steps: data.steps ?? [],
         timeSpent,
-        attempts: newAttempts,
+        attempts: data.userAttempt?.attempts ?? newAttempts,
       });
 
-      //  se acertou → reseta countdown
-      if (data.success) {
-        reset(); // vem do countdown
-      }
-
+      // Atualiza status, tentativas e datas do usuário
       applyAttemptUpdate(data.userAttempt);
+
+      // Se acertou, encerra o cronômetro
+      if (data.success) {
+        reset();
+      }
     } catch (err) {
-      showError(normalizeError(showError));
+      showError(normalizeError(err));
     } finally {
       setRunning(false);
     }
   }
 
-  async function handleRetry() {
-    try {
-      // cria nova tentativa no backend
-      const newAttempt = await createAttempt({ domainUrl, id });
+  function handleRetry() {
+    expireSentRef.current = false;
 
-      applyAttemptUpdate(newAttempt);
-    } catch (err) {
-      showError(normalizeError(err));
-    }
-
-    //  FECHA MODAL
     setExpireModalOpen(false);
-
-    //  LIMPA ESTADO DO DESAFIO
     setResult(null);
 
-    //  RESETA TIMER
     reset();
 
-    //  INICIA NOVO TEMPO
-    const seconds =
-      (challenge?.timeLimit && Number(challenge.timeLimit)) || defaultTimeSec;
-
-    start(isDevTest ? defaultTimeSec : seconds);
+    start(
+      isDevTest
+        ? defaultTimeSec
+        : Number(challenge?.timeLimit) || defaultTimeSec
+    );
   }
 
   function handleBackToChallenges() {
@@ -198,6 +258,52 @@ export default function ChallengePlay() {
   const chosenToolbox =
     (challengeToolbox && challengeToolbox[challenge.structure]) ||
     challengeToolbox?.list;
+
+  function handleRequestExit() {
+    setExitModalOpen(true);
+  }
+
+  function handleCancelExit() {
+    setExitModalOpen(false);
+
+    if (blocker.state === 'blocked') {
+      blocker.reset();
+    }
+  }
+
+  async function handleConfirmExit() {
+    if (leaving) return;
+
+    try {
+      setLeaving(true);
+
+      // Registra a desistência no MongoDB
+      const data = await abandonChallenge({
+        domainUrl,
+        id,
+      });
+
+      applyAttemptUpdate(data.userAttempt);
+
+      // Libera a navegação
+      allowExitRef.current = true;
+
+      setExitModalOpen(false);
+
+      // Se o aluno usou o botão Voltar do navegador
+      if (blocker.state === 'blocked') {
+        blocker.proceed();
+        return;
+      }
+
+      // Se o aluno usou o botão Sair do desafio
+      navigate(-1);
+    } catch (error) {
+      showError(normalizeError(error));
+    } finally {
+      setLeaving(false);
+    }
+  }
 
   return (
     <div
@@ -332,6 +438,21 @@ export default function ChallengePlay() {
                 warningLast={warningLast}
               />
             </div>
+
+            <button
+              type="button"
+              onClick={handleRequestExit}
+              className="flex items-center gap-2 rounded-lg px-4 py-2 transition-opacity hover:opacity-80"
+              style={{
+                background: theme.card,
+                color: theme.warning,
+                border: `1px solid ${theme.warning}`,
+                ...theme.typography.small,
+              }}
+            >
+              <LogOut size={18} />
+              Sair do desafio
+            </button>
           </div>
 
           <div
@@ -349,6 +470,12 @@ export default function ChallengePlay() {
           <ChallengeResult result={result} onClose={() => setResult(null)} />
         </main>
       </div>
+
+      <ChallengeExitModal
+        isOpen={exitModalOpen}
+        onCancel={handleCancelExit}
+        onConfirm={handleConfirmExit}
+      />
 
       {/* Expire modal */}
       <ExpireModal

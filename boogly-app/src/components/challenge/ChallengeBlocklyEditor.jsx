@@ -258,6 +258,7 @@ export default function ChallengeBlocklyEditor({
           javascriptGenerator.init(ws);
           try {
             dslCode = javascriptGenerator.workspaceToCode(ws) || '';
+            console.log(dslCode);
             setLocalDSLCode(dslCode);
           } catch (err) {
             showError(normalizeError(err));
@@ -380,6 +381,8 @@ export default function ChallengeBlocklyEditor({
 
       // extrai comandos
       const commands = extractCommandsFromWorkspace(ws);
+
+      console.log("COMANDOS", commands);
 
       await onRun?.(commands);
     } catch (err) {

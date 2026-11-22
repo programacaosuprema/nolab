@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '../../app_configuration/useApp';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,6 +6,8 @@ import { useTheme } from '../../theme/useTheme';
 import ActionButton from '../../components/ui/ActionButton';
 import { LogOut, Target, User } from 'lucide-react';
 import StudentProfileModal from '../modals/StudentProfileModal';
+import SoundToggle from '../ui/SoundToggle';
+import { playSound } from '../../utils/soundManager';
 
 const STRUCTURE_LABELS = {
   list: 'Lista',
@@ -77,7 +78,6 @@ export default function Header({ structure }) {
         {(appName || 'Nó Lab').replace(/\s+/g, '').toUpperCase()}
       </div>
 
-
       {/* AÇÕES À DIREITA */}
       <div className="flex items-center gap-3">
         {/* MODO ATUAL */}
@@ -93,7 +93,10 @@ export default function Header({ structure }) {
 
         {/* PERFIL */}
         <ActionButton
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            playSound('click');
+          }}
           icon={User}
         >
           {user?.nickname ?? 'Perfil'}
@@ -112,11 +115,10 @@ export default function Header({ structure }) {
             id="nav-challenges"
             className="nav-challenges"
             aria-label={`Ir para desafios ${mode}`}
-            onClick={() =>
-              navigate(
-                `${mainRoute}/challenges?structure=${structure}`
-              )
-            }
+            onClick={() => {
+              navigate(`${mainRoute}/challenges?structure=${structure}`);
+              playSound('click');
+            }}
             icon={Target}
           >
             desafios {mode.toLowerCase()}
@@ -127,7 +129,7 @@ export default function Header({ structure }) {
         <select
           aria-label="Selecionar tema"
           value={themeName}
-          onChange={(e) => setThemeName(e.target.value)}
+          onChange={(e) => { setThemeName(e.target.value);playSound("click");}}
           className="text-sm px-3 py-2 rounded-lg outline-none cursor-pointer"
           style={selectStyle}
         >
@@ -144,12 +146,18 @@ export default function Header({ structure }) {
           </option>
         </select>
 
+        {/* CONTROLE DE SOM */}
+
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium" style={{ color: theme.text }}>
+            Efeitos Sonoros
+          </span>
+
+          <SoundToggle />
+        </div>
+
         {/* SAIR */}
-        <ActionButton
-          onClick={handleLogout}
-          icon={LogOut}
-          variant="danger"
-        >
+        <ActionButton onClick={() => {handleLogout(); playSound("click"); }} icon={LogOut} variant="danger">
           Sair
         </ActionButton>
       </div>

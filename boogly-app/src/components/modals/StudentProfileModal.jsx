@@ -3,6 +3,7 @@ import { useTheme } from '../../theme/useTheme';
 import { useAuth } from '../../autenticator/useAuth';
 import { AppContext } from '../../app_configuration/AppContext';
 import { fetchMe } from '../../services/userService';
+import { playSound } from "../../utils/soundManager";
 
 // exemplo de helper
 function formatDateIso(iso) {
@@ -130,20 +131,7 @@ export default function StudentProfileModal({
           <h3 style={{ ...theme.typography.h3, color: theme.text }}>
             Perfil do Aluno
           </h3>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: theme.muted,
-                cursor: 'pointer',
-              }}
-              aria-label="Fechar"
-            >
-              ✕
-            </button>
-          </div>
+          
         </div>
 
         {/* body */}
@@ -172,7 +160,7 @@ export default function StudentProfileModal({
           }}
         >
           <button
-            onClick={onClose}
+            onClick={ () => {onClose(); playSound("click");}}
             style={{
               padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
               borderRadius: 8,

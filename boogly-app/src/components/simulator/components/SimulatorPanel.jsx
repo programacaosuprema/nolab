@@ -1,48 +1,50 @@
 // src/components/simulator/SimulatorPanel.jsx
-import { useEffect, useState, useRef } from "react";
-import ListVisualizer from "./list/ListVisualizer";
-import StackVisualizer from "./stack/StackVisualizer";
-import QueueVisualizer from "./queue/QueueVisualizer";
-import { useTheme } from "../../../theme/useTheme";
-import useSimulation from "../hooks/useSimulation";
-import { useAuth } from "../../../autenticator/useAuth";
+import { useEffect, useState, useRef } from 'react';
+import ListVisualizer from './list/ListVisualizer';
+import StackVisualizer from './stack/StackVisualizer';
+import QueueVisualizer from './queue/QueueVisualizer';
+import { useTheme } from '../../../theme/useTheme';
+import useSimulation from '../hooks/useSimulation';
+import { useAuth } from '../../../autenticator/useAuth';
+import { playSound } from '../../../utils/soundManager';
 
-export default function SimulatorPanel({dslCode = ""}) {
+export default function SimulatorPanel({ dslCode = '' }) {
   const { structure } = useAuth();
-  const sim = useSimulation({structure});
+  const sim = useSimulation({ structure });
   const { theme } = useTheme();
   const [speed, setSpeed] = useState(1);
   const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75];
   const safeStep = sim.steps[sim.currentStep] || {};
   const safeData = safeStep.state || {};
-  
+
   const historyRef = useRef(null);
 
   const simulators = {
     list: ListVisualizer,
     stack: StackVisualizer,
-    queue: QueueVisualizer
+    queue: QueueVisualizer,
   };
 
-const SimulatorComponent = simulators[structure] || ListVisualizer;
+  const SimulatorComponent = simulators[structure] || ListVisualizer;
 
   const firstListName = (() => {
     try {
-      const names = Object.keys(safeData || {}).filter((n) => n !== "variables");
+      const names = Object.keys(safeData || {}).filter(
+        (n) => n !== 'variables'
+      );
       return names.length ? names[0] : null;
     } catch (e) {
       return null;
     }
   })();
 
-  
-  const isHorizontalStructure = structure === "list" || structure === "queue";
-  const isStackStructure = structure === "stack";
-  const outerSimWrapperRef = useRef(null); 
+  const isHorizontalStructure = structure === 'list' || structure === 'queue';
+  const isStackStructure = structure === 'stack';
+  const outerSimWrapperRef = useRef(null);
   const innerScrollWrapperRef = useRef(null);
 
   useEffect(() => {
-    if (safeStep && safeStep.type === "traverse") return;
+    if (safeStep && safeStep.type === 'traverse') return;
 
     const outer = outerSimWrapperRef.current;
     const inner = innerScrollWrapperRef.current;
@@ -74,8 +76,13 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
         }
       }, delay);
     });
-  }, [isHorizontalStructure, isStackStructure, safeStep, safeStep.type, structure]);
-
+  }, [
+    isHorizontalStructure,
+    isStackStructure,
+    safeStep,
+    safeStep.type,
+    structure,
+  ]);
 
   useEffect(() => {
     if (!sim.isRunning) return;
@@ -103,13 +110,12 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
 
     if (activeItem) {
       activeItem.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
+        behavior: 'smooth',
+        block: 'center',
       });
     }
   }, [sim.currentStep]);
 
-  
   const hasInvalidState = sim.steps.length > 0 && !sim.steps[sim.currentStep];
 
   if (hasInvalidState) {
@@ -122,21 +128,25 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
       </div>
     );
   }
-  
+
   if (!structure) {
     return <div>Escolha uma estrutura primeiro</div>;
   }
 
   return (
-    <div className="flex-[3] min-h-0 rounded-xl p-4 flex flex-col gap-3 overflow-hidden" style={{ background: theme.panel }}> 
-        <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={() => {
-                  if (!sim.isRunning && !sim.isPaused) return sim.handleRun(dslCode);
-                  if (sim.isRunning) return sim.handlePause();
-                  if (sim.isPaused) return sim.handleContinue();
-              }}
-              className="
+    <div
+      className="flex-[3] min-h-0 rounded-xl p-4 flex flex-col gap-3 overflow-hidden"
+      style={{ background: theme.panel }}
+    >
+      <div className="flex items-center gap-3 flex-wrap">
+        <button
+          onClick={() => {
+            playSound('click');
+            if (!sim.isRunning && !sim.isPaused) return sim.handleRun(dslCode);
+            if (sim.isRunning) return sim.handlePause();
+            if (sim.isPaused) return sim.handleContinue();
+          }}
+          className="
                 px-4 py-2 rounded-lg font-semibold
                 cursor-pointer
                 transition-all duration-200 ease-in-out
@@ -144,20 +154,22 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
                 hover:shadow-lg
                 active:scale-95 active:shadow-sm
               "
-              style={{
-                background: theme.success,
-                color: "#fff"
-              }}
-            >
-            
-            {!sim.isRunning && !sim.isPaused && "▶ Executar"}
-            {sim.isRunning && "⏸ Pausar"}
-            {sim.isPaused && "▶ Continuar"}
-            </button>
+          style={{
+            background: theme.success,
+            color: '#fff',
+          }}
+        >
+          {!sim.isRunning && !sim.isPaused && '▶ Executar'}
+          {sim.isRunning && '⏸ Pausar'}
+          {sim.isPaused && '▶ Continuar'}
+        </button>
 
-            <button
-              onClick={sim.handleNextStep}
-              className="
+        <button
+          onClick={() => {
+            sim.handleNextStep();
+            playSound('click');
+          }}
+          className="
               px-4 py-2 rounded-lg font-semibold
               cursor-pointer
               transition-all duration-200 ease-in-out
@@ -165,17 +177,20 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
               hover:shadow-lg
               active:scale-95 active:shadow-sm
               "
-              style={{
-                background: theme.primary,
-                color: "#fff"
-              }}
-            >
-            ⏭ Passo a Passo
-            </button>
+          style={{
+            background: theme.primary,
+            color: '#fff',
+          }}
+        >
+          ⏭ Passo a Passo
+        </button>
 
-            <button
-            onClick={sim.handleClear}
-            className="
+        <button
+          onClick={() => {
+            sim.handleClear();
+            playSound('click');
+          }}
+          className="
             px-4 py-2 rounded-lg font-semibold
             cursor-pointer
             transition-all duration-200 ease-in-out
@@ -183,212 +198,214 @@ const SimulatorComponent = simulators[structure] || ListVisualizer;
             hover:shadow-lg
             active:scale-95 active:shadow-sm
             "
-            style={{
-              background: theme.danger,
-              color: "#fff"
-            }}
-            >
-            🧹 Limpar
-            </button>
-
-            {/* speed control (mantido) */}
-            <div className="flex items-center gap-3 w-64 ml-auto">
-            <span style={{ color: theme.text }} className="text-sm w-10">
-                {speed}x
-            </span>
-
-            <input
-                type="range"
-                min="0"
-                max={speedOptions.length - 1}
-                step="1"
-                value={speedOptions.indexOf(speed)}
-                onChange={(e) => {
-                const index = Number(e.target.value);
-                setSpeed(speedOptions[index]);
-                }}
-                className="w-full cursor-pointer"
-                style={{
-                background: theme.border,
-                accentColor: theme.primary
-                }}
-            />
-            </div>
-        </div>
-
-        {/* VISUALIZAÇÃO — wrapper que foca/centraliza e limita overflow */}
-        <div
-            className="flex-1 min-h-0 rounded-xl p-3 border"
-            style={{
-            background: theme.card,
-            borderColor: theme.border,
-            display: "flex",
-            flexDirection: "column",
-            // garante que o container não empurre a coluna
-            overflow: "hidden",
-            boxSizing: "border-box"
-            }}
+          style={{
+            background: theme.danger,
+            color: '#fff',
+          }}
         >
-            {/* Inner wrapper ajustado: mostra título centralizado UMA vez e mantém o simulador responsável pela rolagem */}
-            <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-                height: "100%",
-                alignItems: "stretch",
-                justifyContent: "flex-start",
-                overflow: "hidden",
-                minWidth: 0
+          🧹 Limpar
+        </button>
+
+        {/* speed control (mantido) */}
+        <div className="flex items-center gap-3 w-64 ml-auto">
+          <span style={{ color: theme.text }} className="text-sm w-10">
+            {speed}x
+          </span>
+
+          <input
+            type="range"
+            min="0"
+            max={speedOptions.length - 1}
+            step="1"
+            value={speedOptions.indexOf(speed)}
+            onChange={(e) => {
+              const index = Number(e.target.value);
+              setSpeed(speedOptions[index]);
             }}
-            >
-            {/* -------------------------
+            className="w-full cursor-pointer"
+            style={{
+              background: theme.border,
+              accentColor: theme.primary,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* VISUALIZAÇÃO — wrapper que foca/centraliza e limita overflow */}
+      <div
+        className="flex-1 min-h-0 rounded-xl p-3 border"
+        style={{
+          background: theme.card,
+          borderColor: theme.border,
+          display: 'flex',
+          flexDirection: 'column',
+          // garante que o container não empurre a coluna
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
+        {/* Inner wrapper ajustado: mostra título centralizado UMA vez e mantém o simulador responsável pela rolagem */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+            alignItems: 'stretch',
+            justifyContent: 'flex-start',
+            overflow: 'hidden',
+            minWidth: 0,
+          }}
+        >
+          {/* -------------------------
                 Nome da primeira estrutura
                 (aparece apenas uma vez, centralizado)
                 ------------------------- */}
-            {firstListName && (
-                <div
-                style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: theme.spacing.sm,
-                    paddingTop: theme.spacing.xs,
-                    paddingBottom: theme.spacing.xs,
-                    boxSizing: "border-box"
-                }}
-                >
-                <div
-                    style={{
-                    display: "inline-block",
-                    padding: `6px ${theme.spacing.md}`,
-                    borderRadius: 8,
-                    background: theme.card,
-                    border: `1px solid ${theme.border}`
-                    }}
-                >
-                    <h2
-                    style={{
-                        margin: 0,
-                        color: theme.text,
-                        ...theme.typography.h2,
-                        textTransform: "none"
-                    }}
-                    >
-                    {firstListName}
-                    </h2>
-                </div>
-                </div>
-            )}
-
-            {/* visualizador: wrapper adaptativo por estrutura */}
+          {firstListName && (
             <div
-                ref={outerSimWrapperRef}
-                style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "stretch",
-                justifyContent: "flex-start",
-                overflow: "hidden",
-                minWidth: 0
-                }}
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: theme.spacing.sm,
+                paddingTop: theme.spacing.xs,
+                paddingBottom: theme.spacing.xs,
+                boxSizing: 'border-box',
+              }}
             >
-                {/* ADDED data-tour="simulator" on the inner scroll wrapper so Tour highlights the scrolling area */}
-                <div
-                ref={innerScrollWrapperRef}
-                data-tour="simulator"
+              <div
                 style={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    // para listas/filas, queremos a linha horizontal e alinhamento ao início
-                    justifyContent: isHorizontalStructure ? "flex-start" : "center",
-                    alignItems: isHorizontalStructure ? "center" : "flex-start",
-                    overflowX: isHorizontalStructure ? "auto" : "hidden",
-                    overflowY: isHorizontalStructure ? "hidden" : "auto",
-                    paddingLeft: theme.spacing.sm,
-                    paddingRight: theme.spacing.sm,
-                    boxSizing: "border-box",
-                    minWidth: 0
+                  display: 'inline-block',
+                  padding: `6px ${theme.spacing.md}`,
+                  borderRadius: 8,
+                  background: theme.card,
+                  border: `1px solid ${theme.border}`,
                 }}
+              >
+                <h2
+                  style={{
+                    margin: 0,
+                    color: theme.text,
+                    ...theme.typography.h2,
+                    textTransform: 'none',
+                  }}
                 >
-                {/* Aqui o ajuste crítico: quando horizontal, o filho NÃO deve forçar width:100% */}
-                <div
-                    style={{
-                    minWidth: isHorizontalStructure ? "max-content" : 0,
-                    width: isHorizontalStructure ? "auto" : "100%"
-                    }}
-                >
-                    {/* Passa showTitle={false} para evitar duplicação */}
-                    <SimulatorComponent data={safeData} step={safeStep} showTitle={false} />
-                </div>
-                </div>
+                  {firstListName}
+                </h2>
+              </div>
             </div>
-            </div>
-        </div>
+          )}
 
-        {/* HISTÓRICO (abaixo da simulação, dentro da mesma coluna direita) */}
-        {/* ADDED data-tour="history" */}
-        <div
-            ref={historyRef}
-            data-tour="history"
-            className="rounded-xl p-4 h-28 overflow-auto border"
+          {/* visualizador: wrapper adaptativo por estrutura */}
+          <div
+            ref={outerSimWrapperRef}
             style={{
-            background: theme.toolbox,
-            borderColor: theme.border
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'stretch',
+              justifyContent: 'flex-start',
+              overflow: 'hidden',
+              minWidth: 0,
             }}
-        >
-            <h3
-            className="text-sm font-semibold mb-2"
-            style={{ color: theme.muted }}
+          >
+            {/* ADDED data-tour="simulator" on the inner scroll wrapper so Tour highlights the scrolling area */}
+            <div
+              ref={innerScrollWrapperRef}
+              data-tour="simulator"
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                // para listas/filas, queremos a linha horizontal e alinhamento ao início
+                justifyContent: isHorizontalStructure ? 'flex-start' : 'center',
+                alignItems: isHorizontalStructure ? 'center' : 'flex-start',
+                overflowX: isHorizontalStructure ? 'auto' : 'hidden',
+                overflowY: isHorizontalStructure ? 'hidden' : 'auto',
+                paddingLeft: theme.spacing.sm,
+                paddingRight: theme.spacing.sm,
+                boxSizing: 'border-box',
+                minWidth: 0,
+              }}
             >
-            Histórico
-            </h3>
-
-            {sim.steps.length === 0 && (
-            <p style={{ color: theme.muted }} className="text-sm">
-                Nenhuma execução ainda
-            </p>
-            )}
-
-            {sim.steps.slice(0, sim.currentStep + 1).map((step, i) => {
-            const color =
-                step.type === "add"
-                ? theme.success
-                : step.type === "remove"
-                ? theme.danger
-                : step.type === "create"
-                ? theme.primary
-                : theme.text;
-
-            const symbol =
-                step.type === "add"
-                ? "+"
-                : step.type === "remove"
-                ? "-"
-                : "•";
-
-            return (
-                <div
-                key={i}
-                className="text-sm flex gap-2 items-center px-2 py-1 rounded"
+              {/* Aqui o ajuste crítico: quando horizontal, o filho NÃO deve forçar width:100% */}
+              <div
                 style={{
-                    background: i === sim.currentStep ? theme.hover : "transparent",
-                    borderLeft: i === sim.currentStep ? `4px solid ${theme.primary}` : "none",
-                    opacity: i === sim.currentStep ? 1 : 0.6
+                  minWidth: isHorizontalStructure ? 'max-content' : 0,
+                  width: isHorizontalStructure ? 'auto' : '100%',
                 }}
-                >
-                <span style={{ color }} className="font-bold">
-                    {symbol}
-                </span>
-
-                <span style={{ color: theme.text }}>
-                    {step.message} → {JSON.stringify(Object.values(step.state)[0] || [])}
-                </span>
-                </div>
-            );
-            })}
+              >
+                {/* Passa showTitle={false} para evitar duplicação */}
+                <SimulatorComponent
+                  data={safeData}
+                  step={safeStep}
+                  showTitle={false}
+                />
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* HISTÓRICO (abaixo da simulação, dentro da mesma coluna direita) */}
+      {/* ADDED data-tour="history" */}
+      <div
+        ref={historyRef}
+        data-tour="history"
+        className="rounded-xl p-4 h-28 overflow-auto border"
+        style={{
+          background: theme.toolbox,
+          borderColor: theme.border,
+        }}
+      >
+        <h3
+          className="text-sm font-semibold mb-2"
+          style={{ color: theme.muted }}
+        >
+          Histórico
+        </h3>
+
+        {sim.steps.length === 0 && (
+          <p style={{ color: theme.muted }} className="text-sm">
+            Nenhuma execução ainda
+          </p>
+        )}
+
+        {sim.steps.slice(0, sim.currentStep + 1).map((step, i) => {
+          const color =
+            step.type === 'add'
+              ? theme.success
+              : step.type === 'remove'
+                ? theme.danger
+                : step.type === 'create'
+                  ? theme.primary
+                  : theme.text;
+
+          const symbol =
+            step.type === 'add' ? '+' : step.type === 'remove' ? '-' : '•';
+
+          return (
+            <div
+              key={i}
+              className="text-sm flex gap-2 items-center px-2 py-1 rounded"
+              style={{
+                background: i === sim.currentStep ? theme.hover : 'transparent',
+                borderLeft:
+                  i === sim.currentStep ? `4px solid ${theme.primary}` : 'none',
+                opacity: i === sim.currentStep ? 1 : 0.6,
+              }}
+            >
+              <span style={{ color }} className="font-bold">
+                {symbol}
+              </span>
+
+              <span style={{ color: theme.text }}>
+                {step.message} →{' '}
+                {JSON.stringify(Object.values(step.state)[0] || [])}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

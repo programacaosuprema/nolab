@@ -10,6 +10,8 @@ import { getChallenges } from '../../services/challengeService';
 import { getUserChallenges } from '../../services/userService';
 import { mergeChallengesWithUser } from '../../services/mergeService';
 import { normalizeError } from '../../error/utils/normalizeError';
+import BackButton from '../ui/BackButton';
+import { playSound } from "../../utils/soundManager";
 
 function formatDate(date) {
   if (!date) return '-';
@@ -220,26 +222,7 @@ export default function ChallengePage() {
             marginBottom: theme.spacing.sm,
           }}
         >
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              background: theme.card,
-              color: theme.text,
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              borderRadius: '8px',
-              border: `1px solid ${theme.border}`,
-              cursor: 'pointer',
-              ...theme.typography.small,
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = theme.hover)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = theme.card)
-            }
-          >
-            ← Voltar
-          </button>
+          <BackButton />  
         </div>
 
         <h2
@@ -295,10 +278,11 @@ export default function ChallengePage() {
         {challenges.map((c, index) => (
           <div
             key={c._id}
-            onClick={() =>
+            onClick={() => {
               navigate(
                 `${mainRoute}/challenges/${c.publicId || c._id}?structure=${structure}`
-              )
+              ); playSound("click");
+            }
             }
             className="grid grid-cols-8 cursor-pointer"
             style={{

@@ -1,12 +1,8 @@
-
 import { AlertTriangle, LogOut, X } from 'lucide-react';
 import { useTheme } from '../../theme/useTheme';
+import { playSound } from '../../utils/soundManager';
 
-export default function ChallengeExitModal({
-  isOpen,
-  onCancel,
-  onConfirm,
-}) {
+export default function ChallengeExitModal({ isOpen, onCancel, onConfirm }) {
   const { theme } = useTheme();
 
   if (!isOpen) return null;
@@ -31,13 +27,10 @@ export default function ChallengeExitModal({
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <AlertTriangle
-              size={26}
-              style={{ color: theme.muted }}
-            />
+            <AlertTriangle size={26} style={{ color: theme.muted }} />
             <h2
               id="exit-modal-title"
-              style={{...theme.typography.h3,  color: theme.muted }}
+              style={{ ...theme.typography.h3, color: theme.muted }}
             >
               Sair do desafio?
             </h2>
@@ -45,7 +38,10 @@ export default function ChallengeExitModal({
 
           <button
             type="button"
-            onClick={onCancel}
+            onClick={() => {
+              onCancel();
+              playSound('click');
+            }}
             aria-label="Fechar confirmação"
             style={{ color: theme.muted }}
           >
@@ -60,15 +56,17 @@ export default function ChallengeExitModal({
             marginBottom: theme.spacing.lg,
           }}
         >
-          Tem certeza de que deseja sair deste desafio?
-          Sua solução atual não será salva e você
-          precisará recomeçar quando voltar.
+          Tem certeza de que deseja sair deste desafio? Sua solução atual não
+          será salva e você precisará recomeçar quando voltar.
         </p>
 
         <div className="flex justify-end gap-3">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={() => {
+              playSound('click');
+              onCancel();
+            }}
             className="rounded-lg px-4 py-2"
             style={{
               background: theme.card,
@@ -81,7 +79,10 @@ export default function ChallengeExitModal({
 
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={() => {
+              playSound('click');
+              onConfirm();
+            }}
             className="rounded-lg px-4 py-2 flex items-center gap-2"
             style={{
               background: theme.warning,

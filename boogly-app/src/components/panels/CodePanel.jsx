@@ -3,6 +3,7 @@ import Editor from '@monaco-editor/react';
 import { useTheme } from '../../theme/useTheme';
 import ActionButton from '../ui/ActionButton';
 import { Download, Clipboard } from 'lucide-react';
+import { playSound } from "../../utils/soundManager";
 
 export default function CodePanel({ cCode }) {
   const [language, setLanguage] = useState('c');
@@ -84,14 +85,14 @@ export default function CodePanel({ cCode }) {
 
         <div className="flex items-center" style={{ gap: theme.spacing.sm }}>
           <ActionButton
-            onClick={handleDownload}
+            onClick={ () => {handleDownload(); playSound("click");}}
             icon={Download}
             variant="success"
           >
             Baixar .c
           </ActionButton>
 
-          <ActionButton onClick={handleCopy} icon={Clipboard} variant="primary">
+          <ActionButton onClick={ () => {handleCopy(); playSound("click");}} icon={Clipboard} variant="primary">
             {copied ? 'Copiado!' : 'Copiar código'}
           </ActionButton>
         </div>

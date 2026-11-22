@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../theme/useTheme';
 import { useError } from '../../error/hooks/useError'
+import BackButton from '../ui/BackButton';
+import { playSound } from "../../utils/soundManager";
 
 export function ChallengeStart({ challenge, onStart }) {
   const [tab, setTab] = useState('descricao');
@@ -44,26 +46,7 @@ export function ChallengeStart({ challenge, onStart }) {
             marginBottom: theme.spacing.sm,
           }}
         >
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              background: theme.card,
-              color: theme.text,
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              borderRadius: '8px',
-              border: `1px solid ${theme.border}`,
-              cursor: 'pointer',
-              ...theme.typography.small,
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = theme.hover)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = theme.card)
-            }
-          >
-            ← Voltar
-          </button>
+          <BackButton />  
         </div>
 
         <h2
@@ -119,7 +102,7 @@ export function ChallengeStart({ challenge, onStart }) {
             return (
               <button
                 key={t}
-                onClick={() => setTab(t)}
+                onClick={() => {setTab(t); playSound("click");}}
                 style={{
                   flex: 1,
                   padding: theme.spacing.sm,
@@ -252,7 +235,7 @@ export function ChallengeStart({ challenge, onStart }) {
           }}
         >
           <button
-            onClick={handleStart}
+            onClick={ () => {handleStart(); playSound("click");}}
             style={{
               background: theme.primary,
               color: '#fff',

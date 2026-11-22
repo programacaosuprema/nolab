@@ -17,6 +17,9 @@ import { useAuth } from '../../autenticator/useAuth';
 
 import { saveWorkspace, loadWorkspace } from '../../utils/workspaceStorage';
 
+import { playSound } from "../../utils/soundManager";
+import { CategoryButton } from '../ui/CategoryButton';
+
 export default function MainBlocklyEditorPanel({
   toolbox,
   setCode,
@@ -420,7 +423,7 @@ export default function MainBlocklyEditorPanel({
 
           {hasCategories && (
             <button
-              onClick={() => setToolboxVisible(!toolboxVisible)}
+              onClick={() => { setToolboxVisible(!toolboxVisible); playSound("click");}}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                 borderRadius: '8px',
@@ -486,35 +489,6 @@ export default function MainBlocklyEditorPanel({
           <div ref={blocklyDiv} className="h-full w-full" />
         </div>
       </div>
-    </div>
-  );
-}
-
-//  BUTTON
-function CategoryButton({ label, active, onClick, theme }) {
-  return (
-    <div className="group relative">
-      <button
-        onClick={onClick}
-        className="w-10 h-10 rounded-full transition"
-        style={{
-          background: active ? theme.primary : theme.hover,
-          transform: active ? 'scale(1.1)' : 'scale(1)',
-        }}
-      />
-
-      <span
-        className="absolute left-12 top-1/2 -translate-y-1/2
-        text-xs px-2 py-1 rounded whitespace-nowrap
-        opacity-0 group-hover:opacity-100 transition pointer-events-none z-50"
-        style={{
-          background: theme.panel,
-          color: theme.text,
-          border: `1px solid ${theme.border}`,
-        }}
-      >
-        {label}
-      </span>
     </div>
   );
 }

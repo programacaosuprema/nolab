@@ -19,11 +19,12 @@ import {
 import { LogOut } from 'lucide-react';
 import ChallengeExitModal from '../modals/ChallengeExitModal';
 import { LoadingPage } from '../pages/LoadingPage';
+import { playSound } from "../../utils/soundManager";
 
 export default function ChallengePlay() {
   const isDevTest = false; //para testar algumas coisas. É verdadeiro enquanto for teste
   const { id } = useParams();
-  const defaultTimeSec = 10;
+  const defaultTimeSec = 5;
   const navigate = useNavigate();
   const { domainUrl } = useContext(AppContext);
   const { theme } = useTheme();
@@ -66,6 +67,7 @@ export default function ChallengePlay() {
         domainUrl,
         id,
       });
+      playSound("expired");
 
       attemptRecordedRef.current = true;
 
@@ -197,6 +199,9 @@ export default function ChallengePlay() {
         id,
         commands,
       });
+
+      // Reproduz o efeito correspondente
+      playSound(data.success ? "success" : "error");
 
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
@@ -341,6 +346,8 @@ export default function ChallengePlay() {
           domainUrl,
           id,
         });
+
+        playSound('abandon');
 
         attemptRecordedRef.current = true;
 
@@ -504,7 +511,10 @@ export default function ChallengePlay() {
 
             <button
               type="button"
-              onClick={handleRequestExit}
+              onClick={ () => {
+                playSound("click");
+                handleRequestExit();
+              }}
               className="flex items-center gap-2 rounded-lg px-4 py-2 transition-opacity hover:opacity-80"
               style={{
                 background: theme.card,

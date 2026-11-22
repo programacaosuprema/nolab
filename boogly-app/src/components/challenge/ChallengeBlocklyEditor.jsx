@@ -21,32 +21,9 @@ import SimulatorPanel from '../simulator/components/SimulatorPanel';
 
 import { normalizeError } from "../../error/utils/normalizeError"
 
-function CategoryButton({ label, active, onClick, theme }) {
-  return (
-    <div className="group relative">
-      <button
-        onClick={onClick}
-        className="w-10 h-10 rounded-full transition"
-        style={{
-          background: active ? theme.primary : theme.hover,
-          transform: active ? 'scale(1.06)' : 'scale(1)',
-        }}
-      />
-      <span
-        className="absolute left-12 top-1/2 -translate-y-1/2
-                   text-xs px-2 py-1 rounded whitespace-nowrap
-                   opacity-0 group-hover:opacity-100 transition pointer-events-none z-50"
-        style={{
-          background: theme.panel,
-          color: theme.text,
-          border: `1px solid ${theme.border}`,
-        }}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
+import { playSound } from "../../utils/soundManager";
+
+import { CategoryButton } from '../ui/CategoryButton';
 
 function detectStructureFromToolbox(toolbox) {
   if (!toolbox) return 'list';
@@ -454,7 +431,7 @@ export default function ChallengeBlocklyEditor({
             {/*  NOVO TOGGLE */}
             <div style={{ display: 'flex', gap: 6 }}>
               <button
-                onClick={() => setView('editor')}
+                onClick={() => {setView('editor'); playSound("click");}}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -468,7 +445,7 @@ export default function ChallengeBlocklyEditor({
               </button>
 
               <button
-                onClick={() => setView('code')}
+                onClick={() => {setView('code'); playSound("click");}}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -482,7 +459,7 @@ export default function ChallengeBlocklyEditor({
               </button>
 
               <button
-                onClick={() => setView('simulation')}
+                onClick={() => {setView('simulation'); playSound("click");}}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -504,7 +481,7 @@ export default function ChallengeBlocklyEditor({
               style={{ gap: theme.spacing.sm }}
             >
               <button
-                onClick={() => setToolboxVisible(!toolboxVisible)}
+                onClick={() => {setToolboxVisible(!toolboxVisible); playSound("click");}}
                 style={{
                   padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                   borderRadius: '8px',
@@ -518,7 +495,7 @@ export default function ChallengeBlocklyEditor({
               </button>
 
               <button
-                onClick={handleRun}
+                onClick={ () => {handleRun(); playSound("click");}}
                 style={{
                   padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
                   borderRadius: '8px',

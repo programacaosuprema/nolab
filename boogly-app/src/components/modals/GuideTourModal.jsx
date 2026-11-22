@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTheme } from '../../theme/useTheme';
 import { useAuth } from '../../autenticator/useAuth';
+import { playSound } from "../../utils/soundManager";
 
 const BASE_KEY = 'guided_tour_done_v1';
 
@@ -492,6 +493,7 @@ export default function GuidedTourModal({
                       onClick={(e) => {
                         e.stopPropagation();
                         prev();
+                        playSound("click");
                       }}
                       disabled={index === 0}
                       style={{
@@ -510,6 +512,7 @@ export default function GuidedTourModal({
                       onClick={(e) => {
                         e.stopPropagation();
                         close(true);
+                        playSound("click");
                       }}
                       style={{
                         background: 'transparent',
@@ -527,6 +530,7 @@ export default function GuidedTourModal({
                       onClick={(e) => {
                         e.stopPropagation();
                         next();
+                        playSound("click");
                       }}
                       style={{
                         background: theme?.primary,

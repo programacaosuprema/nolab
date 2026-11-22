@@ -1,4 +1,5 @@
 import { useTheme } from '../../theme/useTheme';
+import { playSound } from "../../utils/soundManager";
 
 export default function ExpireModal({ isOpen, onRetry, onGoBack }) {
   const { theme } = useTheme();
@@ -36,7 +37,7 @@ export default function ExpireModal({ isOpen, onRetry, onGoBack }) {
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button
-            onClick={onGoBack}
+            onClick={ () => {onGoBack(); playSound("click");}}
             style={{
               padding: '8px 12px',
               borderRadius: 8,
@@ -50,7 +51,7 @@ export default function ExpireModal({ isOpen, onRetry, onGoBack }) {
           </button>
 
           <button
-            onClick={onRetry}
+            onClick={ () => { onRetry(); playSound("click");}}
             style={{
               padding: '8px 12px',
               borderRadius: 8,

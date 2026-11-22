@@ -49,7 +49,16 @@ export async function updateOnboarding({ domainUrl, onboardingDone }) {
   const data = await safeParse(res);
 
   if (!res.ok) {
-    throw new Error(`Erro onboarding (${res.status})`);
+    console.error('Erro ao atualizar onboarding:', {
+      status: res.status,
+      response: data,
+    });
+
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      `Erro onboarding (${res.status})`
+    );
   }
 
   return data;

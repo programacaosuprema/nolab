@@ -115,7 +115,7 @@ export default function MainBlocklyEditorPanel({
                 codeJS =
                   javascriptGenerator.workspaceToCode(workspaceRef.current) ||
                   '';
-                  console.log(codeJS);
+                  
                 
               } catch (err) {
                 showError({
@@ -125,7 +125,7 @@ export default function MainBlocklyEditorPanel({
               }
 
               setCode(codeJS);
-              console.log(codeJS);
+              
 
               //  C CODE
               let codeC = '';

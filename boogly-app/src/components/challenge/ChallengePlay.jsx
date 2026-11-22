@@ -10,7 +10,12 @@ import { challengeToolbox } from '../../blockly/index';
 import ExpireModal from '../modals/ExpireModal'; // novo
 import useCountdown from '../../hooks/useCountDown'; // seu hook (ajustado)
 import ChallengeTimer from '../challenge/ChallengeTimer';
-import {submitChallenge, getChallenge, abandonChallenge, expireChallenge} from '../../services/challengeService';
+import {
+  submitChallenge,
+  getChallenge,
+  abandonChallenge,
+  expireChallenge,
+} from '../../services/challengeService';
 import { LogOut } from 'lucide-react';
 import ChallengeExitModal from '../modals/ChallengeExitModal';
 import { LoadingPage } from '../pages/LoadingPage';
@@ -36,20 +41,23 @@ export default function ChallengePlay() {
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const allowExitRef = useRef(false);
+  const attemptRecordedRef = useRef(false);
+  const successTimeoutRef = useRef(null);
 
   // Intercepta navegações internas do React Router
   //Bloquear botão voltar do navegador
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       !allowExitRef.current &&
+      !attemptRecordedRef.current &&
+      !expireSentRef.current &&
       currentLocation.pathname !== nextLocation.pathname
   );
 
   const expireSentRef = useRef(false);
 
   async function handleExpire() {
-    // Impede chamadas duplicadas nesta montagem
-    if (expireSentRef.current) return;
+    if (expireSentRef.current || attemptRecordedRef.current) return;
 
     expireSentRef.current = true;
 
@@ -59,11 +67,17 @@ export default function ChallengePlay() {
         id,
       });
 
-      // Atualiza o progresso do aluno
-      applyAttemptUpdate(data.userAttempt);
+      attemptRecordedRef.current = true;
 
-      // Abre o modal de tempo esgotado
+      // O controller retorna diretamente o documento
+      applyAttemptUpdate(data.userAttempt ?? data);
+
+      setExitModalOpen(false);
       setExpireModalOpen(true);
+
+      if (blocker.state === 'blocked') {
+        blocker.reset();
+      }
     } catch (error) {
       expireSentRef.current = false;
       showError(normalizeError(error));
@@ -173,7 +187,7 @@ export default function ChallengePlay() {
   }, [countdownKey, id]);
 
   async function handleRun(commands) {
-    if (running) return;
+    if (running || attemptRecordedRef.current) return;
 
     try {
       setRunning(true);
@@ -184,15 +198,12 @@ export default function ChallengePlay() {
         commands,
       });
 
-      console.log('Resposta do backend:', data);
-      console.log('Tentativas no MongoDB:', data.userAttempt?.attempts);
-
-      // Contador local de execuções nesta sessão
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
 
-      // Tempo utilizado no desafio
       const timeSpent = Math.max(0, totalTime - secondsLeft);
+
+      applyAttemptUpdate(data.userAttempt);
 
       setResult({
         success: !!data.success,
@@ -204,12 +215,29 @@ export default function ChallengePlay() {
         attempts: data.userAttempt?.attempts ?? newAttempts,
       });
 
-      // Atualiza status, tentativas e datas do usuário
-      applyAttemptUpdate(data.userAttempt);
-
-      // Se acertou, encerra o cronômetro
+      // Se concluiu o desafio corretamente
       if (data.success) {
+        // A submissão já foi registrada no backend
+        attemptRecordedRef.current = true;
+
+        // Libera a navegação
+        allowExitRef.current = true;
+
+        // Fecha os modais
+        setExitModalOpen(false);
+        setExpireModalOpen(false);
+
+        // Encerra o cronômetro
         reset();
+        sessionStorage.removeItem(countdownKey);
+
+        // Navega diretamente para a lista
+
+        successTimeoutRef.current = setTimeout(() => {
+          navigate("/desafios", { replace: true });
+        }, 3000);
+
+        return;
       }
     } catch (err) {
       showError(normalizeError(err));
@@ -219,11 +247,18 @@ export default function ChallengePlay() {
   }
 
   function handleRetry() {
+    // Libera o registro para uma nova execução
     expireSentRef.current = false;
+    attemptRecordedRef.current = false;
 
+    // Fecha os modais
     setExpireModalOpen(false);
+    setExitModalOpen(false);
+
+    // Limpa o resultado anterior
     setResult(null);
 
+    // Reinicia o cronômetro
     reset();
 
     start(
@@ -234,7 +269,18 @@ export default function ChallengePlay() {
   }
 
   function handleBackToChallenges() {
+    // Libera a navegação do React Router
+    allowExitRef.current = true;
+
+    // Fecha os modais
+    setExpireModalOpen(false);
+    setExitModalOpen(false);
+
+    // Limpa o cronômetro
     reset();
+    sessionStorage.removeItem(countdownKey);
+
+    // Navega sem registrar abandono
     navigate(-2, { replace: true });
   }
 
@@ -273,31 +319,48 @@ export default function ChallengePlay() {
 
   async function handleConfirmExit() {
     if (leaving) return;
+    
+     if (attemptRecordedRef.current) {
+      allowExitRef.current = true;
+      setExitModalOpen(false);
+
+      if (blocker.state === "blocked") {
+        blocker.proceed();
+      } else {
+        navigate("/desafios", { replace: true });
+      }
+
+      return;
+    }
 
     try {
       setLeaving(true);
 
-      // Registra a desistência no MongoDB
-      const data = await abandonChallenge({
-        domainUrl,
-        id,
-      });
+      if (!attemptRecordedRef.current) {
+        const data = await abandonChallenge({
+          domainUrl,
+          id,
+        });
 
-      applyAttemptUpdate(data.userAttempt);
+        attemptRecordedRef.current = true;
 
-      // Libera a navegação
+        applyAttemptUpdate(data.userAttempt ?? data);
+      }
+
       allowExitRef.current = true;
 
       setExitModalOpen(false);
+      setExpireModalOpen(false);
 
-      // Se o aluno usou o botão Voltar do navegador
+      reset();
+      sessionStorage.removeItem(countdownKey);
+
       if (blocker.state === 'blocked') {
         blocker.proceed();
         return;
       }
 
-      // Se o aluno usou o botão Sair do desafio
-      navigate(-1);
+      navigate(-2, { replace: true });
     } catch (error) {
       showError(normalizeError(error));
     } finally {
@@ -472,15 +535,14 @@ export default function ChallengePlay() {
       </div>
 
       <ChallengeExitModal
-        isOpen={exitModalOpen}
+        isOpen={exitModalOpen && !expireModalOpen}
         onCancel={handleCancelExit}
         onConfirm={handleConfirmExit}
       />
 
-      {/* Expire modal */}
       <ExpireModal
         isOpen={expireModalOpen}
-        onClose={() => setExpireModalOpen(false)}
+        onClose={handleBackToChallenges}
         onRetry={handleRetry}
         onGoBack={handleBackToChallenges}
       />

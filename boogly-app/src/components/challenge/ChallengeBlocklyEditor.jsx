@@ -382,8 +382,6 @@ export default function ChallengeBlocklyEditor({
       // extrai comandos
       const commands = extractCommandsFromWorkspace(ws);
 
-      console.log("COMANDOS", commands);
-
       await onRun?.(commands);
     } catch (err) {
       showError(normalizeError(err));

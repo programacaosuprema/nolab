@@ -47,7 +47,7 @@ export async function abandonChallenge({ domainUrl, id }) {
 
 export async function expireChallenge({ domainUrl, id }) {
   const response = await fetch(
-    `${domainUrl}/challenges-play/${id}/expire`,
+    `${domainUrl}/challenge-play/${id}/expire`,
     {
       method: "POST",
       credentials: "include",

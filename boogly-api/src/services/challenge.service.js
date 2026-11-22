@@ -1,11 +1,9 @@
 import { Challenge } from "../models/challenge.model.js";
 import { UserChallenge } from "../models/userChallenge.model.js";
 import mongoose from "mongoose";
-import { ExecutionEngine } from "../utils/executionEngine.js";
-import translate from "../utils/translate.js";
-import validateExecutionRules from "../utils/executionRules.js";
 import { nanoid } from "nanoid";
-import { recordChallengeResult } from "./userChallenge.service.js";
+
+
 
 //  CRIAR
 export const createChallengeService = async (data) => {
@@ -77,19 +75,3 @@ export const getChallengeByIdService = async (id) => {
 
   return challenge;
 };
-
-async function findChallengeByIdOrPublicId(id) {
-  if (!id) return null;
-
-  let challenge = null;
-
-  if (mongoose.Types.ObjectId.isValid(id)) {
-    challenge = await Challenge.findById(id);
-  }
-
-  if (!challenge) {
-    challenge = await Challenge.findOne({ publicId: id });
-  }
-
-  return challenge;
-}

@@ -19,7 +19,7 @@ export default function translate(blockName) {
         /* =========================
         LISTA
         ========================= */
-        case "list_run_program": return "Executar (lista)";
+        case "list_run_program": return "Quando EXECUTAR for clicado";
         case "list_container": return "criar lista";
         case "list_fixed": return "criar lista com tamanho fixo";
         case "list_insert": return "inserir na lista";
@@ -41,7 +41,7 @@ export default function translate(blockName) {
         /* =========================
         FILA (QUEUE)
         ========================= */
-        case "queue_run_program": return "Executar (fila)";
+        case "queue_run_program": return "Quando EXECUTAR for clicado";
         case "queue_container": return "criar fila";
         case "queue_fixed": return "criar fila com tamanho fixo";
         case "enqueue": return "enfileirar";
@@ -54,7 +54,7 @@ export default function translate(blockName) {
         /* =========================
         PILHA (STACK)
         ========================= */
-        case "stack_run_program": return "Executar (pilha)";
+        case "stack_run_program": return "Quando EXECUTAR for clicado";
         case "stack_container": return "criar pilha";
         case "stack_fixed": return "criar pilha com tamanho fixo";
         case "push": return "empilhar";

@@ -34,19 +34,25 @@ export function optionalAuth(req, res, next) {
 }
 
 export function requireAuth(req, res, next) {
-  // Prioriza o cookie HTTPOnly
   const tokenFromCookie = req.cookies?.access_token;
 
   const authorization = req.headers.authorization;
+
   const tokenFromHeader = authorization?.startsWith("Bearer ")
     ? authorization.slice(7)
     : null;
 
   const token = tokenFromCookie || tokenFromHeader;
 
+ /* console.log("[AUTH] Rota:", req.method, req.originalUrl);
+  console.log("[AUTH] Cookie presente:", Boolean(tokenFromCookie));
+  console.log("[AUTH] Bearer presente:", Boolean(tokenFromHeader));**/
+
   if (!token) {
+    console.log("[AUTH] Token ausente");
+
     return res.status(401).json({
-      message: "Não autenticado",
+      error: "Não autenticado",
     });
   }
 
@@ -56,12 +62,25 @@ export function requireAuth(req, res, next) {
       process.env.JWT_SECRET
     );
 
+    if (!decoded.id) {
+      return res.status(401).json({
+        error: "Token sem identificação do usuário",
+      });
+    }
+
     req.userId = decoded.id;
 
+    console.log("[AUTH] Autenticação validada");
+
     return next();
-  } catch {
+  } catch (err) {
+    console.error("[AUTH] Falha JWT:", err.name);
+
     return res.status(401).json({
-      message: "Token inválido ou expirado",
+      error:
+        err.name === "TokenExpiredError"
+          ? "Sessão expirada"
+          : "Token inválido",
     });
   }
 }

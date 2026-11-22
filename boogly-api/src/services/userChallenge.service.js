@@ -1,7 +1,10 @@
 
 import { UserChallenge } from "../models/userChallenge.model.js";
 import { Challenge } from "../models/challenge.model.js";
-
+import mongoose from "mongoose";
+import { ExecutionEngine } from "../utils/executionEngine.js"
+import translate from "../utils/translate.js"
+import  validateExecutionRules  from "../utils/executionRules.js"
 
 export const registerAbandonment = async (userId, challengeId) => {
   return registerAttempt(userId, challengeId);
@@ -49,12 +52,13 @@ export const markAsCompleted = async (userId, challengeId) => {
 
   const progress = await UserChallenge.findOneAndUpdate(
     { userId, challengeId },
-    {
-      $setOnInsert: {
-        attempts: 0,
-        startedAt: now,
+      {
+        $setOnInsert: {
+          attempts: 0,
+          startedAt: now,
+          status: "attempted",
+        },
       },
-    },
     {
       upsert: true,
       new: true,

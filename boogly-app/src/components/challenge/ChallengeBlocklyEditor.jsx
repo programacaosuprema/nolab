@@ -19,9 +19,9 @@ import CodePanel from '../panels/CodePanel';
 
 import SimulatorPanel from '../simulator/components/SimulatorPanel';
 
-import { normalizeError } from "../../error/utils/normalizeError"
+import { normalizeError } from '../../error/utils/normalizeError';
 
-import { playSound } from "../../utils/soundManager";
+import { playSound } from '../../utils/soundManager';
 
 import { CategoryButton } from '../ui/CategoryButton';
 
@@ -57,13 +57,17 @@ function resolveValueFromBlock(block) {
         return Number.isNaN(n) ? v : n;
       }
     } catch (e) {
-        throw new Error(`Erro lendo field ${f}: ${e?.message || e}`);
+      throw new Error(`Erro lendo field ${f}: ${e?.message || e}`);
     }
   }
 
   try {
     const fields =
-      block.inputList?.flatMap(i => (i.fieldRow || []).map(f => f && f.name && block.getFieldValue?.(f.name))) || [];
+      block.inputList?.flatMap((i) =>
+        (i.fieldRow || []).map(
+          (f) => f && f.name && block.getFieldValue?.(f.name)
+        )
+      ) || [];
 
     for (const val of fields) {
       if (val !== undefined) {
@@ -99,7 +103,8 @@ function extractCommandsFromWorkspace(ws) {
     let value = null;
 
     try {
-      value = block.getFieldValue?.('VALUE') ?? block.getFieldValue?.('NUM') ?? null;
+      value =
+        block.getFieldValue?.('VALUE') ?? block.getFieldValue?.('NUM') ?? null;
 
       if (value !== null) {
         const n = Number(value);
@@ -171,7 +176,8 @@ export default function ChallengeBlocklyEditor({
   const [localCCode, setLocalCCode] = useState('');
   const [localDSLCode, setLocalDSLCode] = useState('');
 
-  const detectedStructure = propStructure || detectStructureFromToolbox(toolbox);
+  const detectedStructure =
+    propStructure || detectStructureFromToolbox(toolbox);
 
   const [isRunning, setIsRunning] = useState(false);
 
@@ -207,21 +213,27 @@ export default function ChallengeBlocklyEditor({
 
       workspaceRef.current = Blockly.inject(blocklyDiv.current, {
         toolbox: toolbox?.list || toolbox?.queue || toolbox?.stack || toolbox,
+
+        media: '/blockly/media/',
+
         trashcan: true,
         collapse: true,
+
         grid: {
           spacing: 20,
           length: 3,
           colour: theme.border,
           snap: true,
         },
+
         zoom: {
           controls: true,
           wheel: true,
         },
+
         plugins: {
-          connectionChecker: "customConnectionChecker"
-        }
+          connectionChecker: 'customConnectionChecker',
+        },
       });
 
       // change listener (no autosave)
@@ -253,7 +265,7 @@ export default function ChallengeBlocklyEditor({
           setBlockCount && setBlockCount(count);
           setBlockCountLocal(count);
         } catch (err) {
-          showError(normalizeError('Erro no change listener: '+ err));
+          showError(normalizeError('Erro no change listener: ' + err));
         }
       });
     } catch (err) {
@@ -431,7 +443,10 @@ export default function ChallengeBlocklyEditor({
             {/*  NOVO TOGGLE */}
             <div style={{ display: 'flex', gap: 6 }}>
               <button
-                onClick={() => {setView('editor'); playSound("click");}}
+                onClick={() => {
+                  setView('editor');
+                  playSound('click');
+                }}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -445,7 +460,10 @@ export default function ChallengeBlocklyEditor({
               </button>
 
               <button
-                onClick={() => {setView('code'); playSound("click");}}
+                onClick={() => {
+                  setView('code');
+                  playSound('click');
+                }}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -459,7 +477,10 @@ export default function ChallengeBlocklyEditor({
               </button>
 
               <button
-                onClick={() => {setView('simulation'); playSound("click");}}
+                onClick={() => {
+                  setView('simulation');
+                  playSound('click');
+                }}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '6px',
@@ -481,7 +502,10 @@ export default function ChallengeBlocklyEditor({
               style={{ gap: theme.spacing.sm }}
             >
               <button
-                onClick={() => {setToolboxVisible(!toolboxVisible); playSound("click");}}
+                onClick={() => {
+                  setToolboxVisible(!toolboxVisible);
+                  playSound('click');
+                }}
                 style={{
                   padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                   borderRadius: '8px',
@@ -495,7 +519,10 @@ export default function ChallengeBlocklyEditor({
               </button>
 
               <button
-                onClick={ () => {handleRun(); playSound("click");}}
+                onClick={() => {
+                  handleRun();
+                  playSound('click');
+                }}
                 style={{
                   padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
                   borderRadius: '8px',
@@ -530,7 +557,7 @@ export default function ChallengeBlocklyEditor({
               🧩 {blockCountLocal} blocos
             </div>
           )}
-          
+
           <div
             className={`absolute inset-0 ${view === 'editor' ? 'block' : 'hidden'}`}
           >

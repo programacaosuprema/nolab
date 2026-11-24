@@ -17,7 +17,7 @@ import { useAuth } from '../../autenticator/useAuth';
 
 import { saveWorkspace, loadWorkspace } from '../../utils/workspaceStorage';
 
-import { playSound } from "../../utils/soundManager";
+import { playSound } from '../../utils/soundManager';
 import { CategoryButton } from '../ui/CategoryButton';
 
 export default function MainBlocklyEditorPanel({
@@ -42,6 +42,27 @@ export default function MainBlocklyEditorPanel({
   const { user, structure } = useAuth();
 
   const hasCategories = toolbox?.list || toolbox?.queue || toolbox?.stack;
+
+  useEffect(() => {
+    const container = blocklyDiv.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      const workspace = workspaceRef.current;
+
+      if (
+        workspace &&
+        container.clientWidth > 0 &&
+        container.clientHeight > 0
+      ) {
+        Blockly.svgResize(workspace);
+      }
+    });
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, []);
 
   const categoriesByStructure = {
     list: [
@@ -77,21 +98,27 @@ export default function MainBlocklyEditorPanel({
 
       workspaceRef.current = Blockly.inject(blocklyDiv.current, {
         toolbox: toolbox?.list || toolbox?.queue || toolbox?.stack || toolbox,
+
+        media: '/blockly/media/',
+
         trashcan: true,
         collapse: true,
+
         grid: {
           spacing: 20,
           length: 3,
           colour: theme.border,
           snap: true,
         },
+
         zoom: {
           controls: true,
           wheel: true,
         },
+
         plugins: {
-          connectionChecker: "customConnectionChecker"
-        }
+          connectionChecker: 'customConnectionChecker',
+        },
       });
 
       workspaceRef.current.addChangeListener((event) => {
@@ -106,7 +133,12 @@ export default function MainBlocklyEditorPanel({
               if (!workspaceRef.current) return;
               setSaveStatus('Salvando...');
 
-              saveWorkspace(workspaceRef.current, structure, user?.id, showError);
+              saveWorkspace(
+                workspaceRef.current,
+                structure,
+                user?.id,
+                showError
+              );
 
               setTimeout(() => {
                 setSaveStatus('Salvo');
@@ -118,8 +150,6 @@ export default function MainBlocklyEditorPanel({
                 codeJS =
                   javascriptGenerator.workspaceToCode(workspaceRef.current) ||
                   '';
-                  
-                
               } catch (err) {
                 showError({
                   message: 'Erro ao gerar código Javascript: ' + err.message,
@@ -128,7 +158,6 @@ export default function MainBlocklyEditorPanel({
               }
 
               setCode(codeJS);
-              
 
               //  C CODE
               let codeC = '';
@@ -423,7 +452,10 @@ export default function MainBlocklyEditorPanel({
 
           {hasCategories && (
             <button
-              onClick={() => { setToolboxVisible(!toolboxVisible); playSound("click");}}
+              onClick={() => {
+                setToolboxVisible(!toolboxVisible);
+                playSound('click');
+              }}
               style={{
                 padding: `${theme.spacing.sm} ${theme.spacing.md}`,
                 borderRadius: '8px',
@@ -439,7 +471,7 @@ export default function MainBlocklyEditorPanel({
         </div>
 
         {/* WORKSPACE AREA */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-0 min-w-0">
           {/* 💾 STATUS */}
           <div
             style={{
